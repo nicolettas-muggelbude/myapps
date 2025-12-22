@@ -70,16 +70,16 @@ chmod +x MyApps-0.1.0-x86_64.AppImage
 ./MyApps-0.1.0-x86_64.AppImage
 ```
 
-**Hinweis:** Das AppImage benötigt `python3` und `python3-tk` auf dem System:
+**Hinweis:** Das AppImage benötigt `python3`, `python3-tk` und `python3-pil` auf dem System:
 ```bash
 # Debian/Ubuntu/Mint
-sudo apt install python3 python3-tk
+sudo apt install python3 python3-tk python3-pil python3-pil.imagetk
 
 # Arch/Manjaro
-sudo pacman -S python tk
+sudo pacman -S python tk python-pillow
 
 # Fedora
-sudo dnf install python3 python3-tkinter
+sudo dnf install python3 python3-tkinter python3-pillow python3-pillow-tk
 ```
 
 ### Aus Quellcode (Development)

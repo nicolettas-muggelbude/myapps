@@ -58,7 +58,9 @@ cp AppDir/myapps.desktop AppDir/usr/share/applications/
 
 # Installiere Python-Dependencies in AppDir
 echo -e "${BLUE}[5/7]${NC} Installiere Python-Dependencies..."
-python3 -m pip install --target=AppDir/usr/share/myapps/vendor ttkbootstrap Pillow
+# Nur ttkbootstrap bündeln (Pure Python) ohne Dependencies
+# Pillow hat native Extensions und muss auf dem System installiert sein
+python3 -m pip install --target=AppDir/usr/share/myapps/vendor --no-deps ttkbootstrap
 
 # Erstelle AppRun-Script
 echo -e "${BLUE}[6/7]${NC} Erstelle AppRun-Script..."
@@ -78,7 +80,20 @@ fi
 # Prüfe python3-tk
 if ! python3 -c "import tkinter" 2>/dev/null; then
     echo "Fehler: python3-tk ist nicht installiert!"
-    echo "Bitte installieren: sudo apt install python3-tk"
+    echo "Bitte installieren:"
+    echo "  Debian/Ubuntu: sudo apt install python3-tk python3-pil"
+    echo "  Arch: sudo pacman -S tk python-pillow"
+    echo "  Fedora: sudo dnf install python3-tkinter python3-pillow"
+    exit 1
+fi
+
+# Prüfe python3-pil (Pillow)
+if ! python3 -c "from PIL import Image" 2>/dev/null; then
+    echo "Fehler: python3-pil (Pillow) ist nicht installiert!"
+    echo "Bitte installieren:"
+    echo "  Debian/Ubuntu: sudo apt install python3-pil python3-pil.imagetk"
+    echo "  Arch: sudo pacman -S python-pillow"
+    echo "  Fedora: sudo dnf install python3-pillow python3-pillow-tk"
     exit 1
 fi
 
@@ -110,4 +125,9 @@ echo "  chmod +x ${APPIMAGE_NAME}"
 echo "  ./${APPIMAGE_NAME}"
 echo ""
 echo -e "${GREEN}Hinweis:${NC}"
-echo "  python3 und python3-tk müssen im System installiert sein!"
+echo "  python3, python3-tk und python3-pil müssen im System installiert sein!"
+echo ""
+echo -e "${GREEN}Installation der Dependencies:${NC}"
+echo "  Debian/Ubuntu: sudo apt install python3 python3-tk python3-pil python3-pil.imagetk"
+echo "  Arch: sudo pacman -S python tk python-pillow"
+echo "  Fedora: sudo dnf install python3 python3-tkinter python3-pillow python3-pillow-tk"
