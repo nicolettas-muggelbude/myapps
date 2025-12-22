@@ -1,0 +1,10 @@
+# MyApps Dependencies
+
+# GUI Framework
+ttkbootstrap>=1.10.1
+
+# Icon/Image-Verarbeitung
+Pillow>=10.0.0
+
+# Optional: Für Packaging
+# PyInstaller>=6.0.0  # Für AppImage/Executable

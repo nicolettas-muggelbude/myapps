@@ -1,0 +1,14 @@
+#!/bin/bash
+# MyApps Launcher-Script
+
+# Wechsle ins Projektverzeichnis
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Prüfe ob venv existiert
+if [ -d "venv" ]; then
+    source venv/bin/activate
+fi
+
+# Starte MyApps
+python3 -m src.myapps.main "$@"

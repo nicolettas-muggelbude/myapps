@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "myapps"
+version = "0.1.0"
+description = "Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "GPLv3"}
+authors = [
+    {name = "MyApps Contributors"}
+]
+keywords = ["linux", "package-manager", "gui", "desktop"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "ttkbootstrap>=1.10.1",
+    "Pillow>=10.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOURUSERNAME/myapps"
+"Bug Tracker" = "https://github.com/YOURUSERNAME/myapps/issues"
+
+[project.scripts]
+myapps = "myapps.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+[tool.setuptools]
+packages = ["myapps"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+myapps = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

@@ -1,0 +1,32 @@
+{
+  "description": "Arch Linux spezifische System-App-Filter",
+  "version": "1.0",
+  "keywords": [
+    "pacman",
+    "pamac",
+    "yay",
+    "paru",
+    "makepkg",
+    "base-devel",
+    "archlinux-",
+    "arch-",
+    "manjaro-",
+    "endeavouros-",
+    "garuda-",
+    "reflector",
+    "mkinitcpio",
+    "systemd-sysvcompat",
+    "filesystem",
+    "glibc",
+    "licenses",
+    "pacman-contrib",
+    "pacman-mirrorlist",
+    "archlinux-keyring",
+    "manjaro-keyring",
+    "hwdetect",
+    "hwinfo",
+    "inxi",
+    "mhwd",
+    "mhwd-db"
+  ]
+}
