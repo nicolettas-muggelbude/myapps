@@ -71,6 +71,43 @@ cat > AppDir/AppRun << 'EOF'
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PYTHONPATH="${HERE}/usr/share/myapps:${HERE}/usr/share/myapps/vendor:${PYTHONPATH}"
 
+# Funktion: Erkenne Distribution
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
+
+# Funktion: Zeige distro-spezifischen Installationsbefehl
+show_install_cmd() {
+    local packages="$1"
+    local distro=$(detect_distro)
+
+    case "$distro" in
+        arch|manjaro|endeavouros|garuda)
+            echo "sudo pacman -S $packages"
+            ;;
+        debian|ubuntu|linuxmint|pop|elementary)
+            echo "sudo apt install $packages"
+            ;;
+        fedora|rhel|centos|rocky|almalinux)
+            echo "sudo dnf install $packages"
+            ;;
+        opensuse*|sles)
+            echo "sudo zypper install $packages"
+            ;;
+        *)
+            # Fallback: Zeige alle gängigen Befehle
+            echo "Debian/Ubuntu: sudo apt install $packages"
+            echo "Arch/Manjaro: sudo pacman -S $packages"
+            echo "Fedora/RHEL: sudo dnf install $packages"
+            ;;
+    esac
+}
+
 # Prüfe Python3
 if ! command -v python3 &> /dev/null; then
     echo "Fehler: Python 3 ist nicht installiert!"
@@ -79,21 +116,59 @@ fi
 
 # Prüfe python3-tk
 if ! python3 -c "import tkinter" 2>/dev/null; then
-    echo "Fehler: python3-tk ist nicht installiert!"
-    echo "Bitte installieren:"
-    echo "  Debian/Ubuntu: sudo apt install python3-tk python3-pil"
-    echo "  Arch: sudo pacman -S tk python-pillow"
-    echo "  Fedora: sudo dnf install python3-tkinter python3-pillow"
+    echo "Fehler: tkinter ist nicht installiert!"
+    echo ""
+    distro=$(detect_distro)
+    case "$distro" in
+        arch|manjaro|endeavouros|garuda)
+            echo "Bitte installieren: $(show_install_cmd "tk python-pillow")"
+            ;;
+        debian|ubuntu|linuxmint|pop|elementary)
+            echo "Bitte installieren: $(show_install_cmd "python3-tk python3-pil python3-pil.imagetk")"
+            ;;
+        fedora|rhel|centos|rocky|almalinux)
+            echo "Bitte installieren: $(show_install_cmd "python3-tkinter python3-pillow python3-pillow-tk")"
+            ;;
+        opensuse*|sles)
+            echo "Bitte installieren: $(show_install_cmd "python3-tk python3-Pillow")"
+            ;;
+        *)
+            echo "Bitte installieren (je nach Distribution):"
+            echo "  Debian/Ubuntu: sudo apt install python3-tk python3-pil python3-pil.imagetk"
+            echo "  Arch/Manjaro: sudo pacman -S tk python-pillow"
+            echo "  Fedora/RHEL: sudo dnf install python3-tkinter python3-pillow python3-pillow-tk"
+            echo "  openSUSE: sudo zypper install python3-tk python3-Pillow"
+            ;;
+    esac
     exit 1
 fi
 
 # Prüfe python3-pil (Pillow)
 if ! python3 -c "from PIL import Image" 2>/dev/null; then
-    echo "Fehler: python3-pil (Pillow) ist nicht installiert!"
-    echo "Bitte installieren:"
-    echo "  Debian/Ubuntu: sudo apt install python3-pil python3-pil.imagetk"
-    echo "  Arch: sudo pacman -S python-pillow"
-    echo "  Fedora: sudo dnf install python3-pillow python3-pillow-tk"
+    echo "Fehler: Pillow (PIL) ist nicht installiert!"
+    echo ""
+    distro=$(detect_distro)
+    case "$distro" in
+        arch|manjaro|endeavouros|garuda)
+            echo "Bitte installieren: $(show_install_cmd "python-pillow")"
+            ;;
+        debian|ubuntu|linuxmint|pop|elementary)
+            echo "Bitte installieren: $(show_install_cmd "python3-pil python3-pil.imagetk")"
+            ;;
+        fedora|rhel|centos|rocky|almalinux)
+            echo "Bitte installieren: $(show_install_cmd "python3-pillow python3-pillow-tk")"
+            ;;
+        opensuse*|sles)
+            echo "Bitte installieren: $(show_install_cmd "python3-Pillow")"
+            ;;
+        *)
+            echo "Bitte installieren (je nach Distribution):"
+            echo "  Debian/Ubuntu: sudo apt install python3-pil python3-pil.imagetk"
+            echo "  Arch/Manjaro: sudo pacman -S python-pillow"
+            echo "  Fedora/RHEL: sudo dnf install python3-pillow python3-pillow-tk"
+            echo "  openSUSE: sudo zypper install python3-Pillow"
+            ;;
+    esac
     exit 1
 fi
 
