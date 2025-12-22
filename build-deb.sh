@@ -18,27 +18,31 @@ echo -e "Version: ${GREEN}${VERSION}${NC}"
 echo ""
 
 # Cleanup alte Builds
-echo -e "${BLUE}[1/6]${NC} Räume alte Builds auf..."
+echo -e "${BLUE}[1/7]${NC} Räume alte Builds auf..."
 rm -rf debian/
 rm -f myapps_*.deb
 
 # Erstelle Verzeichnisstruktur
-echo -e "${BLUE}[2/6]${NC} Erstelle Paket-Struktur..."
+echo -e "${BLUE}[2/7]${NC} Erstelle Paket-Struktur..."
 mkdir -p debian/DEBIAN
 mkdir -p debian/usr/bin
-mkdir -p debian/usr/share/myapps
+mkdir -p debian/usr/share/myapps/vendor
 mkdir -p debian/usr/share/applications
 mkdir -p debian/usr/share/pixmaps
 
+# Installiere Python-Dependencies in vendor/
+echo -e "${BLUE}[3/7]${NC} Installiere Python-Dependencies..."
+python3 -m pip install --target=debian/usr/share/myapps/vendor ttkbootstrap Pillow
+
 # Erstelle control-Datei
-echo -e "${BLUE}[3/6]${NC} Erstelle control-Datei..."
+echo -e "${BLUE}[4/7]${NC} Erstelle control-Datei..."
 cat > debian/DEBIAN/control << EOF
 Package: myapps
 Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: all
-Depends: python3 (>= 3.8), python3-tk, python3-pip
+Depends: python3 (>= 3.8), python3-tk
 Maintainer: nicolettas-muggelbude <noreply@github.com>
 Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
  MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
@@ -50,31 +54,18 @@ Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
   - Intelligente Filterung von System-Apps
   - Export-Funktionen (TXT, CSV, JSON)
   - Mehrsprachig (Deutsch, Englisch)
+ .
+ Alle Python-Dependencies sind im Paket gebündelt.
 Homepage: https://github.com/nicolettas-muggelbude/myapps
 EOF
 
-# Erstelle postinst-Script
-echo -e "${BLUE}[4/6]${NC} Erstelle postinst-Script..."
-cat > debian/DEBIAN/postinst << 'EOF'
-#!/bin/bash
-set -e
-
-# Installiere Python-Dependencies
-if [ "$1" = "configure" ]; then
-    echo "Installiere MyApps Python-Dependencies..."
-    pip3 install --system ttkbootstrap>=1.10.1 Pillow>=10.0.0 || true
-fi
-
-exit 0
-EOF
-chmod 755 debian/DEBIAN/postinst
-
 # Erstelle Launcher-Script
-echo -e "${BLUE}[5/6]${NC} Kopiere Dateien..."
+echo -e "${BLUE}[5/7]${NC} Erstelle Launcher und Desktop-Datei..."
 cat > debian/usr/bin/myapps << 'EOF'
 #!/usr/bin/env python3
 """MyApps Launcher"""
 import sys
+sys.path.insert(0, '/usr/share/myapps/vendor')
 sys.path.insert(0, '/usr/share/myapps')
 
 from src.myapps.main import main
@@ -101,11 +92,12 @@ StartupNotify=true
 EOF
 
 # Kopiere Projektdateien
+echo -e "${BLUE}[6/7]${NC} Kopiere Projektdateien..."
 cp -r src filters assets locales debian/usr/share/myapps/
 cp assets/icons/default-app.png debian/usr/share/pixmaps/myapps.png
 
 # Baue DEB-Paket
-echo -e "${BLUE}[6/6]${NC} Baue DEB-Paket..."
+echo -e "${BLUE}[7/7]${NC} Baue DEB-Paket..."
 dpkg-deb --build debian "${PACKAGE_NAME}"
 
 # Zeige Ergebnis
