@@ -4,13 +4,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/YOURUSERNAME/myapps)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
 
 [English](README.en.md) | **Deutsch**
 
 ## Über MyApps
 
-MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwendungen übersichtlich darstellt - ohne System-Clutter. Es wurde auf Wunsch der Community [Linux Guides DE](https://t.me/YOURGROUP) entwickelt.
+MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwendungen übersichtlich darstellt - ohne System-Clutter. Es wurde auf Wunsch der Community [Linux Guides DE](https://t.me/LinuxGuidesDECommunity) entwickelt.
 
 ### Features
 
@@ -53,7 +53,7 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 ### Aus DEB-Paket (Debian/Ubuntu/Mint)
 
 ```bash
-# Download des DEB-Pakets (wird noch bereitgestellt)
+# Download des DEB-Pakets aus dem Release
 sudo dpkg -i myapps_0.1.0_all.deb
 
 # Starten
@@ -63,18 +63,30 @@ myapps
 ### Als AppImage (alle Distributionen)
 
 ```bash
-# Download des AppImage (wird noch bereitgestellt)
+# Download des AppImage aus dem Release
 chmod +x MyApps-0.1.0-x86_64.AppImage
 
 # Starten
 ./MyApps-0.1.0-x86_64.AppImage
 ```
 
+**Hinweis:** Das AppImage benötigt `python3` und `python3-tk` auf dem System:
+```bash
+# Debian/Ubuntu/Mint
+sudo apt install python3 python3-tk
+
+# Arch/Manjaro
+sudo pacman -S python tk
+
+# Fedora
+sudo dnf install python3 python3-tkinter
+```
+
 ### Aus Quellcode (Development)
 
 ```bash
 # Repository klonen
-git clone https://github.com/YOURUSERNAME/myapps.git
+git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
 # Virtual Environment erstellen
@@ -85,7 +97,45 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # App starten
-python3 -m myapps.main
+python3 -m src.myapps.main
+```
+
+## Pakete selbst bauen
+
+### DEB-Paket bauen
+
+```bash
+# Build-Script ausführen
+./build-deb.sh
+
+# Optinal: Spezifische Version
+./build-deb.sh 0.1.0
+
+# Installieren
+sudo dpkg -i myapps_0.1.0_all.deb
+```
+
+### AppImage bauen
+
+```bash
+# appimagetool herunterladen (einmalig)
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+chmod +x appimagetool-x86_64.AppImage
+mv appimagetool-x86_64.AppImage appimagetool
+
+# Für WSL/Systeme ohne FUSE: Tool extrahieren
+./appimagetool --appimage-extract
+mv squashfs-root appimagetool-extracted
+
+# Build-Script ausführen
+./build-appimage.sh
+
+# Optinal: Spezifische Version
+./build-appimage.sh 0.1.0
+
+# Ausführen
+chmod +x MyApps-0.1.0-x86_64.AppImage
+./MyApps-0.1.0-x86_64.AppImage
 ```
 
 ## Verwendung
@@ -114,7 +164,7 @@ Beiträge sind herzlich willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) fü
 
 ### Filter-Keywords vorschlagen
 
-Findest du System-Pakete die nicht gefiltert werden? Öffne ein [Issue](https://github.com/YOURUSERNAME/myapps/issues)!
+Findest du System-Pakete die nicht gefiltert werden? Öffne ein [Issue](https://github.com/nicolettas-muggelbude/myapps/issues)!
 
 ### Tester gesucht!
 
@@ -178,15 +228,15 @@ MyApps ist unter der [GNU General Public License v3.0](LICENSE) lizenziert.
 
 ## Credits
 
-- Entwickelt für die [Linux Guides DE Community](https://t.me/YOURGROUP)
+- Entwickelt für die [Linux Guides DE Community](https://t.me/LinuxGuidesDECommunity)
 - Icons aus System-Themes
 - UI basiert auf [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
 ## Support
 
-- 🐛 [Bug melden](https://github.com/YOURUSERNAME/myapps/issues)
-- 💡 [Feature vorschlagen](https://github.com/YOURUSERNAME/myapps/issues)
-- 💬 [Community-Chat](https://t.me/YOURGROUP)
+- 🐛 [Bug melden](https://github.com/nicolettas-muggelbude/myapps/issues)
+- 💡 [Feature vorschlagen](https://github.com/nicolettas-muggelbude/myapps/issues)
+- 💬 [Community-Chat](https://t.me/LinuxGuidesDECommunity)
 
 ---
 

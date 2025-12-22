@@ -4,13 +4,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/YOURUSERNAME/myapps)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
 
 **English** | [Deutsch](README.md)
 
 ## About MyApps
 
-MyApps is a user-friendly tool for Linux that displays all installed applications in a clean interface - without system clutter. It was developed at the request of the [Linux Guides DE Community](https://t.me/YOURGROUP).
+MyApps is a user-friendly tool for Linux that displays all installed applications in a clean interface - without system clutter. It was developed at the request of the [Linux Guides DE Community](https://t.me/LinuxGuidesDECommunity).
 
 ### Features
 
@@ -53,7 +53,7 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 ### From DEB Package (Debian/Ubuntu/Mint)
 
 ```bash
-# Download DEB package (will be provided soon)
+# Download DEB package from release
 sudo dpkg -i myapps_0.1.0_all.deb
 
 # Launch
@@ -63,18 +63,30 @@ myapps
 ### As AppImage (all distributions)
 
 ```bash
-# Download AppImage (will be provided soon)
+# Download AppImage from release
 chmod +x MyApps-0.1.0-x86_64.AppImage
 
 # Launch
 ./MyApps-0.1.0-x86_64.AppImage
 ```
 
+**Note:** The AppImage requires `python3` and `python3-tk` on your system:
+```bash
+# Debian/Ubuntu/Mint
+sudo apt install python3 python3-tk
+
+# Arch/Manjaro
+sudo pacman -S python tk
+
+# Fedora
+sudo dnf install python3 python3-tkinter
+```
+
 ### From Source (Development)
 
 ```bash
 # Clone repository
-git clone https://github.com/YOURUSERNAME/myapps.git
+git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
 # Create virtual environment
@@ -85,7 +97,45 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Launch app
-python3 -m myapps.main
+python3 -m src.myapps.main
+```
+
+## Building Packages
+
+### Build DEB Package
+
+```bash
+# Run build script
+./build-deb.sh
+
+# Optional: Specify version
+./build-deb.sh 0.1.0
+
+# Install
+sudo dpkg -i myapps_0.1.0_all.deb
+```
+
+### Build AppImage
+
+```bash
+# Download appimagetool (one-time)
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+chmod +x appimagetool-x86_64.AppImage
+mv appimagetool-x86_64.AppImage appimagetool
+
+# For WSL/systems without FUSE: Extract tool
+./appimagetool --appimage-extract
+mv squashfs-root appimagetool-extracted
+
+# Run build script
+./build-appimage.sh
+
+# Optional: Specify version
+./build-appimage.sh 0.1.0
+
+# Execute
+chmod +x MyApps-0.1.0-x86_64.AppImage
+./MyApps-0.1.0-x86_64.AppImage
 ```
 
 ## Usage
@@ -114,7 +164,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### Suggest Filter Keywords
 
-Found system packages that aren't filtered? Open an [Issue](https://github.com/YOURUSERNAME/myapps/issues)!
+Found system packages that aren't filtered? Open an [Issue](https://github.com/nicolettas-muggelbude/myapps/issues)!
 
 ### Testers Wanted!
 
@@ -178,15 +228,15 @@ MyApps is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ## Credits
 
-- Developed for the [Linux Guides DE Community](https://t.me/YOURGROUP)
+- Developed for the [Linux Guides DE Community](https://t.me/LinuxGuidesDECommunity)
 - Icons from system themes
 - UI based on [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
 ## Support
 
-- 🐛 [Report Bug](https://github.com/YOURUSERNAME/myapps/issues)
-- 💡 [Suggest Feature](https://github.com/YOURUSERNAME/myapps/issues)
-- 💬 [Community Chat](https://t.me/YOURGROUP)
+- 🐛 [Report Bug](https://github.com/nicolettas-muggelbude/myapps/issues)
+- 💡 [Suggest Feature](https://github.com/nicolettas-muggelbude/myapps/issues)
+- 💬 [Community Chat](https://t.me/LinuxGuidesDECommunity)
 
 ---
 

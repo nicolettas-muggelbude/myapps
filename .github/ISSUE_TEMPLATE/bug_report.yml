@@ -1,0 +1,81 @@
+name: Bug Report
+description: Melde einen Fehler in MyApps
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du einen Bug meldest! Bitte fülle die folgenden Informationen aus.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung des Problems
+      description: Was ist das Problem? Was hast du erwartet?
+      placeholder: Beschreibe den Bug so detailliert wie möglich
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zur Reproduktion
+      description: Wie können wir den Bug reproduzieren?
+      placeholder: |
+        1. Öffne MyApps
+        2. Klicke auf '...'
+        3. Scrolle zu '...'
+        4. Fehler tritt auf
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten
+      description: Was sollte stattdessen passieren?
+      placeholder: Beschreibe das erwartete Verhalten
+    validations:
+      required: true
+
+  - type: dropdown
+    id: distro
+    attributes:
+      label: Linux-Distribution
+      description: Welche Distribution verwendest du?
+      options:
+        - Debian
+        - Ubuntu
+        - Linux Mint
+        - Arch Linux
+        - Manjaro
+        - Fedora
+        - RHEL/CentOS
+        - Solus
+        - openSUSE
+        - Andere (bitte in Beschreibung angeben)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: MyApps Version
+      description: Welche Version von MyApps verwendest du?
+      placeholder: z.B. v0.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log-Ausgaben
+      description: Falls vorhanden, füge relevante Log-Ausgaben ein
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Zusätzliche Informationen
+      description: Weitere Kontext-Informationen, Screenshots, etc.

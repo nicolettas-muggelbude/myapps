@@ -84,11 +84,25 @@ app_lister/
 │   └── en/LC_MESSAGES/          # Englische Übersetzungen
 ├── assets/
 │   └── icons/                   # Fallback-Icons
+├── debian/                      # DEB-Paket-Struktur
+│   ├── DEBIAN/control           # Package-Metadaten
+│   ├── DEBIAN/postinst          # Post-Install-Script
+│   ├── usr/bin/myapps           # Launcher-Script
+│   └── usr/share/...            # App-Dateien
 ├── tests/                       # Unit-Tests (pytest)
 ├── docs/                        # Zusätzliche Dokumentation
+├── .github/
+│   └── ISSUE_TEMPLATE/          # GitHub Issue Templates
+│       ├── bug_report.yml
+│       ├── feature_request.yml
+│       ├── filter_suggestion.yml
+│       └── config.yml
+├── build-deb.sh                 # DEB-Build-Script
+├── build-appimage.sh            # AppImage-Build-Script
 ├── pyproject.toml               # Python-Projekt-Config
 ├── requirements.txt             # Python-Dependencies
-├── README.md                    # Haupt-Dokumentation (DE + EN)
+├── README.md                    # Haupt-Dokumentation (Deutsch)
+├── README.en.md                 # Haupt-Dokumentation (Englisch)
 ├── LICENSE                      # GPLv3.0
 ├── CONTRIBUTING.md              # Contribution Guidelines
 ├── .gitignore                   # Git-Ignore-Regeln
@@ -124,23 +138,89 @@ app_lister/
 ## Packaging
 
 ### DEB-Paket
-- Für Debian, Ubuntu, Mint
-- Erstellt ab v0.1.0
-- Dependencies: python3, python3-tk, ttkbootstrap
+- **Ziel-Distributionen**: Debian, Ubuntu, Mint
+- **Build-Script**: `build-deb.sh`
+- **Größe**: ~51 KB
+- **Dependencies**: python3 (>= 3.8), python3-tk, python3-pip
+- **Installation**: `sudo dpkg -i myapps_0.1.0_all.deb`
+- **Struktur**:
+  - Launcher-Script in `/usr/bin/myapps`
+  - App-Dateien in `/usr/share/myapps/`
+  - Desktop-Entry in `/usr/share/applications/`
+  - Icon in `/usr/share/icons/hicolor/256x256/apps/`
+- **Post-Install**: Installiert ttkbootstrap und Pillow via pip
 
 ### AppImage
-- Distributionsübergreifend
-- Erstellt ab v0.1.0
-- Alle Dependencies gebündelt
+- **Ziel-Distributionen**: Alle Linux-Distributionen
+- **Build-Script**: `build-appimage.sh`
+- **Größe**: ~7.8 MB
+- **Dependencies**: python3, python3-tk (müssen auf dem System installiert sein)
+- **Gebündelte Pakete**: ttkbootstrap, Pillow (im vendor/-Verzeichnis)
+- **Ausführung**: `chmod +x MyApps-0.1.0-x86_64.AppImage && ./MyApps-0.1.0-x86_64.AppImage`
+- **AppRun-Script**:
+  - Prüft ob python3 und python3-tk vorhanden sind
+  - Setzt PYTHONPATH auf vendor-Verzeichnis
+  - Startet App mit `python3 -m src.myapps.main`
+- **WSL-Kompatibilität**: Build-Script erkennt extrahiertes appimagetool für Systeme ohne FUSE
+
+### Build-Scripts
+
+#### build-deb.sh
+```bash
+./build-deb.sh              # Auto-Version aus pyproject.toml
+./build-deb.sh 0.1.0        # Spezifische Version
+```
+- Farbige Ausgabe (Blau/Grün/Rot)
+- 7 Schritte: Aufräumen, Debian-Struktur, Dateien kopieren, Icons, Control-Datei, postinst, Build
+- Automatische Version-Erkennung aus pyproject.toml
+- Ausgabe: `myapps_VERSION_all.deb`
+
+#### build-appimage.sh
+```bash
+./build-appimage.sh         # Auto-Version aus pyproject.toml
+./build-appimage.sh 0.1.0   # Spezifische Version
+```
+- Farbige Ausgabe (Blau/Grün/Rot)
+- 7 Schritte: Aufräumen, AppDir-Struktur, Dateien kopieren, .desktop-Datei, Dependencies, AppRun, Build
+- Automatische Version-Erkennung aus pyproject.toml
+- Erkennt extrahiertes appimagetool für WSL/FUSE-lose Systeme
+- Ausgabe: `MyApps-VERSION-x86_64.AppImage`
 
 ## Changelog
 
-### v0.1.0 (in Entwicklung)
-- Initiale Version
-- Multi-Distro-Support
-- Moderne GUI mit ttkbootstrap
-- Export-Funktionen
-- Mehrsprachigkeit (DE/EN)
+### v0.1.0 (Alpha - Ready for Release)
+**Initiale Version**
+
+**Core Features:**
+- Multi-Distro-Support (Debian, Ubuntu, Mint, Arch, Fedora, Solus, openSUSE)
+- Moderne GUI mit ttkbootstrap Dark Mode
+- Zwei Ansichten: Tabelle und Liste (Messenger-Style)
+- Export-Funktionen (TXT, CSV, JSON)
+- Mehrsprachigkeit (Deutsch/Englisch via gettext)
+- Intelligente Filterung (89% Filter-Rate: 1330 Pakete → 145 User-Apps)
+
+**GUI-Verbesserungen:**
+- Listenansicht mit modernem Messenger-Design
+- Rekursives Scrolling-Binding für alle Widgets
+- Lazy-Loading Tooltips mit Paketbeschreibungen
+- Moderner Export-Dialog (500x500px, quadratisch)
+- Verbessertes Fallback-Icon (blaues Paket-Symbol)
+- Entfernung aller Emojis (Darstellungsprobleme)
+- Standard-Ansicht: Liste
+
+**Package Management:**
+- DEB-Paket (51 KB) mit build-deb.sh
+- AppImage (7.8 MB) mit build-appimage.sh
+- Automatische Versions-Erkennung in Build-Scripts
+- WSL-Kompatibilität (extrahiertes appimagetool)
+
+**Entwicklung:**
+- Vollständige Type Hints in allen Modulen
+- Deutsche Code-Kommentare
+- Logging statt print()
+- GitHub Issue Templates (Bug, Feature, Filter)
+- Umfassende README (DE + EN)
+- CONTRIBUTING.md für Community-Beiträge
 
 ## Notizen für Claude
 

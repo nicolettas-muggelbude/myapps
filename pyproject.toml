@@ -34,8 +34,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOURUSERNAME/myapps"
-"Bug Tracker" = "https://github.com/YOURUSERNAME/myapps/issues"
+Homepage = "https://github.com/nicolettas-muggelbude/myapps"
+"Bug Tracker" = "https://github.com/nicolettas-muggelbude/myapps/issues"
 
 [project.scripts]
 myapps = "myapps.main:main"

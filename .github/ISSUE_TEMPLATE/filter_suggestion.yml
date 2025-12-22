@@ -1,0 +1,87 @@
+name: Filter-Vorschlag
+description: Schlage neue Filter-Keywords vor
+title: "[Filter]: "
+labels: ["filter", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für deinen Filter-Vorschlag! Hilf uns, die Filter zu verbessern.
+
+  - type: input
+    id: package
+    attributes:
+      label: Paketname
+      description: Name des Pakets, das gefiltert werden sollte
+      placeholder: z.B. gnome-shell, python3-apt
+    validations:
+      required: true
+
+  - type: dropdown
+    id: distro
+    attributes:
+      label: Linux-Distribution
+      description: Auf welcher Distribution hast du dieses Paket gefunden?
+      options:
+        - Debian
+        - Ubuntu
+        - Linux Mint
+        - Arch Linux
+        - Manjaro
+        - Fedora
+        - RHEL/CentOS
+        - Solus
+        - openSUSE
+        - Mehrere (bitte in Beschreibung angeben)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Pakettyp
+      description: Von welchem Paketmanager stammt das Paket?
+      options:
+        - DEB (dpkg)
+        - RPM (dnf/zypper)
+        - PKG (pacman)
+        - eopkg
+        - Snap
+        - Flatpak
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Warum sollte dieses Paket gefiltert werden?
+      description: Erkläre warum es ein System-Paket ist
+      placeholder: z.B. "Ist Teil des GNOME-Desktop-Systems"
+    validations:
+      required: true
+
+  - type: input
+    id: keyword
+    attributes:
+      label: Vorgeschlagenes Filter-Keyword
+      description: Welches Keyword sollte zum Filtern verwendet werden?
+      placeholder: z.B. "gnome-", "python3-"
+    validations:
+      required: true
+
+  - type: textarea
+    id: similar
+    attributes:
+      label: Ähnliche Pakete
+      description: Kennst du weitere Pakete, die mit diesem Keyword gefiltert werden würden?
+      placeholder: Liste weitere betroffene Pakete auf
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Filter-Scope
+      description: Wo sollte dieser Filter angewendet werden?
+      options:
+        - label: Universeller Filter (common.json)
+        - label: Distro-spezifischer Filter
+        - label: Bin mir nicht sicher

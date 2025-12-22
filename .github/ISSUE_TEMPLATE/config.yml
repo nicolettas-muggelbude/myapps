@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community Chat
+    url: https://t.me/LinuxGuidesDECommunity
+    about: Stelle Fragen in der Linux Guides DE Community
+  - name: 📖 Dokumentation
+    url: https://github.com/nicolettas-muggelbude/myapps#readme
+    about: Lies die README für Installationsanweisungen und FAQ
+  - name: 🤝 Contributing Guidelines
+    url: https://github.com/nicolettas-muggelbude/myapps/blob/main/CONTRIBUTING.md
+    about: Erfahre wie du zu MyApps beitragen kannst

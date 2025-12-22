@@ -8,7 +8,7 @@ Vielen Dank für dein Interesse an MyApps! Wir freuen uns über Beiträge aus de
 
 Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neue Filter-Keywords vorschlagen:
 
-1. Öffne ein [Issue](https://github.com/YOURUSERNAME/myapps/issues/new)
+1. Öffne ein [Issue](https://github.com/nicolettas-muggelbude/myapps/issues/new)
 2. Verwende den Titel: "Filter-Vorschlag: [Paketname]"
 3. Gib folgende Informationen an:
    - Paketname
@@ -45,7 +45,7 @@ Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neu
 
 ```bash
 # Repository klonen
-git clone https://github.com/YOURUSERNAME/myapps.git
+git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
 # Virtual Environment erstellen
@@ -54,10 +54,47 @@ source venv/bin/activate
 
 # Dependencies installieren
 pip install -r requirements.txt
-pip install -e .
 
 # App starten
-python3 -m myapps.main
+python3 -m src.myapps.main
+```
+
+## Pakete bauen und testen
+
+Wenn du Änderungen an der Paketierung vornimmst, kannst du die Pakete lokal bauen:
+
+### DEB-Paket
+
+```bash
+# DEB bauen
+./build-deb.sh
+
+# Installieren und testen
+sudo dpkg -i myapps_0.1.0_all.deb
+myapps
+
+# Deinstallieren
+sudo dpkg -r myapps
+```
+
+### AppImage
+
+```bash
+# appimagetool herunterladen (einmalig)
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+chmod +x appimagetool-x86_64.AppImage
+mv appimagetool-x86_64.AppImage appimagetool
+
+# Für WSL/Systeme ohne FUSE
+./appimagetool --appimage-extract
+mv squashfs-root appimagetool-extracted
+
+# AppImage bauen
+./build-appimage.sh
+
+# Testen
+chmod +x MyApps-0.1.0-x86_64.AppImage
+./MyApps-0.1.0-x86_64.AppImage
 ```
 
 ## Code-Stil
@@ -127,6 +164,6 @@ Aktuell werden Deutsch und Englisch unterstützt. Weitere Sprachen sind willkomm
 Bei Fragen kannst du:
 - Ein Issue öffnen
 - Eine Diskussion im Discussions-Bereich starten
-- Die Community im [Linux Guides DE Telegram-Chat](https://t.me/YOURGROUP) fragen
+- Die Community im [Linux Guides DE Telegram-Chat](https://t.me/LinuxGuidesDECommunity) fragen
 
 Vielen Dank für deine Unterstützung! 🎉

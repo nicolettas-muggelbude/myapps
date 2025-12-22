@@ -52,8 +52,12 @@ locales/*/LC_MESSAGES/*.mo
 *.deb
 *.rpm
 *.AppImage
+AppDir/
+debian/
 packaging/build/
 packaging/dist/
+appimagetool
+appimagetool-extracted/
 
 # Logs
 *.log

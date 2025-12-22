@@ -1,0 +1,53 @@
+name: Feature Request
+description: Schlage ein neues Feature für MyApps vor
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für deinen Feature-Vorschlag! Bitte beschreibe deine Idee.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem/Motivation
+      description: Welches Problem löst dieses Feature? Warum brauchst du es?
+      placeholder: Ich hätte gerne... weil...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Vorgeschlagene Lösung
+      description: Wie sollte das Feature funktionieren?
+      placeholder: Beschreibe die gewünschte Funktionalität
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+      description: Hast du andere Lösungsansätze in Betracht gezogen?
+      placeholder: Beschreibe mögliche Alternativen
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorität (aus deiner Sicht)
+      description: Wie wichtig ist dieses Feature für dich?
+      options:
+        - Nice to have
+        - Wäre hilfreich
+        - Sehr wichtig
+        - Kritisch
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Zusätzliche Informationen
+      description: Screenshots, Mockups, Links zu ähnlichen Features, etc.
