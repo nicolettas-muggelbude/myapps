@@ -400,7 +400,7 @@ class MyAppsGUI:
             )
 
     def _populate_list_view(self) -> None:
-        """Füllt die Listenansicht mit Daten"""
+        """Füllt die Listenansicht mit Daten (in Batches für bessere Performance)"""
         # Leere bestehende Widgets
         for widget in self.list_inner_frame.winfo_children():
             widget.destroy()
@@ -412,27 +412,53 @@ class MyAppsGUI:
                 grouped[pkg.package_type] = []
             grouped[pkg.package_type].append(pkg)
 
-        # Erstelle Einträge gruppiert
+        # Erstelle Queue mit allen zu erstellenden Items
+        item_queue = []
         for pkg_type, pkgs in sorted(grouped.items()):
-            # Gruppen-Header (minimalistisch)
-            header_label = ttk.Label(
-                self.list_inner_frame,
-                text=f"{pkg_type.upper()} • {len(pkgs)} Apps",
-                font=("TkDefaultFont", 9, "bold"),
-                foreground="#888888"
-            )
-            header_label.pack(anchor=W, padx=15, pady=(15, 5))
-
-            # Pakete in dieser Gruppe
+            # Header als erstes Item in der Gruppe
+            item_queue.append(('header', pkg_type, len(pkgs)))
+            # Dann alle Pakete
             for pkg in sorted(pkgs, key=lambda p: p.name):
+                item_queue.append(('package', pkg))
+
+        # Starte Batch-Rendering
+        self._render_list_items_batch(item_queue, 0)
+
+    def _render_list_items_batch(self, item_queue, index):
+        """Rendert Liste in Batches um GUI responsiv zu halten"""
+        batch_size = 50  # Items pro Batch
+        end_index = min(index + batch_size, len(item_queue))
+
+        # Rendere aktuellen Batch
+        for i in range(index, end_index):
+            item_type, *item_data = item_queue[i]
+
+            if item_type == 'header':
+                pkg_type, count = item_data
+                header_label = ttk.Label(
+                    self.list_inner_frame,
+                    text=f"{pkg_type.upper()} • {count} Apps",
+                    font=("TkDefaultFont", 9, "bold"),
+                    foreground="#888888"
+                )
+                header_label.pack(anchor=W, padx=15, pady=(15, 5))
+            elif item_type == 'package':
+                pkg = item_data[0]
                 self._create_list_item(pkg)
 
-        # Update scroll region nach dem Füllen
+        # Update scroll region
         self.list_inner_frame.update_idletasks()
         self.list_canvas.configure(scrollregion=self.list_canvas.bbox("all"))
 
-        # Binde Mausrad-Events an alle neuen Widgets
-        self._bind_mousewheel(self.list_inner_frame)
+        # Wenn noch Items übrig, schedule nächsten Batch
+        if end_index < len(item_queue):
+            progress = int((end_index / len(item_queue)) * 100)
+            self._set_status(f"Lade Liste... {progress}%", show_progress=True)
+            self.root.after(10, lambda: self._render_list_items_batch(item_queue, end_index))
+        else:
+            # Fertig
+            self._set_status(_("Bereit") + f" - {len(self.filtered_packages)} Apps", show_progress=False)
+            self._bind_mousewheel(self.list_inner_frame)
 
     def _create_list_item(self, pkg: Package) -> None:
         """
