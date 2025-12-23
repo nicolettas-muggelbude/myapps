@@ -689,16 +689,28 @@ class MyAppsGUI:
         """Zeigt Über-Dialog mit Version und Links"""
         dialog = ttk.Toplevel(self.root)
         dialog.title(_("Über MyApps"))
-        dialog.geometry("550x600")
+        dialog.geometry("500x650")
         dialog.resizable(False, False)
 
         # Zentriere Dialog
         dialog.transient(self.root)
         dialog.grab_set()
 
-        # Hauptframe
-        main_frame = ttk.Frame(dialog, padding=30)
-        main_frame.pack(fill=BOTH, expand=YES)
+        # Canvas mit Scrollbar für scrollbaren Inhalt
+        canvas = ttk.Canvas(dialog, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(dialog, orient=VERTICAL, command=canvas.yview)
+
+        main_frame = ttk.Frame(canvas, padding=30)
+
+        # Configure canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Pack scrollbar and canvas
+        scrollbar.pack(side=RIGHT, fill=Y)
+        canvas.pack(side=LEFT, fill=BOTH, expand=YES)
+
+        # Create window in canvas
+        canvas_window = canvas.create_window((0, 0), window=main_frame, anchor=NW)
 
         # Logo/Titel
         ttk.Label(
@@ -720,11 +732,11 @@ class MyAppsGUI:
             main_frame,
             text=_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"),
             font=("TkDefaultFont", 10),
-            wraplength=450,
+            wraplength=400,
             justify=CENTER
         ).pack(pady=(0, 30))
 
-        # Links-Sektion
+        # Links-Sektion (ohne Emojis)
         links_frame = ttk.LabelFrame(
             main_frame,
             text=_("Links"),
@@ -733,10 +745,10 @@ class MyAppsGUI:
         links_frame.pack(fill=X, pady=(0, 20))
 
         links = [
-            ("🏠 GitHub Repository", "https://github.com/nicolettas-muggelbude/myapps"),
-            ("📖 Dokumentation", "https://github.com/nicolettas-muggelbude/myapps#readme"),
-            ("🐛 Fehler melden", "https://github.com/nicolettas-muggelbude/myapps/issues"),
-            ("💬 Telegram Community", "https://t.me/LinuxGuidesDECommunity"),
+            ("GitHub Repository", "https://github.com/nicolettas-muggelbude/myapps"),
+            ("Dokumentation", "https://github.com/nicolettas-muggelbude/myapps#readme"),
+            ("Fehler melden", "https://github.com/nicolettas-muggelbude/myapps/issues"),
+            ("Telegram Community", "https://t.me/LinuxGuidesDECommunity"),
         ]
 
         for label, url in links:
@@ -744,10 +756,10 @@ class MyAppsGUI:
                 links_frame,
                 text=label,
                 command=lambda u=url: webbrowser.open(u),
-                bootstyle=LINK,
+                bootstyle="info-link",
                 cursor="hand2"
             )
-            link_btn.pack(fill=X, pady=5)
+            link_btn.pack(fill=X, pady=3)
 
         # Credits
         credits_frame = ttk.LabelFrame(
@@ -761,15 +773,15 @@ class MyAppsGUI:
             credits_frame,
             text="Entwickelt für die Linux Guides DE Community",
             font=("TkDefaultFont", 9),
-            wraplength=450
-        ).pack(pady=5)
+            wraplength=400
+        ).pack(pady=3)
 
         ttk.Label(
             credits_frame,
             text="UI basiert auf ttkbootstrap",
             font=("TkDefaultFont", 9),
             bootstyle=SECONDARY
-        ).pack()
+        ).pack(pady=3)
 
         # Lizenz
         ttk.Label(
@@ -787,6 +799,22 @@ class MyAppsGUI:
             bootstyle=PRIMARY,
             width=20
         ).pack()
+
+        # Update scroll region
+        def configure_scroll_region(event=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Set canvas width to match frame
+            canvas.itemconfig(canvas_window, width=canvas.winfo_width())
+
+        main_frame.bind("<Configure>", configure_scroll_region)
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+
+        # Mouse wheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        dialog.protocol("WM_DELETE_WINDOW", lambda: [canvas.unbind_all("<MouseWheel>"), dialog.destroy()])
 
     def _bind_tooltip(self, widget, pkg: Package) -> None:
         """
