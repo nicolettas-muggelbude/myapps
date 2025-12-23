@@ -477,7 +477,7 @@ class MyAppsGUI:
         separator.pack(fill=X, padx=20)
 
         # Binde Rechtsklick für alle Widgets
-        for widget in [item_frame, icon_label, text_frame, name_label, info_label]:
+        for widget in [item_frame, text_frame, name_label, info_label]:
             widget.bind("<Button-3>", lambda e, p=pkg: self._show_item_context_menu(e, p))
 
         # Tooltip mit lazy-loaded Beschreibung (nur auf Name)
