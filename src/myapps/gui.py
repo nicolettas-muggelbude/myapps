@@ -25,7 +25,7 @@ from .i18n import _
 logger = logging.getLogger(__name__)
 
 # Version (wird aus pyproject.toml gelesen oder manuell gesetzt)
-VERSION = "0.1.0-alpha"
+VERSION = "0.1.1-alpha"
 
 
 class MyAppsGUI:
