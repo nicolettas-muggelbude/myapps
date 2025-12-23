@@ -689,28 +689,16 @@ class MyAppsGUI:
         """Zeigt Über-Dialog mit Version und Links"""
         dialog = ttk.Toplevel(self.root)
         dialog.title(_("Über MyApps"))
-        dialog.geometry("500x650")
-        dialog.resizable(False, False)
+        dialog.geometry("550x700")
+        dialog.resizable(True, True)
 
         # Zentriere Dialog
         dialog.transient(self.root)
         dialog.grab_set()
 
-        # Canvas mit Scrollbar für scrollbaren Inhalt
-        canvas = ttk.Canvas(dialog, highlightthickness=0)
-        scrollbar = ttk.Scrollbar(dialog, orient=VERTICAL, command=canvas.yview)
-
-        main_frame = ttk.Frame(canvas, padding=30)
-
-        # Configure canvas
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        # Pack scrollbar and canvas
-        scrollbar.pack(side=RIGHT, fill=Y)
-        canvas.pack(side=LEFT, fill=BOTH, expand=YES)
-
-        # Create window in canvas
-        canvas_window = canvas.create_window((0, 0), window=main_frame, anchor=NW)
+        # Hauptframe - direkt ohne Canvas
+        main_frame = ttk.Frame(dialog, padding=20)
+        main_frame.pack(fill=BOTH, expand=YES)
 
         # Logo/Titel
         ttk.Label(
@@ -798,23 +786,7 @@ class MyAppsGUI:
             command=dialog.destroy,
             bootstyle=PRIMARY,
             width=20
-        ).pack()
-
-        # Update scroll region
-        def configure_scroll_region(event=None):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-            # Set canvas width to match frame
-            canvas.itemconfig(canvas_window, width=canvas.winfo_width())
-
-        main_frame.bind("<Configure>", configure_scroll_region)
-        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
-
-        # Mouse wheel scrolling
-        def on_mousewheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-        canvas.bind_all("<MouseWheel>", on_mousewheel)
-        dialog.protocol("WM_DELETE_WINDOW", lambda: [canvas.unbind_all("<MouseWheel>"), dialog.destroy()])
+        ).pack(pady=(0, 10))
 
     def _bind_tooltip(self, widget, pkg: Package) -> None:
         """
