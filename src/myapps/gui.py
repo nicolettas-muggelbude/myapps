@@ -744,10 +744,10 @@ class MyAppsGUI:
                 links_frame,
                 text=label,
                 command=lambda u=url: webbrowser.open(u),
-                bootstyle="info-link",
-                cursor="hand2"
+                bootstyle=INFO,
+                width=40
             )
-            link_btn.pack(fill=X, pady=3)
+            link_btn.pack(fill=X, pady=5)
 
         # Credits
         credits_frame = ttk.LabelFrame(
