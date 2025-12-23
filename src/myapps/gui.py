@@ -722,62 +722,66 @@ class MyAppsGUI:
             font=("TkDefaultFont", 10),
             wraplength=400,
             justify=CENTER
-        ).pack(pady=(0, 30))
+        ).pack(pady=(0, 20))
 
-        # Links-Sektion (ohne Emojis)
-        links_frame = ttk.LabelFrame(
+        # Separator
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=10)
+
+        # Links Header
+        ttk.Label(
             main_frame,
-            text=_("Links"),
-            padding=15
-        )
-        links_frame.pack(fill=X, pady=(0, 20))
+            text="Links:",
+            font=("TkDefaultFont", 11, "bold")
+        ).pack(anchor=W, pady=(10, 5))
 
-        links = [
+        # Link-Buttons
+        link_data = [
             ("GitHub Repository", "https://github.com/nicolettas-muggelbude/myapps"),
             ("Dokumentation", "https://github.com/nicolettas-muggelbude/myapps#readme"),
             ("Fehler melden", "https://github.com/nicolettas-muggelbude/myapps/issues"),
             ("Telegram Community", "https://t.me/LinuxGuidesDECommunity"),
         ]
 
-        for label, url in links:
-            link_btn = ttk.Button(
-                links_frame,
-                text=label,
+        for text, url in link_data:
+            btn = ttk.Button(
+                main_frame,
+                text=text,
                 command=lambda u=url: webbrowser.open(u),
-                bootstyle=INFO,
-                width=40
+                bootstyle=INFO
             )
-            link_btn.pack(fill=X, pady=5)
+            btn.pack(fill=X, pady=2, padx=20)
 
-        # Credits
-        credits_frame = ttk.LabelFrame(
+        # Separator
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=15)
+
+        # Credits Header
+        ttk.Label(
             main_frame,
-            text=_("Credits"),
-            padding=15
-        )
-        credits_frame.pack(fill=X, pady=(0, 20))
+            text="Credits:",
+            font=("TkDefaultFont", 11, "bold")
+        ).pack(anchor=W, pady=(5, 5))
 
         ttk.Label(
-            credits_frame,
+            main_frame,
             text="Entwickelt für die Linux Guides DE Community",
-            font=("TkDefaultFont", 9),
-            wraplength=400
-        ).pack(pady=3)
+            font=("TkDefaultFont", 9)
+        ).pack(anchor=W, padx=20, pady=2)
 
         ttk.Label(
-            credits_frame,
+            main_frame,
             text="UI basiert auf ttkbootstrap",
-            font=("TkDefaultFont", 9),
-            bootstyle=SECONDARY
-        ).pack(pady=3)
+            font=("TkDefaultFont", 9)
+        ).pack(anchor=W, padx=20, pady=2)
+
+        # Separator
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=15)
 
         # Lizenz
         ttk.Label(
             main_frame,
             text="Lizenziert unter GNU General Public License v3.0",
-            font=("TkDefaultFont", 8),
-            bootstyle=SECONDARY
-        ).pack(pady=(0, 20))
+            font=("TkDefaultFont", 9)
+        ).pack(pady=(5, 15))
 
         # Schließen-Button
         ttk.Button(
