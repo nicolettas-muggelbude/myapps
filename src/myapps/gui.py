@@ -49,8 +49,13 @@ class MyAppsGUI:
         self.icon_manager = IconManager(
             icon_size=32,
             fallback_dir=str(self.base_dir / "assets" / "icons"),
-            use_shared_icon=True  # Performance-Fix für viele Pakete (X-Server BadAlloc)
+            use_shared_icon=False  # Progressive Loading statt Shared Icon
         )
+
+        # Progressive Icon Loading
+        self._icon_loading_active = False
+        self._icon_load_queue = []
+        self._list_icon_labels = {}  # Mapping pkg_key -> icon_label für List View
 
         # Cache für Paketbeschreibungen (lazy loading)
         self.description_cache = {}
@@ -339,27 +344,25 @@ class MyAppsGUI:
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        # Füge Pakete hinzu
-        for pkg in sorted(self.filtered_packages, key=lambda p: (p.package_type, p.name)):
-            icon = self.icon_manager.get_icon(pkg.name, pkg.package_type)
+        # Verwende zunächst Fallback-Icon für alle (schnelles Rendering)
+        fallback_icon = self.icon_manager._get_default_icon()
 
+        # Füge Pakete hinzu mit Fallback-Icon
+        sorted_packages = sorted(self.filtered_packages, key=lambda p: (p.package_type, p.name))
+        for pkg in sorted_packages:
             self.tree.insert(
                 "",
                 END,
-                image=icon,
+                image=fallback_icon,
                 values=(pkg.name, pkg.version, pkg.package_type.upper(), pkg.description or ""),
                 tags=(pkg.package_type,)
             )
 
+        # Starte Progressive Icon Loading im Hintergrund
+        self._start_progressive_icon_loading(sorted_packages)
+
         # Behalte Icon-Referenz (wichtig für tkinter Garbage Collection)
-        # Im Shared-Icon-Modus reicht eine Referenz, da alle dasselbe Icon verwenden
-        if self.icon_manager.use_shared_icon:
-            self.tree.image_references = [self.icon_manager.get_icon("", "")]
-        else:
-            self.tree.image_references = [
-                self.icon_manager.get_icon(pkg.name, pkg.package_type)
-                for pkg in self.filtered_packages
-            ]
+        self.tree.image_references = [fallback_icon]
 
     def _populate_list_view(self) -> None:
         """Füllt die Listenansicht mit Daten"""
@@ -367,8 +370,15 @@ class MyAppsGUI:
         for widget in self.list_inner_frame.winfo_children():
             widget.destroy()
 
+        # Fallback-Icon für alle
+        fallback_icon = self.icon_manager._get_default_icon()
+
+        # Icon-Label-Mapping für Progressive Loading
+        self._list_icon_labels = {}
+
         # Gruppiere nach Typ
         grouped = {}
+        all_packages = []
         for pkg in self.filtered_packages:
             if pkg.package_type not in grouped:
                 grouped[pkg.package_type] = []
@@ -387,7 +397,8 @@ class MyAppsGUI:
 
             # Pakete in dieser Gruppe
             for pkg in sorted(pkgs, key=lambda p: p.name):
-                self._create_list_item(pkg)
+                self._create_list_item(pkg, fallback_icon)
+                all_packages.append(pkg)
 
         # Update scroll region nach dem Füllen
         self.list_inner_frame.update_idletasks()
@@ -396,12 +407,16 @@ class MyAppsGUI:
         # Binde Mausrad-Events an alle neuen Widgets
         self._bind_mousewheel(self.list_inner_frame)
 
-    def _create_list_item(self, pkg: Package) -> None:
+        # Starte Progressive Icon Loading im Hintergrund
+        self._start_progressive_icon_loading(all_packages)
+
+    def _create_list_item(self, pkg: Package, icon=None) -> None:
         """
         Erstellt ein List-Item für ein Paket (Messenger-Stil)
 
         Args:
             pkg: Package-Objekt
+            icon: Optional - Icon zu verwenden (Standard: lade individuelles Icon)
         """
         # Container für Hover-Effekt
         item_container = ttk.Frame(self.list_inner_frame)
@@ -412,10 +427,15 @@ class MyAppsGUI:
         item_frame.pack(fill=X, padx=10, pady=8)
 
         # Icon
-        icon = self.icon_manager.get_icon(pkg.name, pkg.package_type)
+        if icon is None:
+            icon = self.icon_manager.get_icon(pkg.name, pkg.package_type)
         icon_label = ttk.Label(item_frame, image=icon)
         icon_label.image = icon  # Behalte Referenz
         icon_label.pack(side=LEFT, padx=(0, 12))
+
+        # Speichere Icon-Label für späteres Update
+        pkg_key = f"{pkg.package_type}:{pkg.name}"
+        self._list_icon_labels[pkg_key] = icon_label
 
         # Text-Info Container
         text_frame = ttk.Frame(item_frame)
@@ -884,6 +904,84 @@ class MyAppsGUI:
         else:
             self.progress.stop()
             self.progress.pack_forget()
+
+    def _start_progressive_icon_loading(self, packages: List[Package]) -> None:
+        """
+        Startet Progressive Icon Loading im Hintergrund
+
+        Args:
+            packages: Liste der Pakete für die Icons geladen werden sollen
+        """
+        # Stoppe vorheriges Loading falls aktiv
+        self._icon_loading_active = False
+
+        # Setze neue Queue
+        self._icon_load_queue = packages.copy()
+        self._icon_loading_active = True
+
+        # Starte Loading-Thread
+        thread = threading.Thread(target=self._load_icons_worker, daemon=True)
+        thread.start()
+
+        logger.info(f"Progressive Icon Loading gestartet für {len(packages)} Pakete")
+
+    def _load_icons_worker(self) -> None:
+        """Worker-Thread für Progressive Icon Loading"""
+        import time
+
+        batch_size = 10  # Icons pro Batch
+        delay_ms = 50  # Verzögerung zwischen Batches in ms
+
+        while self._icon_loading_active and self._icon_load_queue:
+            # Lade Batch von Icons
+            batch = []
+            for _ in range(min(batch_size, len(self._icon_load_queue))):
+                if not self._icon_load_queue:
+                    break
+                pkg = self._icon_load_queue.pop(0)
+
+                # Lade Icon (cached falls schon geladen)
+                icon = self.icon_manager.get_icon(pkg.name, pkg.package_type)
+                batch.append((pkg, icon))
+
+            # Update GUI im Hauptthread
+            if batch:
+                self.root.after(0, lambda b=batch: self._update_icons_batch(b))
+
+            # Kurze Pause zwischen Batches (verhindert X-Server Overload)
+            time.sleep(delay_ms / 1000.0)
+
+        logger.info("Progressive Icon Loading abgeschlossen")
+
+    def _update_icons_batch(self, batch: List[tuple]) -> None:
+        """
+        Aktualisiert Icons für einen Batch von Paketen
+
+        Args:
+            batch: Liste von (Package, Icon) Tupeln
+        """
+        for pkg, icon in batch:
+            pkg_key = f"{pkg.package_type}:{pkg.name}"
+
+            # Update List View Icons
+            if hasattr(self, '_list_icon_labels') and pkg_key in self._list_icon_labels:
+                icon_label = self._list_icon_labels[pkg_key]
+                if icon_label.winfo_exists():
+                    icon_label.config(image=icon)
+                    icon_label.image = icon
+
+            # Update Table View Icons
+            if self.current_view == "table":
+                # Finde Tree-Item für dieses Paket
+                for item_id in self.tree.get_children():
+                    values = self.tree.item(item_id)['values']
+                    if len(values) >= 3 and values[0] == pkg.name and values[2] == pkg.package_type.upper():
+                        self.tree.item(item_id, image=icon)
+                        # Füge Icon zu Referenzen hinzu
+                        if not hasattr(self.tree, 'image_references'):
+                            self.tree.image_references = []
+                        self.tree.image_references.append(icon)
+                        break
 
     def run(self) -> None:
         """Startet die GUI"""
