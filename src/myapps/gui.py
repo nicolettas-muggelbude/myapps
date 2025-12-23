@@ -293,8 +293,9 @@ class MyAppsGUI:
                 self._set_status(_("Filtere System-Apps..."))
                 self.filtered_packages = self.filter_manager.filter_packages(self.packages)
 
-                # Lade Icons vor
-                self.icon_manager.preload_icons(self.filtered_packages)
+                # Icon-Preloading deaktiviert (verursacht X-Server Memory-Fehler bei vielen Paketen)
+                # Icons werden lazy on-demand geladen via get_icon() mit Cache
+                # self.icon_manager.preload_icons(self.filtered_packages)
 
                 # Update GUI im Hauptthread
                 self.root.after(0, self._update_display)
