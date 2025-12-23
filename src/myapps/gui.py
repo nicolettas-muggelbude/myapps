@@ -1,6 +1,6 @@
 """
-GUI-Modul für MyApps mit ttkbootstrap
-Bietet Tabellen- und Listenansicht mit Dark Mode
+GUI-Modul für MyApps
+Bietet Tabellen- und Listenansicht mit optionalem Dark Mode (ttkbootstrap)
 """
 
 import logging
@@ -10,10 +10,55 @@ from pathlib import Path
 from tkinter import filedialog, messagebox
 from typing import List, Optional
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import Messagebox
-from ttkbootstrap.tooltip import ToolTip
+# Versuche ttkbootstrap zu importieren, fallback zu Standard-ttk
+try:
+    import ttkbootstrap as ttk
+    from ttkbootstrap.constants import *
+    from ttkbootstrap.dialogs import Messagebox
+    from ttkbootstrap.tooltip import ToolTip
+    TTKBOOTSTRAP_AVAILABLE = True
+except ImportError:
+    import tkinter as tk
+    from tkinter import ttk
+    # Definiere ttkbootstrap-Konstanten als Fallback
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    SUCCESS = "success"
+    INFO = "info"
+    WARNING = "warning"
+    DANGER = "danger"
+    LIGHT = "light"
+    DARK = "dark"
+    LEFT = tk.LEFT
+    RIGHT = tk.RIGHT
+    TOP = tk.TOP
+    BOTTOM = tk.BOTTOM
+    BOTH = tk.BOTH
+    X = tk.X
+    Y = tk.Y
+    END = tk.END
+    W = tk.W
+    E = tk.E
+    HORIZONTAL = tk.HORIZONTAL
+    VERTICAL = tk.VERTICAL
+    YES = tk.YES
+
+    # Fallback-Klassen
+    class Messagebox:
+        @staticmethod
+        def show_error(message, title="Fehler", parent=None):
+            messagebox.showerror(title, message, parent=parent)
+        @staticmethod
+        def show_info(message, title="Info", parent=None):
+            messagebox.showinfo(title, message, parent=parent)
+
+    class ToolTip:
+        def __init__(self, widget, text="", **kwargs):
+            self.widget = widget
+            self.text = text
+            # Einfacher Tooltip via binding (kein Hover-Fenster)
+
+    TTKBOOTSTRAP_AVAILABLE = False
 
 from .package_manager import Package, PackageManagerFactory
 from .filters import FilterManager
@@ -25,7 +70,7 @@ from .i18n import _
 logger = logging.getLogger(__name__)
 
 # Version (wird aus pyproject.toml gelesen oder manuell gesetzt)
-VERSION = "0.1.1-alpha"
+VERSION = "0.1.2"
 
 
 class MyAppsGUI:
@@ -46,16 +91,11 @@ class MyAppsGUI:
         # Initialisiere Manager
         self.distro_info = get_distro_info()
         self.filter_manager = FilterManager(str(self.base_dir / "filters"))
-        self.icon_manager = IconManager(
-            icon_size=32,
-            fallback_dir=str(self.base_dir / "assets" / "icons"),
-            use_shared_icon=False  # Progressive Loading statt Shared Icon
-        )
 
-        # Progressive Icon Loading
-        self._icon_loading_active = False
-        self._icon_load_queue = []
-        self._list_icon_labels = {}  # Mapping pkg_key -> icon_label für List View
+        # Icons deaktiviert in v0.1.2 (X11-Crash-Fix)
+        # TODO: Optional wieder aktivieren oder Virtual Scrolling implementieren
+        self.icon_manager = None
+        self._icons_enabled = False
 
         # Cache für Paketbeschreibungen (lazy loading)
         self.description_cache = {}
@@ -65,11 +105,16 @@ class MyAppsGUI:
         self.filter_manager.load_filters(filter_files)
 
         # Erstelle Hauptfenster
-        self.root = ttk.Window(
-            title=f"MyApps v{VERSION} - " + _("Installierte Anwendungen"),
-            themename="darkly",  # Dark Mode Theme
-            size=(1200, 850)
-        )
+        if TTKBOOTSTRAP_AVAILABLE:
+            self.root = ttk.Window(
+                title=f"MyApps v{VERSION} - " + _("Installierte Anwendungen"),
+                themename="darkly",  # Dark Mode Theme
+                size=(1200, 850)
+            )
+        else:
+            self.root = tk.Tk()
+            self.root.title(f"MyApps v{VERSION} - " + _("Installierte Anwendungen"))
+            self.root.geometry("1200x850")
 
         self._build_gui()
         self._load_packages_async()
@@ -344,25 +389,15 @@ class MyAppsGUI:
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        # Verwende zunächst Fallback-Icon für alle (schnelles Rendering)
-        fallback_icon = self.icon_manager._get_default_icon()
-
-        # Füge Pakete hinzu mit Fallback-Icon
+        # Füge Pakete hinzu (ohne Icons in v0.1.2)
         sorted_packages = sorted(self.filtered_packages, key=lambda p: (p.package_type, p.name))
         for pkg in sorted_packages:
             self.tree.insert(
                 "",
                 END,
-                image=fallback_icon,
                 values=(pkg.name, pkg.version, pkg.package_type.upper(), pkg.description or ""),
                 tags=(pkg.package_type,)
             )
-
-        # Starte Progressive Icon Loading im Hintergrund
-        self._start_progressive_icon_loading(sorted_packages)
-
-        # Behalte Icon-Referenz (wichtig für tkinter Garbage Collection)
-        self.tree.image_references = [fallback_icon]
 
     def _populate_list_view(self) -> None:
         """Füllt die Listenansicht mit Daten"""
@@ -370,15 +405,8 @@ class MyAppsGUI:
         for widget in self.list_inner_frame.winfo_children():
             widget.destroy()
 
-        # Fallback-Icon für alle
-        fallback_icon = self.icon_manager._get_default_icon()
-
-        # Icon-Label-Mapping für Progressive Loading
-        self._list_icon_labels = {}
-
         # Gruppiere nach Typ
         grouped = {}
-        all_packages = []
         for pkg in self.filtered_packages:
             if pkg.package_type not in grouped:
                 grouped[pkg.package_type] = []
@@ -397,8 +425,7 @@ class MyAppsGUI:
 
             # Pakete in dieser Gruppe
             for pkg in sorted(pkgs, key=lambda p: p.name):
-                self._create_list_item(pkg, fallback_icon)
-                all_packages.append(pkg)
+                self._create_list_item(pkg)
 
         # Update scroll region nach dem Füllen
         self.list_inner_frame.update_idletasks()
@@ -407,16 +434,12 @@ class MyAppsGUI:
         # Binde Mausrad-Events an alle neuen Widgets
         self._bind_mousewheel(self.list_inner_frame)
 
-        # Starte Progressive Icon Loading im Hintergrund
-        self._start_progressive_icon_loading(all_packages)
-
-    def _create_list_item(self, pkg: Package, icon=None) -> None:
+    def _create_list_item(self, pkg: Package) -> None:
         """
         Erstellt ein List-Item für ein Paket (Messenger-Stil)
 
         Args:
             pkg: Package-Objekt
-            icon: Optional - Icon zu verwenden (Standard: lade individuelles Icon)
         """
         # Container für Hover-Effekt
         item_container = ttk.Frame(self.list_inner_frame)
@@ -426,16 +449,7 @@ class MyAppsGUI:
         item_frame = ttk.Frame(item_container)
         item_frame.pack(fill=X, padx=10, pady=8)
 
-        # Icon
-        if icon is None:
-            icon = self.icon_manager.get_icon(pkg.name, pkg.package_type)
-        icon_label = ttk.Label(item_frame, image=icon)
-        icon_label.image = icon  # Behalte Referenz
-        icon_label.pack(side=LEFT, padx=(0, 12))
-
-        # Speichere Icon-Label für späteres Update
-        pkg_key = f"{pkg.package_type}:{pkg.name}"
-        self._list_icon_labels[pkg_key] = icon_label
+        # Kein Icon in v0.1.2 (X11-Crash-Fix)
 
         # Text-Info Container
         text_frame = ttk.Frame(item_frame)
