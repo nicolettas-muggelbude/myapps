@@ -5,6 +5,7 @@ Bietet Tabellen- und Listenansicht mit Dark Mode
 
 import logging
 import threading
+import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox
 from typing import List, Optional
@@ -12,6 +13,7 @@ from typing import List, Optional
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.tooltip import ToolTip
 
 from .package_manager import Package, PackageManagerFactory
 from .filters import FilterManager
@@ -21,6 +23,9 @@ from .distro_detect import get_distro_info, get_filter_files
 from .i18n import _
 
 logger = logging.getLogger(__name__)
+
+# Version (wird aus pyproject.toml gelesen oder manuell gesetzt)
+VERSION = "0.1.0-alpha"
 
 
 class MyAppsGUI:
@@ -55,7 +60,7 @@ class MyAppsGUI:
 
         # Erstelle Hauptfenster
         self.root = ttk.Window(
-            title=_("MyApps - Installierte Anwendungen"),
+            title=f"MyApps v{VERSION} - " + _("Installierte Anwendungen"),
             themename="darkly",  # Dark Mode Theme
             size=(1200, 850)
         )
@@ -116,6 +121,15 @@ class MyAppsGUI:
         # Rechte Seite - Info
         right_frame = ttk.Frame(toolbar)
         right_frame.pack(side=RIGHT)
+
+        info_btn = ttk.Button(
+            right_frame,
+            text="ⓘ " + _("Info"),
+            command=self._show_about_dialog,
+            bootstyle=SECONDARY
+        )
+        info_btn.pack(side=RIGHT, padx=5)
+        ToolTip(info_btn, text=_("Über MyApps"))
 
         # Distro-Info
         distro_label = ttk.Label(
@@ -670,6 +684,109 @@ class MyAppsGUI:
             bootstyle=SUCCESS,
             width=15
         ).pack(side=RIGHT)
+
+    def _show_about_dialog(self) -> None:
+        """Zeigt Über-Dialog mit Version und Links"""
+        dialog = ttk.Toplevel(self.root)
+        dialog.title(_("Über MyApps"))
+        dialog.geometry("550x600")
+        dialog.resizable(False, False)
+
+        # Zentriere Dialog
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        # Hauptframe
+        main_frame = ttk.Frame(dialog, padding=30)
+        main_frame.pack(fill=BOTH, expand=YES)
+
+        # Logo/Titel
+        ttk.Label(
+            main_frame,
+            text="MyApps",
+            font=("TkDefaultFont", 24, "bold")
+        ).pack(pady=(0, 5))
+
+        # Version
+        ttk.Label(
+            main_frame,
+            text=f"Version {VERSION}",
+            font=("TkDefaultFont", 12),
+            bootstyle=SECONDARY
+        ).pack(pady=(0, 20))
+
+        # Beschreibung
+        ttk.Label(
+            main_frame,
+            text=_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"),
+            font=("TkDefaultFont", 10),
+            wraplength=450,
+            justify=CENTER
+        ).pack(pady=(0, 30))
+
+        # Links-Sektion
+        links_frame = ttk.LabelFrame(
+            main_frame,
+            text=_("Links"),
+            padding=15
+        )
+        links_frame.pack(fill=X, pady=(0, 20))
+
+        links = [
+            ("🏠 GitHub Repository", "https://github.com/nicolettas-muggelbude/myapps"),
+            ("📖 Dokumentation", "https://github.com/nicolettas-muggelbude/myapps#readme"),
+            ("🐛 Fehler melden", "https://github.com/nicolettas-muggelbude/myapps/issues"),
+            ("💬 Telegram Community", "https://t.me/LinuxGuidesDECommunity"),
+        ]
+
+        for label, url in links:
+            link_btn = ttk.Button(
+                links_frame,
+                text=label,
+                command=lambda u=url: webbrowser.open(u),
+                bootstyle=LINK,
+                cursor="hand2"
+            )
+            link_btn.pack(fill=X, pady=5)
+
+        # Credits
+        credits_frame = ttk.LabelFrame(
+            main_frame,
+            text=_("Credits"),
+            padding=15
+        )
+        credits_frame.pack(fill=X, pady=(0, 20))
+
+        ttk.Label(
+            credits_frame,
+            text="Entwickelt für die Linux Guides DE Community",
+            font=("TkDefaultFont", 9),
+            wraplength=450
+        ).pack(pady=5)
+
+        ttk.Label(
+            credits_frame,
+            text="UI basiert auf ttkbootstrap",
+            font=("TkDefaultFont", 9),
+            bootstyle=SECONDARY
+        ).pack()
+
+        # Lizenz
+        ttk.Label(
+            main_frame,
+            text="Lizenziert unter GNU General Public License v3.0",
+            font=("TkDefaultFont", 8),
+            bootstyle=SECONDARY
+        ).pack(pady=(0, 20))
+
+        # Schließen-Button
+        ttk.Button(
+            main_frame,
+            text=_("Schließen"),
+            command=dialog.destroy,
+            bootstyle=PRIMARY,
+            width=20
+        ).pack()
 
     def _bind_tooltip(self, widget, pkg: Package) -> None:
         """
