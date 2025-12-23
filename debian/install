@@ -1,0 +1,7 @@
+src/myapps usr/share/myapps
+filters usr/share/myapps
+assets usr/share/myapps
+locales usr/share/myapps
+debian/myapps usr/bin
+debian/myapps.desktop usr/share/applications
+assets/icons/default-app.png usr/share/pixmaps/myapps.png

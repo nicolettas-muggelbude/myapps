@@ -1,0 +1,20 @@
+Package: myapps
+Version: 0.1.1
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.8), python3-tk
+Maintainer: nicolettas-muggelbude <noreply@github.com>
+Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
+ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
+ Anwendungen übersichtlich darstellt - ohne System-Clutter.
+ .
+ Features:
+  - Multi-Distribution-Support (Debian, Ubuntu, Mint, Arch, Fedora, etc.)
+  - Moderne GUI mit Dark Mode
+  - Intelligente Filterung von System-Apps
+  - Export-Funktionen (TXT, CSV, JSON)
+  - Mehrsprachig (Deutsch, Englisch)
+ .
+ Alle Python-Dependencies sind im Paket gebündelt.
+Homepage: https://github.com/nicolettas-muggelbude/myapps

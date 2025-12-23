@@ -53,11 +53,12 @@ locales/*/LC_MESSAGES/*.mo
 *.rpm
 *.AppImage
 AppDir/
-debian/
 packaging/build/
 packaging/dist/
 appimagetool
 appimagetool-extracted/
+
+# Note: debian/ ist jetzt im Repo (für proper packaging)
 
 # Logs
 *.log

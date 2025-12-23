@@ -1,0 +1,28 @@
+{
+  "description": "Fedora spezifische System-App-Filter",
+  "version": "1.0",
+  "keywords": [
+    "dnf",
+    "yum",
+    "rpm-",
+    "fedora-",
+    "redhat-",
+    "rpmfusion-",
+    "selinux-",
+    "policycoreutils",
+    "NetworkManager",
+    "fedora-release",
+    "fedora-repos",
+    "fedora-gpg-keys",
+    "fedora-workstation-",
+    "subscription-manager",
+    "insights-client",
+    "dnf-plugins-core",
+    "dnf-automatic",
+    "PackageKit",
+    "abrt",
+    "fpaste",
+    "firewalld",
+    "cockpit"
+  ]
+}

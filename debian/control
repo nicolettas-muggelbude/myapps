@@ -1,0 +1,27 @@
+Source: myapps
+Section: utils
+Priority: optional
+Maintainer: nicolettas-muggelbude <noreply@github.com>
+Build-Depends: debhelper (>= 10), python3 (>= 3.8), dh-python
+Standards-Version: 4.5.1
+Homepage: https://github.com/nicolettas-muggelbude/myapps
+Vcs-Browser: https://github.com/nicolettas-muggelbude/myapps
+Vcs-Git: https://github.com/nicolettas-muggelbude/myapps.git
+
+Package: myapps
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}, python3 (>= 3.8), python3-tk, python3-pil, python3-pil.imagetk
+Recommends: python3-ttkbootstrap
+Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
+ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
+ Anwendungen übersichtlich darstellt - ohne System-Clutter.
+ .
+ Features:
+  - Multi-Distribution-Support (Debian, Ubuntu, Mint, Arch, Fedora, etc.)
+  - Moderne GUI (optional mit Dark Mode via ttkbootstrap)
+  - Intelligente Filterung von System-Apps
+  - Export-Funktionen (TXT, CSV, JSON)
+  - Mehrsprachig (Deutsch, Englisch)
+ .
+ ttkbootstrap ist optional und ermöglicht Dark Mode. Ohne ttkbootstrap
+ wird eine Standard-GUI verwendet.
