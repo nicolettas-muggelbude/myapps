@@ -39,16 +39,19 @@ class IconManager:
     # Icon-Datei-Endungen (in Prioritätsreihenfolge)
     ICON_EXTENSIONS = [".png", ".svg", ".xpm", ".jpg", ".jpeg"]
 
-    def __init__(self, icon_size: int = 32, fallback_dir: Optional[str] = None):
+    def __init__(self, icon_size: int = 32, fallback_dir: Optional[str] = None, use_shared_icon: bool = False):
         """
         Initialisiert den IconManager
 
         Args:
             icon_size: Zielgröße für Icons in Pixeln (Standard: 32)
             fallback_dir: Verzeichnis mit Fallback-Icons
+            use_shared_icon: Wenn True, wird für alle Pakete dasselbe Icon verwendet
+                            (Performance-Optimierung für viele Pakete)
         """
         self.icon_size = icon_size
         self.fallback_dir = Path(fallback_dir) if fallback_dir else None
+        self.use_shared_icon = use_shared_icon
         self._icon_cache: Dict[str, ImageTk.PhotoImage] = {}
         self._default_icon: Optional[ImageTk.PhotoImage] = None
 
@@ -71,6 +74,11 @@ class IconManager:
         Returns:
             PhotoImage-Objekt (entweder App-Icon oder Fallback)
         """
+        # Shared-Icon-Modus: Verwende für alle Pakete dasselbe Icon
+        # (Performance-Optimierung bei vielen Paketen gegen X-Server BadAlloc)
+        if self.use_shared_icon:
+            return self._get_default_icon()
+
         # Prüfe Cache
         cache_key = f"{package_type}:{package_name}"
         if cache_key in self._icon_cache:

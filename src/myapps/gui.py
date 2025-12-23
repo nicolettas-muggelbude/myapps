@@ -48,7 +48,8 @@ class MyAppsGUI:
         self.filter_manager = FilterManager(str(self.base_dir / "filters"))
         self.icon_manager = IconManager(
             icon_size=32,
-            fallback_dir=str(self.base_dir / "assets" / "icons")
+            fallback_dir=str(self.base_dir / "assets" / "icons"),
+            use_shared_icon=True  # Performance-Fix für viele Pakete (X-Server BadAlloc)
         )
 
         # Cache für Paketbeschreibungen (lazy loading)
@@ -350,11 +351,15 @@ class MyAppsGUI:
                 tags=(pkg.package_type,)
             )
 
-        # Behalte Icon-Referenzen (wichtig für tkinter)
-        self.tree.image_references = [
-            self.icon_manager.get_icon(pkg.name, pkg.package_type)
-            for pkg in self.filtered_packages
-        ]
+        # Behalte Icon-Referenz (wichtig für tkinter Garbage Collection)
+        # Im Shared-Icon-Modus reicht eine Referenz, da alle dasselbe Icon verwenden
+        if self.icon_manager.use_shared_icon:
+            self.tree.image_references = [self.icon_manager.get_icon("", "")]
+        else:
+            self.tree.image_references = [
+                self.icon_manager.get_icon(pkg.name, pkg.package_type)
+                for pkg in self.filtered_packages
+            ]
 
     def _populate_list_view(self) -> None:
         """Füllt die Listenansicht mit Daten"""
