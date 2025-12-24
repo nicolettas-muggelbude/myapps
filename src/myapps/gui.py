@@ -875,7 +875,7 @@ class MyAppsGUI:
         """Zeigt Über-Dialog mit Version und Links"""
         dialog = ttk.Toplevel(self.root)
         dialog.title(_("Über MyApps"))
-        dialog.geometry("550x700")
+        dialog.geometry("550x780")
         dialog.resizable(True, True)
 
         # Zentriere Dialog
@@ -936,6 +936,40 @@ class MyAppsGUI:
                 bootstyle=INFO
             )
             btn.pack(fill=X, pady=2, padx=20)
+
+        # Separator
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=15)
+
+        # Unterstützen-Bereich
+        ttk.Label(
+            main_frame,
+            text="💙 Projekt unterstützen:",
+            font=("TkDefaultFont", 11, "bold")
+        ).pack(anchor=W, pady=(5, 5))
+
+        ttk.Label(
+            main_frame,
+            text="Wenn dir MyApps hilft, freue ich mich über eine kleine Spende!",
+            font=("TkDefaultFont", 9),
+            wraplength=450,
+            justify=LEFT
+        ).pack(anchor=W, padx=20, pady=(0, 10))
+
+        # Spenden-Button
+        donate_btn = ttk.Button(
+            main_frame,
+            text="💰 Über PayPal spenden",
+            command=lambda: webbrowser.open("https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"),
+            bootstyle=SUCCESS
+        )
+        donate_btn.pack(fill=X, pady=2, padx=20)
+
+        ttk.Label(
+            main_frame,
+            text="Spenden werden von der PC-Wittfoot UG verwaltet.",
+            font=("TkDefaultFont", 8),
+            foreground="#888888"
+        ).pack(anchor=W, padx=20, pady=(5, 0))
 
         # Separator
         ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=15)

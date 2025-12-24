@@ -232,6 +232,19 @@ MyApps ist unter der [GNU General Public License v3.0](LICENSE) lizenziert.
 - Icons aus System-Themes
 - UI basiert auf [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
+## 💙 Unterstütze dieses Projekt
+
+MyApps ist Open Source und kostenlos. Wenn dir das Projekt hilft, freue ich mich über eine kleine Spende für die Weiterentwicklung!
+
+<a href="https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL" target="_blank">
+  <img
+    src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donateCC_LG.gif"
+    alt="Über PayPal spenden"
+  />
+</a>
+
+*Spenden werden von der PC-Wittfoot UG verwaltet und für Serverkosten, Hardware und Entwicklerzeit verwendet. Vielen Dank für deine Unterstützung!*
+
 ## Support
 
 - 🐛 [Bug melden](https://github.com/nicolettas-muggelbude/myapps/issues)
@@ -240,4 +253,4 @@ MyApps ist unter der [GNU General Public License v3.0](LICENSE) lizenziert.
 
 ---
 
-Gemacht mit ❤️ für die Linux-Community
+*Gemacht mit ❤️ für die Linux-Community*
