@@ -7,10 +7,10 @@ layout: default
 
 ## 1. Verantwortliche Stelle für Spenden
 Verantwortlich für die **Verarbeitung von Spendendaten** ist:
-**{{PC-Wittfoot UG}}**
-{{Melkbrink 61}}
-{{26121 Oldenburg}}
-E-Mail: [{{info@pc-wittfoot.de}}](mailto:{{info@pc-wittfoot.de}})
+**PC-Wittfoot UG**
+Melkbrink 61
+26121 Oldenburg
+E-Mail: [info@pc-wittfoot.de](mailto:info@pc-wittfoot.de)
 
 ## 2. Erhebung und Speicherung personenbezogener Daten
 ### a) Spenden über PayPal
@@ -30,7 +30,7 @@ E-Mail: [{{info@pc-wittfoot.de}}](mailto:{{info@pc-wittfoot.de}})
 - **Weitergabe**: GitHub (Microsoft) verarbeitet Daten in den USA. Details: [GitHub Privacy Statement](https://docs.github.com/de/site-policy/privacy-policies/github-privacy-statement).
 
 ## 3. Keine Datenerhebung durch das Projekt
-Die **{{PC-Wittfoot UG}}** hat **keinen Zugriff** auf Daten, die durch die Nutzung des Open-Source-Projekts **[MyApps](https://github.com/nicolettas-muggelbude/myapps)** anfallen. Für die Datenverarbeitung im Rahmen des Projekts sind die **Projektverantwortlichen** zuständig.
+Die **PC-Wittfoot UG** hat **keinen Zugriff** auf Daten, die durch die Nutzung des Open-Source-Projekts **[MyApps](https://github.com/nicolettas-muggelbude/myapps)** anfallen. Für die Datenverarbeitung im Rahmen des Projekts sind die **Projektverantwortlichen** zuständig.
 
 ## 4. Ihre Rechte
 Sie haben das Recht auf:
@@ -38,7 +38,7 @@ Sie haben das Recht auf:
 - Berichtigung oder Löschung (Art. 16, 17 DSGVO)
 - Einschränkung der Verarbeitung (Art. 18 DSGVO)
 
-Kontakt: [{{Deine E-Mail}}](mailto:{{Deine E-Mail}})
+Kontakt: [info@pc-wittfoot.de](mailto:info@pc-wittfoot.de)
 
 ---
-**Stand:** {{Datum}}
+**Stand:** 24. Dezember 2024
