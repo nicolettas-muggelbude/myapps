@@ -245,6 +245,8 @@ MyApps ist Open Source und kostenlos. Wenn dir das Projekt hilft, freue ich mich
 
 *Spenden werden von der PC-Wittfoot UG verwaltet und für Serverkosten, Hardware und Entwicklerzeit verwendet. Vielen Dank für deine Unterstützung!*
 
+[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Datenschutz](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
+
 ## Support
 
 - 🐛 [Bug melden](https://github.com/nicolettas-muggelbude/myapps/issues)

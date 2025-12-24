@@ -1,0 +1,20 @@
+# Jekyll Configuration für MyApps GitHub Pages
+title: MyApps
+description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
+theme: jekyll-theme-minimal
+baseurl: "/myapps"
+url: "https://nicolettas-muggelbude.github.io"
+
+# Markdown
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Plugins
+plugins:
+  - jekyll-seo-tag
+
+# Exclude
+exclude:
+  - README.md
