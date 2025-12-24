@@ -1,3 +1,14 @@
+myapps (0.1.3) unstable; urgency=medium
+
+  * Pagination implementiert: 100 Apps pro Seite
+  * FIX: X-Server BadAlloc endgültig behoben
+  * Problem war nicht Icons, sondern zu viele Widgets (800+)
+  * Navigation: "Zurück" / "Weiter" Buttons
+  * Zeigt "Seite X von Y • Apps 1-100 von 849"
+  * Funktioniert stabil mit 1000+ Paketen
+
+ -- nicolettas-muggelbude <noreply@github.com>  Tue, 24 Dec 2024 12:00:00 +0100
+
 myapps (0.1.2) unstable; urgency=medium
 
   * ttkbootstrap ist nun optional (Fallback zu Standard-ttk)

@@ -70,7 +70,7 @@ from .i18n import _
 logger = logging.getLogger(__name__)
 
 # Version (wird aus pyproject.toml gelesen oder manuell gesetzt)
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 
 class MyAppsGUI:
@@ -87,6 +87,11 @@ class MyAppsGUI:
         self.packages: List[Package] = []
         self.filtered_packages: List[Package] = []
         self.current_view = "list"  # "table" oder "list"
+
+        # Pagination (v0.1.3 - Fix für X-Server BadAlloc)
+        self.current_page = 0
+        self.items_per_page = 100
+        self.total_pages = 0
 
         # Initialisiere Manager
         self.distro_info = get_distro_info()
@@ -124,6 +129,9 @@ class MyAppsGUI:
 
         # Toolbar
         self._build_toolbar()
+
+        # Pagination-Navigation (v0.1.3)
+        self._build_pagination_bar()
 
         # Hauptbereich (mit Frame für View-Wechsel)
         self.main_frame = ttk.Frame(self.root, padding=10)
@@ -189,6 +197,52 @@ class MyAppsGUI:
             bootstyle=SECONDARY
         )
         distro_label.pack(side=RIGHT, padx=10)
+
+    def _build_pagination_bar(self) -> None:
+        """Erstellt die Pagination-Navigation (v0.1.3)"""
+        pagination_frame = ttk.Frame(self.root, padding=5)
+        pagination_frame.pack(fill=X, side=TOP)
+
+        # Info-Text links
+        info_text = ttk.Label(
+            pagination_frame,
+            text="ℹ️  Zeigt 100 Apps pro Seite (Fix für X-Server Crash)",
+            font=("TkDefaultFont", 9),
+            foreground="#888888"
+        )
+        info_text.pack(side=LEFT, padx=10)
+
+        # Navigation in der Mitte
+        nav_frame = ttk.Frame(pagination_frame)
+        nav_frame.pack(side=LEFT, expand=YES)
+
+        # Zurück Button
+        self.prev_btn = ttk.Button(
+            nav_frame,
+            text="◀ Zurück",
+            command=self._prev_page,
+            bootstyle=SECONDARY,
+            state="disabled"
+        )
+        self.prev_btn.pack(side=LEFT, padx=5)
+
+        # Seiten-Label
+        self.page_label = ttk.Label(
+            nav_frame,
+            text="Seite 0 von 0",
+            font=("TkDefaultFont", 10, "bold")
+        )
+        self.page_label.pack(side=LEFT, padx=15)
+
+        # Weiter Button
+        self.next_btn = ttk.Button(
+            nav_frame,
+            text="Weiter ▶",
+            command=self._next_page,
+            bootstyle=SECONDARY,
+            state="disabled"
+        )
+        self.next_btn.pack(side=LEFT, padx=5)
 
     def _build_statusbar(self) -> None:
         """Erstellt die Statusleiste"""
@@ -344,6 +398,53 @@ class MyAppsGUI:
 
         logger.info(f"Ansicht gewechselt zu: {self.current_view}")
 
+    def _prev_page(self) -> None:
+        """Geht zur vorherigen Seite"""
+        if self.current_page > 0:
+            self.current_page -= 1
+            self._update_display()
+            logger.info(f"Navigiere zu Seite {self.current_page + 1}")
+
+    def _next_page(self) -> None:
+        """Geht zur nächsten Seite"""
+        if self.current_page < self.total_pages - 1:
+            self.current_page += 1
+            self._update_display()
+            logger.info(f"Navigiere zu Seite {self.current_page + 1}")
+
+    def _update_pagination_controls(self) -> None:
+        """Aktualisiert Pagination-Controls (Buttons und Label)"""
+        # Berechne total pages
+        if self.filtered_packages:
+            self.total_pages = (len(self.filtered_packages) + self.items_per_page - 1) // self.items_per_page
+        else:
+            self.total_pages = 0
+
+        # Stelle sicher dass current_page gültig ist
+        if self.current_page >= self.total_pages:
+            self.current_page = max(0, self.total_pages - 1)
+
+        # Update Label
+        if self.total_pages > 0:
+            start_idx = self.current_page * self.items_per_page + 1
+            end_idx = min((self.current_page + 1) * self.items_per_page, len(self.filtered_packages))
+            self.page_label.config(
+                text=f"Seite {self.current_page + 1} von {self.total_pages}  •  Apps {start_idx}-{end_idx} von {len(self.filtered_packages)}"
+            )
+        else:
+            self.page_label.config(text="Keine Apps")
+
+        # Update Buttons
+        if self.current_page > 0:
+            self.prev_btn.config(state="normal")
+        else:
+            self.prev_btn.config(state="disabled")
+
+        if self.current_page < self.total_pages - 1:
+            self.next_btn.config(state="normal")
+        else:
+            self.next_btn.config(state="disabled")
+
     def _load_packages_async(self) -> None:
         """Lädt Pakete asynchron"""
         self._set_status(_("Lade Pakete..."), show_progress=True)
@@ -374,6 +475,9 @@ class MyAppsGUI:
 
     def _update_display(self) -> None:
         """Aktualisiert die Anzeige mit geladenen Paketen"""
+        # Update Pagination Controls
+        self._update_pagination_controls()
+
         if self.current_view == "table":
             self._populate_table_view()
         else:
@@ -384,14 +488,20 @@ class MyAppsGUI:
         self._set_status(_("Bereit") + f" - {count} Apps", show_progress=False)
 
     def _populate_table_view(self) -> None:
-        """Füllt die Tabellenansicht mit Daten"""
+        """Füllt die Tabellenansicht mit Daten (Pagination v0.1.3)"""
         # Leere bestehende Einträge
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        # Füge Pakete hinzu (ohne Icons in v0.1.2)
+        # Berechne Pagination Range
+        start_idx = self.current_page * self.items_per_page
+        end_idx = min(start_idx + self.items_per_page, len(self.filtered_packages))
+
+        # Sortiere und zeige nur aktuelle Seite
         sorted_packages = sorted(self.filtered_packages, key=lambda p: (p.package_type, p.name))
-        for pkg in sorted_packages:
+        page_packages = sorted_packages[start_idx:end_idx]
+
+        for pkg in page_packages:
             self.tree.insert(
                 "",
                 END,
@@ -400,14 +510,22 @@ class MyAppsGUI:
             )
 
     def _populate_list_view(self) -> None:
-        """Füllt die Listenansicht mit Daten (in Batches für bessere Performance)"""
+        """Füllt die Listenansicht mit Daten (Pagination v0.1.3)"""
         # Leere bestehende Widgets
         for widget in self.list_inner_frame.winfo_children():
             widget.destroy()
 
-        # Gruppiere nach Typ
+        # Berechne Pagination Range
+        start_idx = self.current_page * self.items_per_page
+        end_idx = min(start_idx + self.items_per_page, len(self.filtered_packages))
+
+        # Hole nur Pakete für aktuelle Seite
+        sorted_packages = sorted(self.filtered_packages, key=lambda p: (p.package_type, p.name))
+        page_packages = sorted_packages[start_idx:end_idx]
+
+        # Gruppiere nach Typ (nur aktuelle Seite)
         grouped = {}
-        for pkg in self.filtered_packages:
+        for pkg in page_packages:
             if pkg.package_type not in grouped:
                 grouped[pkg.package_type] = []
             grouped[pkg.package_type].append(pkg)
@@ -421,7 +539,7 @@ class MyAppsGUI:
             for pkg in sorted(pkgs, key=lambda p: p.name):
                 item_queue.append(('package', pkg))
 
-        # Starte Batch-Rendering
+        # Starte Batch-Rendering (max. 100 items pro Seite, kein X-Server Overload mehr)
         self._render_list_items_batch(item_queue, 0)
 
     def _render_list_items_batch(self, item_queue, index):
@@ -571,7 +689,10 @@ class MyAppsGUI:
 
     def _refresh_packages(self) -> None:
         """Aktualisiert die Paketliste"""
-        self.icon_manager.clear_cache()
+        # Reset to page 1
+        self.current_page = 0
+        if self.icon_manager:
+            self.icon_manager.clear_cache()
         self._load_packages_async()
 
     def _show_export_dialog(self) -> None:
