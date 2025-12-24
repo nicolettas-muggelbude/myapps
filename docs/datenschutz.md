@@ -7,9 +7,10 @@ layout: default
 
 ## 1. Verantwortliche Stelle für Spenden
 Verantwortlich für die **Verarbeitung von Spendendaten** ist:
-**PC-Wittfoot UG**
-Melkbrink 61
-26121 Oldenburg
+
+**PC-Wittfoot UG**<br>
+Melkbrink 61<br>
+26121 Oldenburg<br>
 E-Mail: [info@pc-wittfoot.de](mailto:info@pc-wittfoot.de)
 
 ## 2. Erhebung und Speicherung personenbezogener Daten

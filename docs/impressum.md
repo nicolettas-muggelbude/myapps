@@ -7,24 +7,24 @@ layout: default
 
 **Angaben gemäß § 5 TMG**
 
-PC-Wittfoot UG
-Melkbrink 61
-26121 Oldenburg
+PC-Wittfoot UG<br>
+Melkbrink 61<br>
+26121 Oldenburg<br>
 **Deutschland**
 
-**Vertreten durch:**
+**Vertreten durch:**<br>
 Nicole Wittfoot (Geschäftsführerin)
 
-**Kontakt:**
+**Kontakt:**<br>
 E-Mail: [info@pc-wittfoot.de](mailto:info@pc-wittfoot.de)
 
-**Registereintrag:**
-Eingetragen im Handelsregister.
-Registergericht: Oldenburg
+**Registereintrag:**<br>
+Eingetragen im Handelsregister.<br>
+Registergericht: Oldenburg<br>
 Registernummer: HRB 215517
 
-**Umsatzsteuer-ID:**
-Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:
+**Umsatzsteuer-ID:**<br>
+Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br>
 DE331470711
 
 ---
