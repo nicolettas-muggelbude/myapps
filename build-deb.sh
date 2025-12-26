@@ -28,7 +28,7 @@ mkdir -p debian/DEBIAN
 mkdir -p debian/usr/bin
 mkdir -p debian/usr/share/myapps/vendor
 mkdir -p debian/usr/share/applications
-mkdir -p debian/usr/share/pixmaps
+mkdir -p debian/usr/share/icons/hicolor/scalable/apps
 
 # Installiere Python-Dependencies in vendor/
 echo -e "${BLUE}[3/7]${NC} Installiere Python-Dependencies..."
@@ -80,26 +80,84 @@ if __name__ == '__main__':
 EOF
 chmod 755 debian/usr/bin/myapps
 
-# Erstelle .desktop-Datei
-cat > debian/usr/share/applications/myapps.desktop << EOF
+# Kopiere .desktop-Datei (oder erstelle sie, falls nicht vorhanden)
+if [ -f "io.github.nicolettas-muggelbude.myapps.desktop" ]; then
+    cp io.github.nicolettas-muggelbude.myapps.desktop debian/usr/share/applications/
+else
+    # Fallback: Erstelle Desktop-Datei
+    cat > debian/usr/share/applications/io.github.nicolettas-muggelbude.myapps.desktop << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=MyApps
-GenericName=Paketmanager-Übersicht
-Comment=Installierte Anwendungen anzeigen und verwalten
+GenericName=Package Manager Overview
+GenericName[de]=Paketmanager-Übersicht
+Comment=View and manage installed Linux applications
+Comment[de]=Installierte Linux-Anwendungen anzeigen und verwalten
 Exec=myapps
-Icon=myapps
+Icon=io.github.nicolettas-muggelbude.myapps
 Terminal=false
-Categories=System;PackageManager;
-Keywords=package;apps;software;installer;
+Categories=System;PackageManager;GTK;
+Keywords=package;apps;software;installer;dpkg;rpm;flatpak;snap;
+Keywords[de]=Paket;Apps;Software;Installer;dpkg;rpm;flatpak;snap;
 StartupNotify=true
+StartupWMClass=io.github.nicolettas-muggelbude.myapps
 EOF
+fi
 
 # Kopiere Projektdateien
 echo -e "${BLUE}[6/7]${NC} Kopiere Projektdateien..."
 cp -r src filters assets locales debian/usr/share/myapps/
-cp assets/icons/default-app.png debian/usr/share/pixmaps/myapps.png
+
+# Installiere App-Icon (SVG bevorzugt, PNG als Fallback)
+if [ -f "assets/icons/io.github.nicolettas-muggelbude.myapps.svg" ]; then
+    cp assets/icons/io.github.nicolettas-muggelbude.myapps.svg \
+       debian/usr/share/icons/hicolor/scalable/apps/
+elif [ -f "assets/icons/default-app.png" ]; then
+    # Fallback für ältere Versionen
+    mkdir -p debian/usr/share/pixmaps
+    cp assets/icons/default-app.png debian/usr/share/pixmaps/myapps.png
+fi
+
+# Erstelle postinst-Script (für Icon-Cache und Desktop-Database Update)
+cat > debian/DEBIAN/postinst << 'EOF'
+#!/bin/bash
+set -e
+
+# Icon-Cache aktualisieren
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+fi
+
+# Desktop-Database aktualisieren
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+
+exit 0
+EOF
+chmod 755 debian/DEBIAN/postinst
+
+# Erstelle postrm-Script (Cleanup nach Deinstallation)
+cat > debian/DEBIAN/postrm << 'EOF'
+#!/bin/bash
+set -e
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    # Icon-Cache aktualisieren
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+    fi
+
+    # Desktop-Database aktualisieren
+    if command -v update-desktop-database >/dev/null 2>&1; then
+        update-desktop-database -q /usr/share/applications || true
+    fi
+fi
+
+exit 0
+EOF
+chmod 755 debian/DEBIAN/postrm
 
 # Baue DEB-Paket
 echo -e "${BLUE}[7/7]${NC} Baue DEB-Paket..."
