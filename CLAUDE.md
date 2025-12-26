@@ -475,27 +475,40 @@ from pathlib import Path
 - GitHub Issues kommentiert und kommuniziert
 - Screenshots-Ordner erstellt mit README
 - Screenshots erstellt (4 Stück: main-window, table-view, search-demo, dark-mode)
-- **Flathub Submission erfolgreich!** 🎉
+- **Flathub Submission eingereicht** 🎉
   - Pull Request: https://github.com/flathub/flathub/pull/7404
-  - Status: Wartet auf Review
+  - Status: **Wartet auf Exception-Genehmigung**
   - Datum: 26.12.2024
+  - **Problem:** MyApps braucht Zugriff auf /var/lib/* für Paketmanager-DBs
+  - **Lösung:** Exception bei Flathub beantragt
+  - **Build-Fehler:**
+    - `finish-args-host-var-access` - /var/lib Zugriff verboten (Exception beantragt)
+    - `runtime-is-eol-org.gnome.Platform-47` - Runtime veraltet (Antwort abwarten)
 
 ### 🔄 Nächste Schritte für User
 1. ✅ **Screenshots erstellen** - ERLEDIGT
 2. ✅ **Flatpak bauen und testen** - ERLEDIGT (erfolgreich getestet)
 3. ✅ **Flathub Submission** - ERLEDIGT (PR #7404)
+4. ✅ **Exception-Anfrage gestellt** - ERLEDIGT
 
-4. **Flathub Review abwarten**:
-   - Beobachte PR #7404 für Updates
-   - Reagiere auf Feedback von Maintainern
-   - Review-Prozess: 1-2 Wochen erwartet
+5. **Auf Flathub-Antwort warten** ⏳:
+   - **Wartet auf:** Maintainer-Antwort zu Exception-Anfrage
+   - **Frage 1:** Darf MyApps /var/lib Zugriff haben? (für Paketmanager-DBs)
+   - **Frage 2:** Welche Runtime-Version verwenden? (47 ist EOL)
+   - **Wartezeit:** 1-7 Tage (Maintainer sind Volunteers)
+   - **GitHub benachrichtigt** dich bei Antwort
 
-5. **Community Testing** (parallel):
+6. **Nach Antwort:**
+   - Manifest entsprechend anpassen
+   - Neu builden mit `bot, build`
+   - Auf erfolgreichen Build warten
+
+7. **Community Testing** (parallel):
    - v0.2.0 DEB-Paket auf verschiedenen Systemen testen
    - Feedback sammeln via GitHub Issues
    - Bug-Reports bearbeiten
 
-6. **Nach Flathub Approval**:
+8. **Nach Flathub Approval**:
    - Ankündigung in Linux Guides DE Community
    - README aktualisieren mit Flathub-Installation
    - Social Media Ankündigung
