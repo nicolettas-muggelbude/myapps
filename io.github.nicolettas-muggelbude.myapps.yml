@@ -42,7 +42,7 @@ modules:
       - type: git
         url: https://github.com/nicolettas-muggelbude/myapps.git
         tag: v0.2.0
-        commit: 1b9e838d7d0f8e0e7c8c8c8c8c8c8c8c8c8c8c8c  # Wird beim Release aktualisiert
+        commit: ad99594978c0c35b93a9dc97a227decedff96066
 
       # Metadata
       - type: file
