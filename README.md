@@ -1,10 +1,14 @@
-# MyApps 📦
+<div align="center">
+  <img src="assets/icons/io.github.nicolettas-muggelbude.myapps.svg" width="128" alt="MyApps Logo">
 
-> Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
+  # MyApps
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
+  > Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
+
+  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+  [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
+  [![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/nicolettas-muggelbude/myapps)
+</div>
 
 [English](README.en.md) | **Deutsch**
 
@@ -47,7 +51,17 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 
 ## Screenshots
 
-*Coming soon - Screenshots werden nach dem ersten Release hinzugefügt*
+### Hauptfenster (Listenansicht)
+<img src="docs/screenshots/main-window.png" width="800" alt="MyApps Hauptfenster">
+
+### Tabellenansicht
+<img src="docs/screenshots/table-view.png" width="800" alt="MyApps Tabellenansicht">
+
+### Suchfunktion
+<img src="docs/screenshots/search-demo.png" width="800" alt="MyApps Suchfunktion">
+
+### Dark Mode
+<img src="docs/screenshots/dark-mode.png" width="800" alt="MyApps Dark Mode">
 
 ## Installation
 
