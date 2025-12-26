@@ -449,6 +449,22 @@ from pathlib import Path
 - Alle Terminal-Ausgaben auf Deutsch
 - Diese CLAUDE.md kontinuierlich fortführen
 
+### Release Notes Format:
+- **WICHTIG**: Impressum und Datenschutz-Links gehören DIREKT UNTER den Spendenbutton!
+  - Grund: Die rechtlichen Hinweise sind nur für die Spenden relevant
+  - Format:
+    ```
+    ## 💝 MyApps unterstützen
+    [Spendenbutton und Beschreibung]
+
+    **Rechtliches:**
+    [Impressum] | [Datenschutz]
+
+    ---
+
+    **Vollständiges Changelog:** ...
+    ```
+
 ## Aktueller Projekt-Stand (26.12.2024)
 
 ### ✅ Abgeschlossen
