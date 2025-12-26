@@ -32,7 +32,7 @@ mkdir -p debian/usr/share/pixmaps
 
 # Installiere Python-Dependencies in vendor/
 echo -e "${BLUE}[3/7]${NC} Installiere Python-Dependencies..."
-python3 -m pip install --target=debian/usr/share/myapps/vendor ttkbootstrap Pillow
+python3 -m pip install --target=debian/usr/share/myapps/vendor Pillow
 
 # Erstelle control-Datei
 echo -e "${BLUE}[4/7]${NC} Erstelle control-Datei..."
@@ -42,7 +42,8 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: all
-Depends: python3 (>= 3.8), python3-tk
+Depends: python3 (>= 3.8), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1, python3-pil
+Recommends: libadwaita-1-0
 Maintainer: nicolettas-muggelbude <noreply@github.com>
 Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
  MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
@@ -50,12 +51,16 @@ Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
  .
  Features:
   - Multi-Distribution-Support (Debian, Ubuntu, Mint, Arch, Fedora, etc.)
-  - Moderne GUI mit Dark Mode
+  - Moderne GTK4 + Libadwaita GUI mit nativem Dark Mode
+  - Virtual Scrolling für 10.000+ Pakete ohne Performance-Probleme
   - Intelligente Filterung von System-Apps
+  - Icons für Apps mit System-Integration
+  - Suchfunktion (Name + Beschreibung)
   - Export-Funktionen (TXT, CSV, JSON)
   - Mehrsprachig (Deutsch, Englisch)
  .
- Alle Python-Dependencies sind im Paket gebündelt.
+ Ab Version 0.2.0 nutzt MyApps GTK4 + Libadwaita für native
+ GNOME-Integration und bessere Performance.
 Homepage: https://github.com/nicolettas-muggelbude/myapps
 EOF
 
