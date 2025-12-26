@@ -73,20 +73,23 @@ class DpkgPackageManager(PackageManagerBase):
         """Gibt alle installierten DEB-Pakete zurück"""
         packages = []
 
-        output = self._run_command(["dpkg", "--list"])
+        # Hole Pakete MIT Beschreibungen in einem Befehl
+        output = self._run_command([
+            "dpkg-query", "-W",
+            "--showformat=${Package}\t${Version}\t${Description}\n"
+        ])
         if not output:
             return packages
 
-        for line in output.splitlines()[5:]:  # Überspringe Header
+        for line in output.splitlines():
             if not line.strip():
                 continue
 
-            parts = line.split()
-            if len(parts) >= 3 and parts[0] == "ii":
-                package_name = parts[1]
-                version = parts[2]
-                # Beschreibung wird lazy geladen (bei Bedarf)
-                description = None
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                package_name = parts[0].strip()
+                version = parts[1].strip()
+                description = parts[2].strip() if len(parts) >= 3 else None
 
                 packages.append(Package(
                     name=package_name,
