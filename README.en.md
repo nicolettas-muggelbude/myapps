@@ -84,22 +84,50 @@ sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
 sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
 ```
 
-### From DEB Package (Debian/Ubuntu/Mint)
+### From OBS (Recommended - Debian/Ubuntu/Fedora/openSUSE)
 
-[![Download DEB](https://img.shields.io/badge/Download-DEB_Package_v0.2.0-0078D4?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+**📦 Professional packages for 11 distributions via openSUSE Build Service:**
 
+[![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
+
+**Debian/Ubuntu:**
 ```bash
-# After download, install
-sudo dpkg -i myapps_0.2.0_all.deb
+# Debian 12 (Bookworm)
+echo "deb https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/ /" | sudo tee /etc/apt/sources.list.d/myapps.list
+wget -qO- https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/Release.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/myapps.gpg
+sudo apt update && sudo apt install myapps
 
-# If dependencies are missing
-sudo apt-get install -f
-
-# Launch
-myapps
+# Ubuntu 24.04 LTS
+echo "deb https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Ubuntu_24.04/ /" | sudo tee /etc/apt/sources.list.d/myapps.list
+wget -qO- https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Ubuntu_24.04/Release.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/myapps.gpg
+sudo apt update && sudo apt install myapps
 ```
 
-### From AUR (Arch Linux)
+**Fedora:**
+```bash
+# Fedora 41
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_41/home:nicoletta:myapps.repo
+sudo dnf install myapps
+```
+
+**openSUSE:**
+```bash
+# openSUSE Tumbleweed
+sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Tumbleweed/home:nicoletta:myapps.repo
+sudo zypper refresh && sudo zypper install myapps
+```
+
+**Additional supported distributions:**
+- Debian 13 (Trixie)
+- Ubuntu 22.04 LTS, 25.10
+- Fedora 42, 43
+- openSUSE Leap 16, Slowroll
+
+[View all OBS packages →](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
+
+---
+
+### From AUR (Recommended - Arch Linux)
 
 [![AUR Version](https://img.shields.io/badge/AUR-myapps-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
 
@@ -163,22 +191,11 @@ sudo zypper refresh && sudo zypper install myapps
 
 [View all OBS packages →](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
 
-### As Flatpak (recommended - all distributions)
+### ~~As Flatpak~~ (Not Available)
 
-**Recommended since version 0.2.0:**
+**Flathub rejected MyApps** due to required `/var/lib` access for package manager databases.
 
-```bash
-# Install Flatpak (if not already installed)
-# Debian/Ubuntu: sudo apt install flatpak
-# Arch: sudo pacman -S flatpak
-# Fedora: sudo dnf install flatpak
-
-# Install MyApps (not yet available - Flathub review in progress)
-# flatpak install flathub io.github.nicolettas-muggelbude.myapps
-
-# Launch
-# flatpak run io.github.nicolettas-muggelbude.myapps
-```
+**Alternative:** Use **OBS packages** (see above) - they provide native system integration without sandbox restrictions.
 
 ### ~~As AppImage~~ (discontinued since v0.2.0)
 

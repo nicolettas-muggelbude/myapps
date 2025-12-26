@@ -1,5 +1,7 @@
 #!/bin/bash
 # MyApps DEB-Paket Build-Script
+# ⚠️  WARNUNG: Dieses Paket ist NUR für Testing/Development!
+# ⚠️  Für Production bitte OBS-Pakete nutzen: https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
 set -e
 
@@ -7,6 +9,7 @@ set -e
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Version aus pyproject.toml lesen oder als Parameter
@@ -14,6 +17,9 @@ VERSION=${1:-$(grep '^version = ' pyproject.toml | cut -d'"' -f2)}
 PACKAGE_NAME="myapps_${VERSION}_all.deb"
 
 echo -e "${BLUE}=== MyApps DEB-Paket Builder ===${NC}"
+echo -e "${YELLOW}⚠️  WARNING: This package is for TESTING/DEVELOPMENT only!${NC}"
+echo -e "${YELLOW}⚠️  For production use: https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps${NC}"
+echo ""
 echo -e "Version: ${GREEN}${VERSION}${NC}"
 echo ""
 
@@ -144,6 +150,13 @@ cat > debian/DEBIAN/postrm << 'EOF'
 set -e
 
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    # Icon explizit löschen (falls dpkg es nicht entfernt)
+    rm -f /usr/share/icons/hicolor/scalable/apps/io.github.nicolettas-muggelbude.myapps.svg || true
+
+    # Leere Icon-Verzeichnisse aufräumen
+    rmdir --ignore-fail-on-non-empty /usr/share/icons/hicolor/scalable/apps 2>/dev/null || true
+    rmdir --ignore-fail-on-non-empty /usr/share/icons/hicolor/scalable 2>/dev/null || true
+
     # Icon-Cache aktualisieren
     if command -v gtk-update-icon-cache >/dev/null 2>&1; then
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true

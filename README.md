@@ -83,41 +83,11 @@ sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
 sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
 ```
 
-### Aus DEB-Paket (Debian/Ubuntu/Mint)
+### Aus OBS (Empfohlen - Debian/Ubuntu/Fedora/openSUSE)
 
-[![Download DEB](https://img.shields.io/badge/Download-DEB_Paket_v0.2.0-0078D4?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+**📦 Professionelle Pakete für 11 Distributionen über openSUSE Build Service:**
 
-```bash
-# Nach dem Download installieren
-sudo dpkg -i myapps_0.2.0_all.deb
-
-# Falls Dependencies fehlen
-sudo apt-get install -f
-
-# Starten
-myapps
-```
-
-### Aus AUR (Arch Linux)
-
-[![AUR Version](https://img.shields.io/badge/AUR-myapps-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
-
-```bash
-# Mit AUR Helper (z.B. yay)
-yay -S myapps
-
-# Oder mit paru
-paru -S myapps
-
-# Manuell
-git clone https://aur.archlinux.org/myapps.git
-cd myapps
-makepkg -si
-```
-
-### Aus OBS (Fedora/openSUSE/weitere Distributionen)
-
-**MyApps ist über den openSUSE Build Service für 11 Distributionen verfügbar:**
+[![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
 
 **Debian/Ubuntu:**
 ```bash
@@ -137,10 +107,6 @@ sudo apt update && sudo apt install myapps
 # Fedora 41
 sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_41/home:nicoletta:myapps.repo
 sudo dnf install myapps
-
-# Fedora 42
-sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_42/home:nicoletta:myapps.repo
-sudo dnf install myapps
 ```
 
 **openSUSE:**
@@ -148,36 +114,64 @@ sudo dnf install myapps
 # openSUSE Tumbleweed
 sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Tumbleweed/home:nicoletta:myapps.repo
 sudo zypper refresh && sudo zypper install myapps
-
-# openSUSE Leap 16
-sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Leap_16/home:nicoletta:myapps.repo
-sudo zypper refresh && sudo zypper install myapps
 ```
 
-**Weitere unterstützte Distributionen:**
+**Weitere verfügbare Distributionen:**
 - Debian 13 (Trixie)
 - Ubuntu 22.04 LTS, 25.10
-- Fedora 43
-- openSUSE Slowroll
+- Fedora 42, 43
+- openSUSE Leap 16, Slowroll
 
 [Alle OBS-Pakete ansehen →](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
 
-### Als Flatpak (empfohlen - alle Distributionen)
+---
 
-**Ab Version 0.2.0 empfohlen:**
+### Aus AUR (Empfohlen - Arch Linux)
+
+[![AUR Version](https://img.shields.io/badge/AUR-myapps-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
 
 ```bash
-# Flatpak installieren (falls nicht vorhanden)
-# Debian/Ubuntu: sudo apt install flatpak
-# Arch: sudo pacman -S flatpak
-# Fedora: sudo dnf install flatpak
+# Mit AUR Helper (z.B. yay)
+yay -S myapps
 
-# MyApps installieren (noch nicht verfügbar - Flathub Review läuft)
-# flatpak install flathub io.github.nicolettas-muggelbude.myapps
+# Oder mit paru
+paru -S myapps
+
+# Manuell
+git clone https://aur.archlinux.org/myapps.git
+cd myapps
+makepkg -si
+```
+
+### Aus GitHub DEB-Paket (⚠️ Nur für Testing)
+
+**⚠️ WARNUNG:** Dieses Paket ist NUR für Testing/Development gedacht!
+
+**Für Production bitte OBS-Pakete nutzen** (siehe oben) - diese sind professioneller und folgen Linux-Standards.
+
+[![Download DEB](https://img.shields.io/badge/Download-DEB_Testing-FFA500?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+
+```bash
+# Nach dem Download installieren
+sudo dpkg -i myapps_0.2.0_all.deb
+
+# Falls Dependencies fehlen
+sudo apt-get install -f
 
 # Starten
-# flatpak run io.github.nicolettas-muggelbude.myapps
+myapps
 ```
+
+**Bekannte Probleme:**
+- Bundelt Pillow (größer als OBS-Paket)
+- Installiert nach /usr/share/myapps/ statt /usr/lib/
+- Nicht für Production empfohlen
+
+### ~~Als Flatpak~~ (Nicht verfügbar)
+
+**Flathub hat MyApps abgelehnt** aufgrund benötigter `/var/lib` Zugriffe für Paketmanager-Datenbanken.
+
+**Alternative:** Nutze **OBS-Pakete** (siehe oben) - diese bieten native System-Integration ohne Sandbox-Einschränkungen.
 
 ### ~~Als AppImage~~ (discontinued ab v0.2.0)
 
