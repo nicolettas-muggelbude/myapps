@@ -1,10 +1,14 @@
-# MyApps 📦
+<div align="center">
+  <img src="assets/icons/io.github.nicolettas-muggelbude.myapps.svg" width="128" alt="MyApps Logo">
 
-> Tool for listing and managing installed Linux applications
+  # MyApps
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
+  > Tool for listing and managing installed Linux applications
+
+  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+  [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
+  [![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/nicolettas-muggelbude/myapps)
+</div>
 
 **English** | [Deutsch](README.md)
 
@@ -23,10 +27,12 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 - Snap & Flatpak (cross-distribution)
 
 🎨 **Modern Interface**
-- Dark Mode (ttkbootstrap)
-- Table view (file manager style)
-- List view (with icons)
+- Native GTK4 + Libadwaita integration
+- Dark Mode (follows system theme)
+- Virtual scrolling (10,000+ packages no problem)
+- Table view & List view
 - Switchable with one click
+- Search function (name + description)
 
 🔍 **Smart Filtering**
 - Automatic detection of system apps
@@ -46,7 +52,17 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 
 ## Screenshots
 
-*Coming soon - Screenshots will be added after the first release*
+### Main Window (List View)
+<img src="docs/screenshots/main-window.png" width="800" alt="MyApps Main Window">
+
+### Table View
+<img src="docs/screenshots/table-view.png" width="800" alt="MyApps Table View">
+
+### Search Function
+<img src="docs/screenshots/search-demo.png" width="800" alt="MyApps Search Function">
+
+### Dark Mode
+<img src="docs/screenshots/dark-mode.png" width="800" alt="MyApps Dark Mode">
 
 ## Installation
 
@@ -230,13 +246,28 @@ MyApps is licensed under the [GNU General Public License v3.0](LICENSE).
 
 - Developed for the [Linux Guides DE Community](https://t.me/LinuxGuidesDECommunity)
 - Icons from system themes
-- UI based on [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
+- UI based on [GTK4](https://gtk.org/) and [Libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/)
 
 ## Support
 
 - 🐛 [Report Bug](https://github.com/nicolettas-muggelbude/myapps/issues)
 - 💡 [Suggest Feature](https://github.com/nicolettas-muggelbude/myapps/issues)
 - 💬 [Community Chat](https://t.me/LinuxGuidesDECommunity)
+
+## 💝 Support This Project
+
+If MyApps helps you, consider supporting the development:
+
+[![Donate via PayPal](https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL)
+
+**Donations go to:** PC-Wittfoot UG (donation manager)
+**Used for:** Server costs, hardware, developer time for MyApps
+
+**Note:** Development is done by the Linux Guides DE Community (Open Source).
+PC-Wittfoot UG only manages donations, but is NOT the developer.
+
+**Legal:**
+[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Privacy Policy](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
 
 ---
 
