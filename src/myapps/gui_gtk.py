@@ -27,6 +27,30 @@ logger = logging.getLogger(__name__)
 VERSION = "0.2.0-dev"
 
 
+class PackageItem(GObject.Object):
+    """GObject-Wrapper für Package-Objekte (für Gio.ListStore)"""
+
+    def __init__(self, package: Package):
+        super().__init__()
+        self.package = package
+
+    @property
+    def name(self) -> str:
+        return self.package.name
+
+    @property
+    def version(self) -> str:
+        return self.package.version
+
+    @property
+    def package_type(self) -> str:
+        return self.package.package_type
+
+    @property
+    def description(self) -> str:
+        return self.package.description or ""
+
+
 class MyAppsGUI(Adw.Application):
     """GTK4 Hauptanwendung mit Libadwaita"""
 
@@ -255,8 +279,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _create_list_view(self):
         """Erstellt die ListView mit Virtual Scrolling"""
-        # Model: Gio.ListStore für Package-Objekte
-        self.list_store = Gio.ListStore.new(GObject.TYPE_PYOBJECT)
+        # Model: Gio.ListStore für PackageItem-Objekte
+        self.list_store = Gio.ListStore.new(PackageItem)
 
         # Selection Model
         selection = Gtk.NoSelection.new(self.list_store)
@@ -340,7 +364,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
     def _create_table_view(self):
         """Erstellt die ColumnView (Table)"""
         # Model
-        self.table_store = Gio.ListStore.new(GObject.TYPE_PYOBJECT)
+        self.table_store = Gio.ListStore.new(PackageItem)
         selection = Gtk.NoSelection.new(self.table_store)
 
         # ColumnView
@@ -466,9 +490,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
-        # Add to Model
+        # Add to Model (wrapped in PackageItem)
         for pkg in page_packages:
-            self.list_store.append(pkg)
+            self.list_store.append(PackageItem(pkg))
 
     def _populate_table_view(self):
         """Füllt Table View (paginiert)"""
@@ -483,9 +507,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
-        # Add to Model
+        # Add to Model (wrapped in PackageItem)
         for pkg in page_packages:
-            self.table_store.append(pkg)
+            self.table_store.append(PackageItem(pkg))
 
     def _update_pagination_controls(self):
         """Aktualisiert Pagination Controls"""
