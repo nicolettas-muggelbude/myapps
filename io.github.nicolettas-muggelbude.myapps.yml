@@ -57,5 +57,5 @@ modules:
       # Install appdata
       - install -Dm644 io.github.nicolettas-muggelbude.myapps.metainfo.xml -t /app/share/metainfo/
 
-      # Install icon
-      - install -Dm644 assets/icons/default-app.png /app/share/icons/hicolor/256x256/apps/io.github.nicolettas-muggelbude.myapps.png
+      # Install icon (SVG for scalability)
+      - install -Dm644 assets/icons/io.github.nicolettas-muggelbude.myapps.svg /app/share/icons/hicolor/scalable/apps/io.github.nicolettas-muggelbude.myapps.svg
