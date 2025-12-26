@@ -98,6 +98,70 @@ sudo apt-get install -f
 myapps
 ```
 
+### Aus AUR (Arch Linux)
+
+[![AUR Version](https://img.shields.io/badge/AUR-myapps-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
+
+```bash
+# Mit AUR Helper (z.B. yay)
+yay -S myapps
+
+# Oder mit paru
+paru -S myapps
+
+# Manuell
+git clone https://aur.archlinux.org/myapps.git
+cd myapps
+makepkg -si
+```
+
+### Aus OBS (Fedora/openSUSE/weitere Distributionen)
+
+**MyApps ist über den openSUSE Build Service für 11 Distributionen verfügbar:**
+
+**Debian/Ubuntu:**
+```bash
+# Debian 12 (Bookworm)
+echo "deb https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/ /" | sudo tee /etc/apt/sources.list.d/myapps.list
+wget -qO- https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/Release.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/myapps.gpg
+sudo apt update && sudo apt install myapps
+
+# Ubuntu 24.04 LTS
+echo "deb https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Ubuntu_24.04/ /" | sudo tee /etc/apt/sources.list.d/myapps.list
+wget -qO- https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Ubuntu_24.04/Release.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/myapps.gpg
+sudo apt update && sudo apt install myapps
+```
+
+**Fedora:**
+```bash
+# Fedora 41
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_41/home:nicoletta:myapps.repo
+sudo dnf install myapps
+
+# Fedora 42
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_42/home:nicoletta:myapps.repo
+sudo dnf install myapps
+```
+
+**openSUSE:**
+```bash
+# openSUSE Tumbleweed
+sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Tumbleweed/home:nicoletta:myapps.repo
+sudo zypper refresh && sudo zypper install myapps
+
+# openSUSE Leap 16
+sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Leap_16/home:nicoletta:myapps.repo
+sudo zypper refresh && sudo zypper install myapps
+```
+
+**Weitere unterstützte Distributionen:**
+- Debian 13 (Trixie)
+- Ubuntu 22.04 LTS, 25.10
+- Fedora 43
+- openSUSE Slowroll
+
+[Alle OBS-Pakete ansehen →](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
+
 ### Als Flatpak (empfohlen - alle Distributionen)
 
 **Ab Version 0.2.0 empfohlen:**

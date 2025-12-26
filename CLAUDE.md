@@ -282,7 +282,7 @@ from pathlib import Path
 
 ## Packaging
 
-### DEB-Paket
+### DEB-Paket (v0.1.x - tkinter)
 - **Ziel-Distributionen**: Debian, Ubuntu, Mint
 - **Build-Script**: `build-deb.sh`
 - **Größe**: ~51 KB
@@ -295,18 +295,149 @@ from pathlib import Path
   - Icon in `/usr/share/icons/hicolor/256x256/apps/`
 - **Post-Install**: Installiert ttkbootstrap und Pillow via pip
 
-### AppImage
-- **Ziel-Distributionen**: Alle Linux-Distributionen
-- **Build-Script**: `build-appimage.sh`
-- **Größe**: ~7.8 MB
-- **Dependencies**: python3, python3-tk (müssen auf dem System installiert sein)
-- **Gebündelte Pakete**: ttkbootstrap, Pillow (im vendor/-Verzeichnis)
-- **Ausführung**: `chmod +x MyApps-0.1.0-x86_64.AppImage && ./MyApps-0.1.0-x86_64.AppImage`
-- **AppRun-Script**:
-  - Prüft ob python3 und python3-tk vorhanden sind
-  - Setzt PYTHONPATH auf vendor-Verzeichnis
-  - Startet App mit `python3 -m src.myapps.main`
-- **WSL-Kompatibilität**: Build-Script erkennt extrahiertes appimagetool für Systeme ohne FUSE
+### DEB-Paket (v0.2.0+ - GTK4)
+- **Ziel-Distributionen**: Debian, Ubuntu, Mint
+- **Build-Script**: `build-deb.sh`
+- **Größe**: ~5.8 MB (bundelt Pillow)
+- **Dependencies**:
+  - python3 (>= 3.8)
+  - python3-gi, python3-gi-cairo
+  - gir1.2-gtk-4.0, gir1.2-adw-1
+  - python3-pil
+- **Installation**: `sudo dpkg -i myapps_0.2.0_all.deb`
+- **Struktur**:
+  - Binary in `/usr/bin/myapps`
+  - Python-Paket in `/usr/lib/python3/dist-packages/myapps/`
+  - Desktop-Entry in `/usr/share/applications/`
+  - MetaInfo in `/usr/share/metainfo/`
+  - Icon in `/usr/share/icons/hicolor/scalable/apps/`
+  - Filters in `/usr/share/myapps/filters/`
+  - Locales in `/usr/share/myapps/locales/`
+
+### openSUSE Build Service (OBS) - v0.2.0+
+**URL:** https://build.opensuse.org
+**Projekt:** home:nicoletta:myapps
+**Package:** myapps
+
+**Zweck:**
+- Multi-Distro Builds aus einer Konfiguration
+- Native Pakete (DEB für Debian/Ubuntu, RPM für Fedora/openSUSE)
+- Kein Sandbox (voller /var/lib Zugriff für Paketmanager-DBs)
+- Alternative zu Flathub (nach Ablehnung)
+
+**Unterstützte Distributionen (11):**
+- **Debian:** 12 (Bookworm), 13 (Trixie)
+- **Ubuntu:** 22.04 LTS, 24.04 LTS, 25.10
+- **Fedora:** 41, 42, 43
+- **openSUSE:** Leap 16, Slowroll, Tumbleweed
+
+**Dateien in OBS:**
+- `myapps-0.2.0.tar.gz` - Git-Archive des Source Codes (5.7 MB)
+- `myapps.spec` - RPM Build Specification
+
+**RPM .spec Highlights:**
+```spec
+Name:           myapps
+Version:        0.2.0
+Release:        1%{?dist}
+BuildArch:      noarch
+
+# Runtime Dependencies
+Requires:       python3 >= 3.8
+Requires:       python3-gobject
+Requires:       gtk4
+Requires:       libadwaita
+Requires:       python3-pillow
+
+# Build Steps
+%build
+%py3_build
+
+%install
+%py3_install
+# + Install desktop file, metainfo, icon, filters, locales, assets
+```
+
+**User Installation (nach Build-Erfolg):**
+
+*Debian/Ubuntu:*
+```bash
+# Repo hinzufügen (einmalig)
+echo "deb https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/ /" | sudo tee /etc/apt/sources.list.d/myapps.list
+wget -qO- https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Debian_12/Release.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/myapps.gpg
+sudo apt update
+
+# Installieren
+sudo apt install myapps
+```
+
+*Fedora:*
+```bash
+# Repo hinzufügen (einmalig)
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/Fedora_41/home:nicoletta:myapps.repo
+
+# Installieren
+sudo dnf install myapps
+```
+
+*openSUSE:*
+```bash
+# Repo hinzufügen (einmalig)
+sudo zypper addrepo https://download.opensuse.org/repositories/home:/nicoletta:/myapps/openSUSE_Tumbleweed/home:nicoletta:myapps.repo
+
+# Installieren
+sudo zypper install myapps
+```
+
+**Build-Workflow:**
+1. Source Tarball erstellen: `git archive --format=tar.gz --prefix=myapps-0.2.0/ -o myapps-0.2.0.tar.gz HEAD`
+2. .spec Datei schreiben (defines build steps)
+3. In OBS hochladen (Web UI oder `osc` CLI)
+4. Repositories auswählen (welche Distros)
+5. Builds triggern (automatisch nach Upload)
+6. Warten auf Build-Ergebnisse (5-15 Min pro Distro)
+7. Repository-URLs in README eintragen
+
+**Vorteile gegenüber Flathub:**
+- ✅ Kein Sandbox (voller System-Zugriff)
+- ✅ Native Integration (systemd, distro package manager)
+- ✅ Kleinere Download-Größe (shared dependencies)
+- ✅ Vertrauter Workflow für Linux-User (apt/dnf/zypper)
+
+**Nachteile:**
+- ❌ Kein App Store UI (Terminal-Installation)
+- ❌ Nutzer müssen Repo manuell hinzufügen
+- ❌ Keine automatische Sandbox-Sicherheit
+
+### Flatpak (Flathub - ABGELEHNT)
+**Status:** ❌ Nicht verfügbar auf Flathub
+
+**Grund der Ablehnung:**
+- MyApps benötigt `/var/lib/*` Zugriff für Paketmanager-Datenbanken
+- Flathub erlaubt dies aus Sicherheitsgründen nicht
+- Antwort: "then this application is not suitable for flathub"
+
+**Technische Details:**
+- **App-ID:** `io.github.nicolettas-muggelbude.myapps`
+- **Runtime:** org.gnome.Platform 46
+- **Manifest:** `io.github.nicolettas-muggelbude.myapps.yml`
+- **Build-Fehler:**
+  - `finish-args-host-var-access` - /var/lib Zugriff verboten
+  - `finish-args-flatpak-system-folder-access` - System-Ordner verboten
+  - `runtime-is-eol-org.gnome.Platform-47` - Runtime EOL
+
+**Alternative:** openSUSE Build Service (siehe oben)
+
+**Flatpak bleibt im Repo (für Self-Hosting):**
+- User können Flatpak selbst bauen: `flatpak-builder --force-clean build-dir io.github.nicolettas-muggelbude.myapps.yml`
+- Lokale Installation möglich: `flatpak-builder --install ...`
+- Nur nicht auf Flathub verfügbar
+
+### AppImage (discontinued ab v0.2.0)
+- **Grund:** GTK4 + Libadwaita schwer in AppImage zu bundeln
+- **Problem:** System-Dependencies (GTK4, Libadwaita) müssen auf Host vorhanden sein
+- **Alternative:** DEB-Paket oder OBS-Pakete verwenden
+- **v0.1.x AppImage:** Noch verfügbar für Legacy tkinter Version
 
 ### Build-Scripts
 
@@ -475,6 +606,8 @@ from pathlib import Path
 - GitHub Issues kommentiert und kommuniziert
 - Screenshots-Ordner erstellt mit README
 - Screenshots erstellt (4 Stück: main-window, table-view, search-demo, dark-mode)
+- **OBS Builds erfolgreich** - 11 Distributionen (Debian, Ubuntu, Fedora, openSUSE)
+- **AUR-Paket live** - https://aur.archlinux.org/packages/myapps
 - **Flathub Submission eingereicht** 🎉
   - Pull Request: https://github.com/flathub/flathub/pull/7404
   - Status: **Wartet auf Exception-Genehmigung**
@@ -490,28 +623,55 @@ from pathlib import Path
 2. ✅ **Flatpak bauen und testen** - ERLEDIGT (erfolgreich getestet)
 3. ✅ **Flathub Submission** - ERLEDIGT (PR #7404)
 4. ✅ **Exception-Anfrage gestellt** - ERLEDIGT
+5. ❌ **Flathub ABGELEHNT** - "then this application is not suitable for flathub"
+   - **Grund:** /var/lib Zugriff wird generell nicht gewährt (Sicherheitspolitik)
+   - **Alternative:** openSUSE Build Service (OBS) für native Pakete
+   - **PR geschlossen:** Sauber beendet am 26.12.2024
 
-5. **Auf Flathub-Antwort warten** ⏳:
-   - **Wartet auf:** Maintainer-Antwort zu Exception-Anfrage
-   - **Frage 1:** Darf MyApps /var/lib Zugriff haben? (für Paketmanager-DBs)
-   - **Frage 2:** Welche Runtime-Version verwenden? (47 ist EOL)
-   - **Wartezeit:** 1-7 Tage (Maintainer sind Volunteers)
-   - **GitHub benachrichtigt** dich bei Antwort
+6. **OBS Setup** ⏳ (AKTUELL):
+   - ✅ **OBS Account erstellt:** https://build.opensuse.org
+   - ✅ **Projekt erstellt:** home:nicoletta:myapps
+   - ✅ **Package erstellt:** myapps
+   - ✅ **Source Tarball hochgeladen:** myapps-0.2.0.tar.gz (5.7 MB)
+   - ✅ **RPM .spec Datei hochgeladen:** myapps.spec (mit hicolor-icon-theme Fix + %dir Direktiven)
+   - ✅ **Debian-Dateien hochgeladen:** debian.control, debian.rules, debian.changelog
+   - ⏳ **Build-Status:** Builds laufen für alle Distributionen!
 
-6. **Nach Antwort:**
-   - Manifest entsprechend anpassen
-   - Neu builden mit `bot, build`
-   - Auf erfolgreichen Build warten
+   **Build-Status (11 Distributionen):**
+   - ✅ **Fedora 41, 42, 43** - Erfolgreich gebaut!
+   - ✅ **openSUSE Leap 16, Slowroll, Tumbleweed** - Erfolgreich gebaut!
+   - ✅ **Debian 12** (Bookworm) - Erfolgreich gebaut!
+   - ✅ **Debian 13** (Trixie) - Erfolgreich gebaut!
+   - ✅ **Ubuntu 22.04 LTS** (Jammy) - Erfolgreich gebaut!
+   - ✅ **Ubuntu 24.04 LTS** (Noble) - Erfolgreich gebaut!
+   - ✅ **Ubuntu 25.10** (Plucky) - Erfolgreich gebaut!
 
-7. **Community Testing** (parallel):
+   **Behobene Build-Probleme:**
+   - ~~Icon-Verzeichnisse nicht owned (openSUSE)~~ → **BEHOBEN** (hicolor-icon-theme dependency + %dir Direktiven)
+   - ~~Debian/Ubuntu excluded~~ → **BEHOBEN** (debian.tar.gz mit control, rules, changelog, source/options)
+   - ~~pybuild-plugin-pyproject nicht verfügbar~~ → **BEHOBEN** (setup.py wird während Build generiert)
+   - ~~dpkg-source unexpected changes~~ → **BEHOBEN** (extend-diff-ignore in debian/source/options)
+
+7. ✅ **OBS Build-Erfolg erreicht!** Alle 11 Distributionen erfolgreich gebaut!
+
+8. **AUR-Paket (Arch Linux)** ✅ (ABGESCHLOSSEN):
+   - ✅ **PKGBUILD erstellt** - Arch Linux Build-Script
+   - ✅ **AUR Account erstellt** - https://aur.archlinux.org
+   - ✅ **SSH-Key zu AUR hinzugefügt**
+   - ✅ **AUR Repository geklont** - `git clone ssh://aur@aur.archlinux.org/myapps.git`
+   - ✅ **PKGBUILD + .SRCINFO hochgeladen**
+   - ✅ **Live auf AUR:** https://aur.archlinux.org/packages/myapps
+
+9. **Nach kompletter Paketierung:**
+   - Repository-URLs in README eintragen (OBS + AUR)
+   - Installations-Anleitung für alle Distros schreiben
+   - Ankündigung in Linux Guides DE Community
+   - v0.2.0 als stabil markieren
+
+8. **Community Testing** (parallel):
    - v0.2.0 DEB-Paket auf verschiedenen Systemen testen
    - Feedback sammeln via GitHub Issues
    - Bug-Reports bearbeiten
-
-8. **Nach Flathub Approval**:
-   - Ankündigung in Linux Guides DE Community
-   - README aktualisieren mit Flathub-Installation
-   - Social Media Ankündigung
 
 ### 🎯 Geplant für v0.3.0
 - Virtual Scrolling ohne Pagination (echtes ListView-Scrolling)
