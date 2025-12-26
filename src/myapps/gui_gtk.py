@@ -20,6 +20,7 @@ from .filters import FilterManager
 from .export import Exporter
 from .distro_detect import get_distro_info
 from .i18n import _
+from .icons import IconManagerGTK
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,9 @@ class MyAppsGUI(Adw.Application):
         from .distro_detect import get_filter_files
         filter_files = get_filter_files()
         self.filter_manager.load_filters(filter_files)
+
+        # Icon Manager initialisieren
+        self.icon_manager = IconManagerGTK(icon_size=32)
 
         logger.info(f"MyApps GTK4 {VERSION} initialisiert")
 
@@ -338,6 +342,11 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.set_margin_top(8)
         box.set_margin_bottom(8)
 
+        # Icon
+        icon = Gtk.Image()
+        icon.set_pixel_size(32)
+        box.append(icon)
+
         # Text Container
         text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         text_box.set_hexpand(True)
@@ -363,6 +372,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.add_controller(gesture)
 
         # Store widgets für später
+        box.icon = icon
         box.name_label = name_label
         box.info_label = info_label
         box.gesture = gesture
@@ -373,6 +383,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Bind: Verknüpft Package-Daten mit Widget"""
         pkg = list_item.get_item()  # PackageItem-Objekt
         box = list_item.get_child()
+
+        # Icon laden
+        pixbuf = self.gui.icon_manager.get_icon(pkg.name, pkg.package_type)
+        box.icon.set_from_pixbuf(pixbuf)
 
         # Set Data
         box.name_label.set_text(pkg.name)
