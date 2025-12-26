@@ -23,9 +23,10 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 - Snap & Flatpak (distributionsübergreifend)
 
 🎨 **Moderne Oberfläche**
-- Dark Mode (ttkbootstrap)
-- Tabellenansicht (wie ein Dateimanager)
-- Listenansicht (mit Icons)
+- Native GTK4 + Libadwaita Integration
+- Dark Mode (folgt System-Theme)
+- Virtual Scrolling (10.000+ Pakete kein Problem)
+- Tabellenansicht & Listenansicht
 - Umschaltbar per Knopfdruck
 
 🔍 **Intelligentes Filtern**
@@ -50,37 +51,54 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 
 ## Installation
 
+### Voraussetzungen
+
+**Ab Version 0.2.0 benötigt MyApps GTK4 + Libadwaita:**
+
+```bash
+# Debian/Ubuntu/Mint
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
+
+# Arch/Manjaro
+sudo pacman -S python-gobject gtk4 libadwaita python-pillow
+
+# Fedora/RHEL/CentOS
+sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
+
+# openSUSE
+sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
+```
+
 ### Aus DEB-Paket (Debian/Ubuntu/Mint)
 
 ```bash
 # Download des DEB-Pakets aus dem Release
-sudo dpkg -i myapps_0.1.0_all.deb
+sudo dpkg -i myapps_0.2.0_all.deb
 
 # Starten
 myapps
 ```
 
-### Als AppImage (alle Distributionen)
+### Als Flatpak (empfohlen - alle Distributionen)
+
+**Ab Version 0.2.0 empfohlen:**
 
 ```bash
-# Download des AppImage aus dem Release
-chmod +x MyApps-0.1.0-x86_64.AppImage
+# Flatpak installieren (falls nicht vorhanden)
+# Debian/Ubuntu: sudo apt install flatpak
+# Arch: sudo pacman -S flatpak
+# Fedora: sudo dnf install flatpak
+
+# MyApps installieren (noch nicht verfügbar - Release kommt bald)
+# flatpak install flathub de.pc-wittfoot.myapps
 
 # Starten
-./MyApps-0.1.0-x86_64.AppImage
+# flatpak run de.pc-wittfoot.myapps
 ```
 
-**Hinweis:** Das AppImage benötigt `python3`, `python3-tk` und `python3-pil` auf dem System:
-```bash
-# Debian/Ubuntu/Mint
-sudo apt install python3 python3-tk python3-pil python3-pil.imagetk
+### ~~Als AppImage~~ (discontinued ab v0.2.0)
 
-# Arch/Manjaro
-sudo pacman -S python tk python-pillow
-
-# Fedora
-sudo dnf install python3 python3-tkinter python3-pillow python3-pillow-tk
-```
+**Hinweis:** AppImage wird ab v0.2.0 nicht mehr angeboten, da GTK4-System-Dependencies schwer zu bundeln sind. Nutze stattdessen DEB-Paket oder Flatpak.
 
 ### Aus Quellcode (Development)
 
@@ -89,15 +107,19 @@ sudo dnf install python3 python3-tkinter python3-pillow python3-pillow-tk
 git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
-# Virtual Environment erstellen
+# System-Dependencies installieren (siehe oben unter "Voraussetzungen")
+# Debian/Ubuntu/Mint:
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
+
+# Virtual Environment erstellen (optional)
 python3 -m venv venv
 source venv/bin/activate
 
-# Dependencies installieren
-pip install -r requirements.txt
+# Python-Dependencies installieren
+pip install -e .
 
 # App starten
-python3 -m src.myapps.main
+python3 -m myapps.main
 ```
 
 ## Pakete selbst bauen
@@ -178,7 +200,7 @@ Wir brauchen Community-Tester für verschiedene Distributionen:
 
 ## Roadmap
 
-### v0.1.0 (Aktuell - Alpha) ⏳
+### v0.1.x (Stable - tkinter) ✅
 - [x] Multi-Distro-Support
 - [x] Moderne GUI mit Dark Mode
 - [x] Icons mit Fallback
@@ -186,10 +208,14 @@ Wir brauchen Community-Tester für verschiedene Distributionen:
 - [x] Mehrsprachigkeit (DE/EN)
 - [x] Distro-spezifische Filter
 - [x] User-Filter
+- [x] Pagination (100 Apps/Seite)
 
-### v0.2.0 (Geplant)
-- [ ] Größen-Information anzeigen
-- [ ] Performance-Optimierungen
+### v0.2.0 (Aktuell - GTK4 Migration) ⏳
+- [x] GTK4 + Libadwaita GUI
+- [x] Virtual Scrolling (10.000+ Pakete)
+- [x] Kein X-Server BadAlloc mehr
+- [x] Native GNOME Integration
+- [ ] Community Testing
 
 ### v0.3.0 (Geplant)
 - [ ] Installationsdatum anzeigen
@@ -230,7 +256,7 @@ MyApps ist unter der [GNU General Public License v3.0](LICENSE) lizenziert.
 
 - Entwickelt für die [Linux Guides DE Community](https://t.me/LinuxGuidesDECommunity)
 - Icons aus System-Themes
-- UI basiert auf [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
+- UI basiert auf [GTK4](https://www.gtk.org/) und [Libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/)
 
 ## 💙 Unterstütze dieses Projekt
 

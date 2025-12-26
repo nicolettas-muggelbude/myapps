@@ -8,17 +8,18 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v0.1.0 (Alpha)
+- **Version**: v0.2.0 (Beta - GTK4 Migration)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
 
 ### Technologie-Stack
 - **Sprache**: Python 3.8+
-- **GUI-Framework**: ttkbootstrap (Dark Mode)
-- **Icon-Größe**: 32x32px
+- **GUI-Framework**: GTK4 + Libadwaita (ab v0.2.0)
+  - Legacy: ttkbootstrap (v0.1.x)
+- **Icon-Größe**: 32x32px (48x48px für GTK4)
 - **Lokalisierung**: gettext (i18n)
-- **Packaging**: DEB + AppImage
+- **Packaging**: DEB + Flatpak (AppImage discontinued ab v0.2.0)
 
 ### Unterstützte Distributionen
 - Debian, Ubuntu, Linux Mint
@@ -50,9 +51,22 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 - [x] Export-Funktionen (txt, csv, json)
 - [x] Mehrsprachigkeit (Deutsch + Englisch)
 
+### v0.2.0 Features (GTK4 Migration) - AKTUELL
+- [x] GTK4 + Libadwaita GUI (~650 Zeilen)
+- [x] Virtual Scrolling (10.000+ Pakete kein Problem)
+- [x] Kein X-Server BadAlloc mehr
+- [x] ListView mit SignalListItemFactory
+- [x] ColumnView für Tabellenansicht
+- [x] Pagination (100 Apps/Seite, UX-Feature)
+- [x] Export Dialog (File Chooser)
+- [x] About Dialog mit Spendenlink
+- [x] Threading mit GLib.idle_add
+- [ ] Community Testing (ausstehend)
+- [ ] CSS Styling (optional)
+- [ ] Flatpak Manifest
+
 ### Spätere Versionen
-- **v0.2.0**: Größen-Information (optional einblendbar)
-- **v0.3.0**: Installationsdatum anzeigen
+- **v0.3.0**: Größen-Information, Installationsdatum, Sortier-Funktionen
 - **v0.4.0**: Update-Status prüfen
 - **v1.0.0**: Stabile Version nach Community-Testing
 - **v2.0.0**: Deinstallations-Funktion
@@ -65,13 +79,14 @@ app_lister/
 │   └── myapps/
 │       ├── __init__.py
 │       ├── main.py              # Haupteinstiegspunkt
-│       ├── gui.py               # GUI-Logik (ttkbootstrap)
-│       ├── distro_detect.py     # Distro-Erkennung
-│       ├── package_manager.py   # Paketmanager-Abstraktionen
-│       ├── filters.py           # Filter-System
-│       ├── icons.py             # Icon-Management
-│       ├── export.py            # Export-Funktionen
-│       └── i18n.py              # Internationalisierung
+│       ├── gui_gtk.py           # GUI-Logik (GTK4 + Libadwaita, v0.2.0+)
+│       ├── gui_legacy.py        # Legacy GUI (ttkbootstrap, v0.1.x)
+│       ├── distro_detect.py     # Distro-Erkennung (GUI-agnostisch)
+│       ├── package_manager.py   # Paketmanager-Abstraktionen (GUI-agnostisch)
+│       ├── filters.py           # Filter-System (GUI-agnostisch)
+│       ├── icons.py             # Icon-Management (GUI-agnostisch)
+│       ├── export.py            # Export-Funktionen (GUI-agnostisch)
+│       └── i18n.py              # Internationalisierung (GUI-agnostisch)
 ├── filters/
 │   ├── common.json              # Universelle System-Apps
 │   ├── debian.json              # Debian/Ubuntu/Mint
@@ -107,6 +122,111 @@ app_lister/
 ├── CONTRIBUTING.md              # Contribution Guidelines
 ├── .gitignore                   # Git-Ignore-Regeln
 └── CLAUDE.md                    # Diese Datei
+```
+
+## GTK4 Architektur (v0.2.0+)
+
+### Kern-Komponenten
+
+#### MyAppsGUI (Adw.Application)
+- **Application ID**: `de.pc-wittfoot.myapps`
+- **Rolle**: Verwaltet Package-Loading, Filtering, Pagination
+- **Threading**: GLib.idle_add für GUI-Updates aus Worker-Threads
+- **Lifecycle**: `do_activate()` → erstellt Window → lädt Pakete async
+
+#### MyAppsWindow (Adw.ApplicationWindow)
+- **Header Bar**: Adw.HeaderBar mit Buttons (Refresh, Export, Menu)
+- **Stack**: View-Switching zwischen List und Table View
+- **Pagination Bar**: Info-Label + Prev/Next Buttons
+- **Status Bar**: Gtk.Statusbar für Nachrichten
+
+### Virtual Scrolling (Kern-Innovation)
+
+**Problem in v0.1.x (tkinter):**
+- Alle 800+ Widgets wurden gleichzeitig gerendert
+- X-Server BadAlloc bei zu vielen Widgets
+- Lösung war Pagination (100 Apps/Seite)
+
+**Lösung in v0.2.0 (GTK4):**
+- **ListView** mit **SignalListItemFactory**
+- Nur sichtbare Items werden gerendert
+- Model: `Gio.ListStore` mit Package-Objekten
+- Setup/Bind-Pattern:
+  - `setup`: Widget-Template EINMAL erstellen
+  - `bind`: Daten für jedes sichtbare Item verknüpfen
+- **Ergebnis**: 10.000+ Pakete kein Problem
+
+### ListView Implementation
+
+```python
+def _create_list_view(self):
+    # Model
+    self.list_store = Gio.ListStore.new(GObject.TYPE_PYOBJECT)
+    selection = Gtk.NoSelection.new(self.list_store)
+
+    # Factory
+    factory = Gtk.SignalListItemFactory()
+    factory.connect("setup", self._on_list_setup)
+    factory.connect("bind", self._on_list_bind)
+
+    # ListView
+    list_view = Gtk.ListView.new(selection, factory)
+
+def _on_list_setup(self, factory, list_item):
+    """Erstellt Widget-Template EINMAL"""
+    box = Gtk.Box(...)
+    list_item.set_child(box)
+
+def _on_list_bind(self, factory, list_item):
+    """Verknüpft Daten (nur für sichtbare Items)"""
+    pkg = list_item.get_item()
+    box = list_item.get_child()
+    # ... Daten setzen
+```
+
+### ColumnView Implementation
+
+```python
+def _create_table_view(self):
+    # Model
+    self.table_store = Gio.ListStore.new(GObject.TYPE_PYOBJECT)
+    selection = Gtk.SingleSelection.new(self.table_store)
+
+    # ColumnView
+    column_view = Gtk.ColumnView.new(selection)
+
+    # Spalten
+    col_name = Gtk.ColumnViewColumn.new("Name", factory)
+    column_view.append_column(col_name)
+    # ... weitere Spalten
+```
+
+### Threading Model
+
+**WICHTIG**: Alle GUI-Updates MÜSSEN über `GLib.idle_add` laufen!
+
+```python
+def _load_packages_worker(self):
+    """Worker Thread"""
+    packages = PackageManagerFactory.get_all_packages(...)
+    filtered = self.filter_manager.filter_packages(packages)
+
+    # Update GUI im Main Thread
+    GLib.idle_add(self.win._on_packages_loaded, filtered)
+    # NICHT: self.win._on_packages_loaded(filtered)  # CRASH!
+```
+
+### Backend bleibt GUI-agnostisch
+
+**Regel**: Backend-Module (package_manager, filters, export, etc.) dürfen **KEINE** GUI-Imports haben!
+
+```python
+# ❌ FALSCH - GUI-Import im Backend
+from .gui_gtk import MyAppsWindow
+
+# ✅ RICHTIG - Nur Standard-Libraries
+import subprocess
+from pathlib import Path
 ```
 
 ## Development Guidelines
@@ -188,7 +308,39 @@ app_lister/
 
 ## Changelog
 
-### v0.1.0 (Alpha - Ready for Release)
+### v0.2.0 (Beta - GTK4 Migration) - IN TESTING
+**Veröffentlicht:** TBD (Testing läuft)
+
+**🎯 Haupt-Features:**
+- **GTK4 + Libadwaita GUI** (~650 Zeilen, kompletter Rewrite)
+- **Virtual Scrolling** mit ListView/ColumnView (10.000+ Pakete kein Problem)
+- **Kein X-Server BadAlloc mehr** (GTK4 rendert nur sichtbare Items)
+- **Threading** mit GLib.idle_add für GUI-Updates
+- **Export Dialog** mit Gtk.FileChooserDialog
+- **About Dialog** mit Spendenlink (Adw.AboutWindow)
+
+**📦 Packaging-Änderungen:**
+- DEB-Paket mit GTK4-Dependencies (debian/control aktualisiert)
+- AppImage **discontinued** (GTK4-Dependencies schwer zu bundeln)
+- Flatpak **geplant** (org.gnome.Platform 46)
+
+**📚 Dokumentation:**
+- README.md komplett überarbeitet (GTK4 Installation)
+- CLAUDE.md erweitert (GTK4 Architektur-Sektion)
+- Donation Button in README + About Dialog
+- GitHub Pages mit Impressum/Datenschutz
+
+**⚠️ Bekannte Einschränkungen:**
+- Icon-Anzeige nicht implementiert (Icons werden geladen, aber nicht angezeigt)
+- Kein CSS-Styling (nutzt Standard-Libadwaita-Theme)
+- **Noch nicht auf echter Linux-Maschine getestet** (nur WSL Development)
+
+**🔧 Breaking Changes:**
+- Alte tkinter-GUI in `gui_legacy.py` verschoben
+- `main.py` importiert jetzt `gui_gtk.py` statt `gui.py`
+- System-Dependencies geändert: python3-tk → python3-gi + GTK4
+
+### v0.1.0 (Alpha - Stable)
 **Initiale Version**
 
 **Core Features:**

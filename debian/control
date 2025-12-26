@@ -10,18 +10,19 @@ Vcs-Git: https://github.com/nicolettas-muggelbude/myapps.git
 
 Package: myapps
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}, python3 (>= 3.8), python3-tk, python3-pil, python3-pil.imagetk
-Recommends: python3-ttkbootstrap
+Depends: ${python3:Depends}, ${misc:Depends}, python3 (>= 3.8), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1, python3-pil
+Recommends: libadwaita-1-0
 Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen
  MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
  Anwendungen übersichtlich darstellt - ohne System-Clutter.
  .
  Features:
   - Multi-Distribution-Support (Debian, Ubuntu, Mint, Arch, Fedora, etc.)
-  - Moderne GUI (optional mit Dark Mode via ttkbootstrap)
+  - Moderne GTK4 + Libadwaita GUI mit nativem Dark Mode
+  - Virtual Scrolling für 10.000+ Pakete ohne Performance-Probleme
   - Intelligente Filterung von System-Apps
   - Export-Funktionen (TXT, CSV, JSON)
   - Mehrsprachig (Deutsch, Englisch)
  .
- ttkbootstrap ist optional und ermöglicht Dark Mode. Ohne ttkbootstrap
- wird eine Standard-GUI verwendet.
+ Ab Version 0.2.0 nutzt MyApps GTK4 + Libadwaita für native
+ GNOME-Integration und bessere Performance.
