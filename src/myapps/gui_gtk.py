@@ -25,7 +25,7 @@ from .icons import IconManagerGTK
 logger = logging.getLogger(__name__)
 
 # Version
-VERSION = "0.2.0-dev"
+VERSION = "0.2.0"
 
 
 class PackageItem(GObject.Object):
