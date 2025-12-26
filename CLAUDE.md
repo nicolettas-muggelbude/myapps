@@ -12,6 +12,25 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
+- **Entwickelt von**: Linux Guides DE Community
+- **Hauptentwickler**: nicolettas-muggelbude
+
+### Projekt-Organisation
+
+**WICHTIG: Rollenverteilung**
+
+- **Entwicklung**: Linux Guides DE Community (Open Source, GPLv3)
+  - Hauptentwickler: nicolettas-muggelbude
+  - Community Contributors willkommen
+  - Entwicklung ist NICHT durch PC-Wittfoot UG
+
+- **Spendenverwaltung**: PC-Wittfoot UG
+  - Verwaltet PayPal-Spenden für das Projekt
+  - Verwendet Spenden für Serverkosten, Hardware, Entwicklerzeit
+  - **Hat NICHTS mit der Entwicklung zu tun**
+  - Siehe Impressum/Datenschutz auf GitHub Pages
+
+**Zusammenfassung**: PC-Wittfoot UG ist NUR Spendenverwalter, NICHT Entwickler!
 
 ### Technologie-Stack
 - **Sprache**: Python 3.8+

@@ -715,15 +715,15 @@ class MyAppsWindow(Adw.ApplicationWindow):
         about.set_transient_for(self)
         about.set_application_name("MyApps")
         about.set_version(VERSION)
-        about.set_developer_name("PC-Wittfoot UG")
+        about.set_developer_name("Linux Guides DE Community")
         about.set_license_type(Gtk.License.GPL_3_0)
         about.set_website("https://github.com/nicolettas-muggelbude/myapps")
         about.set_issue_url("https://github.com/nicolettas-muggelbude/myapps/issues")
-        about.set_developers(["nicolettas-muggelbude", "Linux Guides DE Community"])
+        about.set_developers(["nicolettas-muggelbude", "Linux Guides DE Community Contributors"])
         about.set_comments(_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"))
 
-        # Spenden-Link
-        about.add_link(_("Spenden via PayPal"), "https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL")
+        # Spenden-Link (PC-Wittfoot UG verwaltet NUR Spenden, nicht Entwicklung!)
+        about.add_link(_("Spenden via PayPal (verwaltet von PC-Wittfoot UG)"), "https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL")
 
         about.present()
 
