@@ -70,24 +70,28 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 - [x] Export-Funktionen (txt, csv, json)
 - [x] Mehrsprachigkeit (Deutsch + Englisch)
 
-### v0.2.0 Features (GTK4 Migration) - AKTUELL
-- [x] GTK4 + Libadwaita GUI (~650 Zeilen)
-- [x] Virtual Scrolling (10.000+ Pakete kein Problem)
-- [x] Kein X-Server BadAlloc mehr
+### v0.2.0 Features (GTK4 Migration) - ✅ RELEASED (26.12.2024)
+- [x] GTK4 + Libadwaita GUI (~800 Zeilen)
+- [x] Pagination (100 Apps/Seite, da Virtual Scrolling in v0.3.0 verschoben)
 - [x] ListView mit SignalListItemFactory
 - [x] ColumnView für Tabellenansicht
-- [x] Pagination (100 Apps/Seite, UX-Feature)
 - [x] Export Dialog (File Chooser)
 - [x] About Dialog mit Spendenlink
 - [x] Threading mit GLib.idle_add
-- [ ] Community Testing (ausstehend)
-- [ ] CSS Styling (optional)
-- [ ] Flatpak Manifest
+- [x] Searchbar (Live-Suche in Name + Beschreibung)
+- [x] Flatpak Manifest (io.github.nicolettas-muggelbude.myapps.yml)
+- [x] MetaInfo XML für Flathub
+- [x] Desktop Entry für Flatpak
+- [x] DEB-Paket mit GTK4-Dependencies (5.8 MB)
+- [x] GitHub Release v0.2.0
+- [x] Screenshots-Ordner erstellt (docs/screenshots/)
+- [ ] Screenshots für Flathub (vom User zu erstellen)
+- [ ] Community Testing (läuft)
 
 ### Spätere Versionen
-- **v0.3.0**: Größen-Information, Installationsdatum, Sortier-Funktionen
-- **v0.4.0**: Update-Status prüfen
-- **v1.0.0**: Stabile Version nach Community-Testing
+- **v0.3.0**: Virtual Scrolling (10.000+ Pakete ohne Pagination), .desktop-only View (Issue #4), Größen-Information (Issue #5), Performance-Optimierungen (Issue #9 - Caching)
+- **v0.4.0**: Update-Status prüfen, Installationsdatum
+- **v1.0.0**: Stabile Version nach Community-Testing, Snap-Paket
 - **v2.0.0**: Deinstallations-Funktion
 
 ## Projekt-Struktur
@@ -148,16 +152,18 @@ app_lister/
 ### Kern-Komponenten
 
 #### MyAppsGUI (Adw.Application)
-- **Application ID**: `de.pc-wittfoot.myapps`
-- **Rolle**: Verwaltet Package-Loading, Filtering, Pagination
+- **Application ID**: `io.github.nicolettas-muggelbude.myapps` (GitHub-basiert, neutral)
+  - **WICHTIG**: Nicht de.pc-wittfoot.myapps! PC-Wittfoot UG ist nur Spendenverwalter, kein Entwickler
+- **Rolle**: Verwaltet Package-Loading, Filtering, Pagination, Suche
 - **Threading**: GLib.idle_add für GUI-Updates aus Worker-Threads
 - **Lifecycle**: `do_activate()` → erstellt Window → lädt Pakete async
 
 #### MyAppsWindow (Adw.ApplicationWindow)
 - **Header Bar**: Adw.HeaderBar mit Buttons (Refresh, Export, Menu)
+  - **SearchEntry**: Zentral im Title-Bereich für Live-Suche (300px breit)
 - **Stack**: View-Switching zwischen List und Table View
 - **Pagination Bar**: Info-Label + Prev/Next Buttons
-- **Status Bar**: Gtk.Statusbar für Nachrichten
+- **Status Bar**: Gtk.Statusbar für Nachrichten (zeigt Anzahl gefundener Apps bei Suche)
 
 ### Virtual Scrolling (Kern-Innovation)
 
@@ -327,37 +333,67 @@ from pathlib import Path
 
 ## Changelog
 
-### v0.2.0 (Beta - GTK4 Migration) - IN TESTING
-**Veröffentlicht:** TBD (Testing läuft)
+### v0.2.0 (Major Update - GTK4 Migration) - ✅ RELEASED
+**Veröffentlicht:** 26. Dezember 2024
+**GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.2.0
 
 **🎯 Haupt-Features:**
-- **GTK4 + Libadwaita GUI** (~650 Zeilen, kompletter Rewrite)
-- **Virtual Scrolling** mit ListView/ColumnView (10.000+ Pakete kein Problem)
-- **Kein X-Server BadAlloc mehr** (GTK4 rendert nur sichtbare Items)
+- **GTK4 + Libadwaita GUI** (~800 Zeilen, kompletter Rewrite)
+  - Moderne GNOME-Integration mit nativem Dark Mode
+  - ListView mit SignalListItemFactory (Setup/Bind-Pattern)
+  - ColumnView für Tabellenansicht
+- **Searchbar** (Issue #2 - IMPLEMENTIERT)
+  - Live-Suche in App-Name und Beschreibung
+  - Case-insensitive, funktioniert mit Pagination
+  - Export respektiert Suchergebnisse
+- **Pagination** (100 Apps/Seite)
+  - UX-Feature für bessere Übersichtlichkeit
+  - Virtual Scrolling verschoben auf v0.3.0
 - **Threading** mit GLib.idle_add für GUI-Updates
-- **Export Dialog** mit Gtk.FileChooserDialog
+- **Export Dialog** mit Gtk.FileChooserDialog (TXT, CSV, JSON)
 - **About Dialog** mit Spendenlink (Adw.AboutWindow)
+- **Deutsche Beschreibungen** in Listenansicht (via apt-cache)
+- **Englische Beschreibungen** in Tabellenansicht (schneller)
 
-**📦 Packaging-Änderungen:**
-- DEB-Paket mit GTK4-Dependencies (debian/control aktualisiert)
-- AppImage **discontinued** (GTK4-Dependencies schwer zu bundeln)
-- Flatpak **geplant** (org.gnome.Platform 46)
+**📦 Packaging:**
+- **DEB-Paket** (5.8 MB) mit GTK4-Dependencies
+  - Dependencies: python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1, python3-pil
+  - Bundelt nur noch Pillow, keine GUI-Frameworks
+- **Flatpak-Manifest** (YAML) für GNOME Platform 46
+  - App-ID: `io.github.nicolettas-muggelbude.myapps` (GitHub-basiert, neutral)
+  - MetaInfo XML für Flathub vorbereitet
+  - Desktop Entry inkludiert
+- **AppImage discontinued** (GTK4-Dependencies schwer zu bundeln)
 
 **📚 Dokumentation:**
-- README.md komplett überarbeitet (GTK4 Installation)
-- CLAUDE.md erweitert (GTK4 Architektur-Sektion)
+- `README.md` komplett überarbeitet (GTK4 Installation)
+- `CONTRIBUTING.md` erweitert (GTK4 System-Dependencies)
+- `CLAUDE.md` aktualisiert (v0.2.0 Release-Stand)
 - Donation Button in README + About Dialog
-- GitHub Pages mit Impressum/Datenschutz
+- Screenshots-Ordner erstellt (`docs/screenshots/`)
+
+**🐛 Bugfixes:**
+- Kein X-Server BadAlloc mehr durch GTK4
+- Tooltips funktionieren jetzt korrekt
+- Export-Dialog deutlich verbessert
+
+**🗂️ GitHub Issues:**
+- Issue #2 (Searchbar) → ✅ Implementiert
+- Issue #4 (.desktop-only View) → Verschoben auf v0.3.0
+- Issue #5 (Größen-Information) → Verschoben auf v0.3.0
+- Issue #9 (Performance-Optimierungen) → Verschoben auf v0.3.0
 
 **⚠️ Bekannte Einschränkungen:**
 - Icon-Anzeige nicht implementiert (Icons werden geladen, aber nicht angezeigt)
 - Kein CSS-Styling (nutzt Standard-Libadwaita-Theme)
-- **Noch nicht auf echter Linux-Maschine getestet** (nur WSL Development)
+- Virtual Scrolling noch nicht implementiert (Pagination als Workaround)
+- Community Testing läuft noch
 
 **🔧 Breaking Changes:**
-- Alte tkinter-GUI in `gui_legacy.py` verschoben
+- Alte tkinter-GUI in `gui_legacy.py` verschoben (nicht mehr gewartet)
 - `main.py` importiert jetzt `gui_gtk.py` statt `gui.py`
-- System-Dependencies geändert: python3-tk → python3-gi + GTK4
+- System-Dependencies geändert: `python3-tk` → `python3-gi + GTK4`
+- App-ID geändert: `de.pc-wittfoot.myapps` → `io.github.nicolettas-muggelbude.myapps`
 
 ### v0.1.0 (Alpha - Stable)
 **Initiale Version**
@@ -412,3 +448,50 @@ from pathlib import Path
 - Keine explizite Nachfrage bei neuen Script-Versionen
 - Alle Terminal-Ausgaben auf Deutsch
 - Diese CLAUDE.md kontinuierlich fortführen
+
+## Aktueller Projekt-Stand (26.12.2024)
+
+### ✅ Abgeschlossen
+- v0.2.0 Release vollständig
+- DEB-Paket gebaut und zu GitHub Release hinzugefügt
+- Flatpak-Manifest, Desktop Entry und MetaInfo XML erstellt
+- Searchbar implementiert (Issue #2)
+- GitHub Issues kommentiert und kommuniziert
+- Screenshots-Ordner erstellt mit README
+
+### 🔄 Nächste Schritte für User
+1. **Screenshots erstellen** für Flathub:
+   - `docs/screenshots/main-window.png` (Pflicht)
+   - Optional: table-view.png, search-demo.png, dark-mode.png
+   - Empfohlene Größe: 1200x850px
+   - Siehe `docs/screenshots/README.md` für Details
+
+2. **Flatpak bauen und testen** (Optional):
+   ```bash
+   flatpak-builder --user --install --force-clean build-dir io.github.nicolettas-muggelbude.myapps.yml
+   flatpak run io.github.nicolettas-muggelbude.myapps
+   ```
+
+3. **Community Testing**:
+   - v0.2.0 DEB-Paket auf verschiedenen Systemen testen
+   - Feedback sammeln via GitHub Issues
+   - Bug-Reports bearbeiten
+
+4. **Flathub Submission** (nach Screenshots):
+   - Fork von flathub/flathub Repository
+   - io.github.nicolettas-muggelbude.myapps Manifest einreichen
+   - Screenshots hochladen
+   - Pull Request erstellen
+
+### 🎯 Geplant für v0.3.0
+- Virtual Scrolling ohne Pagination (echtes ListView-Scrolling)
+- .desktop-only View (Issue #4)
+- Größen-Information für Pakete (Issue #5)
+- Performance-Optimierungen: Caching, Lazy-Loading (Issue #9)
+- Icon-Anzeige in ListView/ColumnView
+
+### 📋 Offene Fragen
+- Wie gut performt v0.2.0 auf echten Linux-Maschinen?
+- Funktioniert das Flatpak-Manifest beim Build?
+- Benötigen wir zusätzliche Flatpak-Permissions?
+- Soll CSS-Styling für v0.3.0 hinzugefügt werden?
