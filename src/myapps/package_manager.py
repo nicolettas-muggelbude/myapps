@@ -73,14 +73,12 @@ class DpkgPackageManager(PackageManagerBase):
         """Gibt alle installierten DEB-Pakete zurück"""
         packages = []
 
-        # Hole Pakete MIT Beschreibungen in einem Befehl
-        output = self._run_command([
-            "dpkg-query", "-W",
-            "--showformat=${Package}\t${Version}\t${Description}\n"
-        ])
+        # Hole Paketliste (schnell, ohne Beschreibungen)
+        output = self._run_command(["dpkg-query", "-W", "--showformat=${Package}\t${Version}\n"])
         if not output:
             return packages
 
+        # Erstelle Package-Objekte
         for line in output.splitlines():
             if not line.strip():
                 continue
@@ -89,7 +87,9 @@ class DpkgPackageManager(PackageManagerBase):
             if len(parts) >= 2:
                 package_name = parts[0].strip()
                 version = parts[1].strip()
-                description = parts[2].strip() if len(parts) >= 3 else None
+
+                # Hole lokalisierte Beschreibung via apt-cache (respektiert LANG)
+                description = self._get_localized_description(package_name)
 
                 packages.append(Package(
                     name=package_name,
@@ -100,6 +100,21 @@ class DpkgPackageManager(PackageManagerBase):
 
         logger.info(f"DEB: {len(packages)} Pakete gefunden")
         return packages
+
+    def _get_localized_description(self, package_name: str) -> Optional[str]:
+        """Holt lokalisierte Beschreibung via apt-cache (respektiert System-Locale)"""
+        output = self._run_command(["apt-cache", "show", package_name])
+        if not output:
+            return None
+
+        # Parse apt-cache output für Description
+        for line in output.splitlines():
+            if line.startswith("Description:") or line.startswith("Description-de:") or line.startswith("Description-en:"):
+                # Nimm ersten gefundenen Description-Header (apt-cache gibt locale-spezifische zuerst)
+                desc = line.split(":", 1)[1].strip()
+                return desc if desc else None
+
+        return None
 
     def get_package_description(self, package_name: str) -> Optional[str]:
         """
