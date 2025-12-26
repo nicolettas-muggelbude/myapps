@@ -70,11 +70,15 @@ class MyAppsGUI(Adw.Application):
         self.base_dir = Path(base_dir)
         self.packages: List[Package] = []
         self.filtered_packages: List[Package] = []
+        self.search_filtered_packages: List[Package] = []  # Nach Suche gefiltert
 
         # Pagination (gleiche Logik wie tkinter)
         self.current_page = 0
         self.items_per_page = 100
         self.total_pages = 0
+
+        # Suche
+        self.search_query = ""
 
         # Manager initialisieren (UNVERÄNDERT!)
         self.distro_info = get_distro_info()
@@ -235,6 +239,13 @@ class MyAppsWindow(Adw.ApplicationWindow):
         export_btn.set_icon_name("document-save-symbolic")
         export_btn.connect("clicked", self._on_export_clicked)
         header.pack_start(export_btn)
+
+        # Search Entry (zentral im Title-Bereich)
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.set_placeholder_text(_("Apps durchsuchen..."))
+        self.search_entry.set_size_request(300, -1)
+        self.search_entry.connect("search-changed", self._on_search_changed)
+        header.set_title_widget(self.search_entry)
 
         # Menu Button (rechts)
         menu_btn = Gtk.MenuButton()
@@ -506,10 +517,49 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_packages_loaded(self, packages):
         """Callback wenn Pakete geladen sind"""
+        self._apply_search_filter()
         self._update_pagination_controls()
         self._populate_current_view()
         self._set_status(f"{len(packages)} Apps " + _("geladen"))
         return GLib.SOURCE_REMOVE
+
+    def _on_search_changed(self, search_entry):
+        """Callback wenn Suchtext geändert wird"""
+        self.gui.search_query = search_entry.get_text().lower().strip()
+        self.gui.current_page = 0  # Zurück zu Seite 1
+        self._apply_search_filter()
+        self._update_pagination_controls()
+        self._populate_current_view()
+
+        # Status Update
+        if self.gui.search_query:
+            self._set_status(f"{len(self.gui.search_filtered_packages)} Apps " + _("gefunden"))
+        else:
+            self._set_status(f"{len(self.gui.filtered_packages)} Apps " + _("geladen"))
+
+    def _apply_search_filter(self):
+        """Wendet Suchfilter auf filtered_packages an"""
+        if not self.gui.search_query:
+            # Keine Suche: Zeige alle gefilterten Pakete
+            self.gui.search_filtered_packages = self.gui.filtered_packages
+            return
+
+        # Suche in Name und Beschreibung
+        query = self.gui.search_query
+        matching = []
+
+        for pkg in self.gui.filtered_packages:
+            # Suche in Name (case-insensitive)
+            if query in pkg.name.lower():
+                matching.append(pkg)
+                continue
+
+            # Suche in Beschreibung (falls vorhanden)
+            if pkg.description and query in pkg.description.lower():
+                matching.append(pkg)
+                continue
+
+        self.gui.search_filtered_packages = matching
 
     def _on_loading_error(self, error_msg):
         """Callback bei Lade-Fehler"""
@@ -530,12 +580,12 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Clear
         self.list_store.remove_all()
 
-        # Pagination Range
+        # Pagination Range (verwendet search_filtered_packages!)
         start_idx = self.gui.current_page * self.gui.items_per_page
-        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.filtered_packages))
+        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
 
         # Sortieren
-        sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
+        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
         # Hole lokalisierte Beschreibungen PARALLEL für dpkg-Pakete
@@ -580,12 +630,12 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Clear
         self.table_store.remove_all()
 
-        # Pagination Range
+        # Pagination Range (verwendet search_filtered_packages!)
         start_idx = self.gui.current_page * self.gui.items_per_page
-        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.filtered_packages))
+        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
 
         # Sortieren
-        sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
+        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
         # Add to Model (wrapped in PackageItem)
@@ -613,9 +663,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
         return None
 
     def _update_pagination_controls(self):
-        """Aktualisiert Pagination Controls"""
-        if self.gui.filtered_packages:
-            self.gui.total_pages = (len(self.gui.filtered_packages) + self.gui.items_per_page - 1) // self.gui.items_per_page
+        """Aktualisiert Pagination Controls (verwendet search_filtered_packages!)"""
+        if self.gui.search_filtered_packages:
+            self.gui.total_pages = (len(self.gui.search_filtered_packages) + self.gui.items_per_page - 1) // self.gui.items_per_page
         else:
             self.gui.total_pages = 0
 
@@ -626,10 +676,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Update Label
         if self.gui.total_pages > 0:
             start_idx = self.gui.current_page * self.gui.items_per_page + 1
-            end_idx = min((self.gui.current_page + 1) * self.gui.items_per_page, len(self.gui.filtered_packages))
+            end_idx = min((self.gui.current_page + 1) * self.gui.items_per_page, len(self.gui.search_filtered_packages))
             self.page_label.set_text(
                 f"{_('Seite')} {self.gui.current_page + 1} {_('von')} {self.gui.total_pages}  •  "
-                f"Apps {start_idx}-{end_idx} {_('von')} {len(self.gui.filtered_packages)}"
+                f"Apps {start_idx}-{end_idx} {_('von')} {len(self.gui.search_filtered_packages)}"
             )
         else:
             self.page_label.set_text(_("Keine Apps"))
@@ -660,7 +710,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_export_clicked(self, button):
         """Export Button Handler"""
-        if not self.gui.filtered_packages:
+        if not self.gui.search_filtered_packages:
             dialog = Adw.MessageDialog.new(self)
             dialog.set_heading(_("Keine Pakete"))
             dialog.set_body(_("Keine Pakete zum Exportieren vorhanden"))
@@ -713,8 +763,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
                 elif file_path.endswith(".json"):
                     fmt = "json"
 
-                # Export durchführen
-                success = Exporter.export(self.gui.filtered_packages, file_path, fmt)
+                # Export durchführen (verwendet search_filtered_packages!)
+                success = Exporter.export(self.gui.search_filtered_packages, file_path, fmt)
 
                 if success:
                     self._set_status(f"{_('Exportiert')}: {file_path}")
