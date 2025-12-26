@@ -38,6 +38,21 @@
       <caption xml:lang="de">Hauptfenster mit installierten Anwendungen</caption>
       <image>https://raw.githubusercontent.com/nicolettas-muggelbude/myapps/main/docs/screenshots/main-window.png</image>
     </screenshot>
+    <screenshot>
+      <caption>Table view with all package information</caption>
+      <caption xml:lang="de">Tabellenansicht mit allen Paket-Informationen</caption>
+      <image>https://raw.githubusercontent.com/nicolettas-muggelbude/myapps/main/docs/screenshots/table-view.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Search function in action</caption>
+      <caption xml:lang="de">Suchfunktion in Aktion</caption>
+      <image>https://raw.githubusercontent.com/nicolettas-muggelbude/myapps/main/docs/screenshots/search-demo.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Dark mode with Libadwaita integration</caption>
+      <caption xml:lang="de">Dark Mode mit Libadwaita-Integration</caption>
+      <image>https://raw.githubusercontent.com/nicolettas-muggelbude/myapps/main/docs/screenshots/dark-mode.png</image>
+    </screenshot>
   </screenshots>
 
   <url type="homepage">https://github.com/nicolettas-muggelbude/myapps</url>
