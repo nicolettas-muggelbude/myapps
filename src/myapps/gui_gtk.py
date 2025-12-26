@@ -168,6 +168,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self.table_view_container = self._create_table_view()
         self.stack.add_titled(self.table_view_container, "table", _("Tabelle"))
 
+        # View-Switch Handler: Repopulate bei Ansichtswechsel
+        self.stack.connect("notify::visible-child", lambda *_: self._populate_current_view())
+
         # View Switcher (für Stack)
         view_switcher = Gtk.StackSwitcher()
         view_switcher.set_stack(self.stack)
