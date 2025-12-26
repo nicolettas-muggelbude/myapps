@@ -710,78 +710,207 @@ class MyAppsWindow(Adw.ApplicationWindow):
         dialog.destroy()
 
     def _on_about(self, action, param):
-        """About Dialog - Freundlich und informativ wie vorher!"""
-        about = Adw.AboutWindow()
-        about.set_transient_for(self)
+        """About Dialog - Alles auf einer Seite wie vorher!"""
+        import webbrowser
 
-        # Basis-Infos
-        about.set_application_name("MyApps")
-        about.set_version(VERSION)
-        about.set_application_icon("system-software-install")  # System Icon
-        about.set_developer_name("Linux Guides DE Community")
-        about.set_license_type(Gtk.License.GPL_3_0)
-        about.set_copyright("© 2024 Linux Guides DE Community")
+        # Dialog-Fenster
+        dialog = Gtk.Window()
+        dialog.set_transient_for(self)
+        dialog.set_modal(True)
+        dialog.set_title(_("Über MyApps"))
+        dialog.set_default_size(550, 780)
 
-        # Freundliche Beschreibung
-        about.set_comments(_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"))
+        # ScrolledWindow für Inhalt
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        dialog.set_child(scrolled)
 
-        # Entwickler & Contributors
-        about.set_developers([
-            "nicolettas-muggelbude https://github.com/nicolettas-muggelbude",
-            "Linux Guides DE Community Contributors"
-        ])
+        # Hauptcontainer
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        main_box.set_margin_start(30)
+        main_box.set_margin_end(30)
+        main_box.set_margin_top(20)
+        main_box.set_margin_bottom(20)
+        scrolled.set_child(main_box)
 
-        # Credits - Wer hat geholfen?
-        about.add_credit_section(
-            _("Entwickelt für"),
-            ["Linux Guides DE Community https://t.me/LinuxGuidesDECommunity"]
+        # === TITEL ===
+        title_label = Gtk.Label(label="MyApps")
+        title_label.add_css_class("title-1")
+        title_label.set_margin_bottom(5)
+        main_box.append(title_label)
+
+        # Version
+        version_label = Gtk.Label(label=f"Version {VERSION}")
+        version_label.add_css_class("title-3")
+        version_label.add_css_class("dim-label")
+        version_label.set_margin_bottom(20)
+        main_box.append(version_label)
+
+        # Beschreibung
+        desc_label = Gtk.Label(
+            label=_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen")
         )
+        desc_label.set_wrap(True)
+        desc_label.set_max_width_chars(50)
+        desc_label.set_justify(Gtk.Justification.CENTER)
+        desc_label.set_margin_bottom(20)
+        main_box.append(desc_label)
 
-        about.add_credit_section(
-            _("UI Framework"),
-            ["GTK4 + Libadwaita https://gtk.org"]
+        # Separator
+        main_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+        # === LINKS ===
+        links_label = Gtk.Label(label="Links:")
+        links_label.add_css_class("title-4")
+        links_label.set_halign(Gtk.Align.START)
+        links_label.set_margin_top(15)
+        links_label.set_margin_bottom(5)
+        main_box.append(links_label)
+
+        # Link-Buttons
+        links = [
+            ("GitHub Repository", "https://github.com/nicolettas-muggelbude/myapps"),
+            ("Dokumentation", "https://github.com/nicolettas-muggelbude/myapps#readme"),
+            ("Fehler melden", "https://github.com/nicolettas-muggelbude/myapps/issues"),
+            ("Telegram Community", "https://t.me/LinuxGuidesDECommunity"),
+        ]
+
+        for link_text, url in links:
+            btn = Gtk.Button(label=link_text)
+            btn.connect("clicked", lambda b, u=url: webbrowser.open(u))
+            btn.set_margin_start(20)
+            btn.set_margin_end(20)
+            btn.set_margin_top(2)
+            btn.set_margin_bottom(2)
+            main_box.append(btn)
+
+        # Separator
+        sep2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep2.set_margin_top(15)
+        main_box.append(sep2)
+
+        # === UNTERSTÜTZEN ===
+        support_label = Gtk.Label(label="💙 Projekt unterstützen:")
+        support_label.add_css_class("title-4")
+        support_label.set_halign(Gtk.Align.START)
+        support_label.set_margin_top(15)
+        support_label.set_margin_bottom(5)
+        main_box.append(support_label)
+
+        support_text = Gtk.Label(
+            label="Wenn dir MyApps hilft, freue ich mich über eine kleine Spende!"
         )
+        support_text.set_wrap(True)
+        support_text.set_max_width_chars(50)
+        support_text.set_halign(Gtk.Align.START)
+        support_text.set_margin_start(20)
+        support_text.set_margin_bottom(10)
+        main_box.append(support_text)
 
-        # Danksagungen
-        about.add_acknowledgement_section(
-            _("Besonderer Dank an"),
-            ["Beta-Tester der Linux Guides DE Community",
-             "Alle Contributors auf GitHub"]
+        # Spenden-Button
+        donate_btn = Gtk.Button(label="💰 Über PayPal spenden")
+        donate_btn.add_css_class("suggested-action")
+        donate_btn.connect("clicked", lambda b: webbrowser.open("https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"))
+        donate_btn.set_margin_start(20)
+        donate_btn.set_margin_end(20)
+        donate_btn.set_margin_bottom(5)
+        main_box.append(donate_btn)
+
+        # Spenden-Hinweis
+        donate_hint = Gtk.Label(
+            label="Spenden werden von der PC-Wittfoot UG verwaltet."
         )
+        donate_hint.add_css_class("caption")
+        donate_hint.add_css_class("dim-label")
+        donate_hint.set_halign(Gtk.Align.START)
+        donate_hint.set_margin_start(20)
+        main_box.append(donate_hint)
 
-        # Links
-        about.set_website("https://github.com/nicolettas-muggelbude/myapps")
-        about.set_issue_url("https://github.com/nicolettas-muggelbude/myapps/issues")
-        about.set_support_url("https://t.me/LinuxGuidesDECommunity")
+        # Separator
+        sep3 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep3.set_margin_top(15)
+        main_box.append(sep3)
 
-        # Spenden - Freundlich formuliert!
-        about.add_link(
-            "💙 Projekt unterstützen (PayPal)",
-            "https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"
+        # === CREDITS ===
+        credits_label = Gtk.Label(label="Credits:")
+        credits_label.add_css_class("title-4")
+        credits_label.set_halign(Gtk.Align.START)
+        credits_label.set_margin_top(15)
+        credits_label.set_margin_bottom(5)
+        main_box.append(credits_label)
+
+        credit_items = [
+            "Entwickelt für die Linux Guides DE Community",
+            "UI basiert auf GTK4 + Libadwaita",
+            "Danke an alle Beta-Tester und Contributors!"
+        ]
+
+        for credit in credit_items:
+            credit_label = Gtk.Label(label=credit)
+            credit_label.set_halign(Gtk.Align.START)
+            credit_label.set_margin_start(20)
+            credit_label.set_margin_top(2)
+            main_box.append(credit_label)
+
+        # Separator
+        sep4 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep4.set_margin_top(15)
+        main_box.append(sep4)
+
+        # === NEU IN 0.2.0 ===
+        whats_new_label = Gtk.Label(label="✨ Neu in Version 0.2.0:")
+        whats_new_label.add_css_class("title-4")
+        whats_new_label.set_halign(Gtk.Align.START)
+        whats_new_label.set_margin_top(15)
+        whats_new_label.set_margin_bottom(5)
+        main_box.append(whats_new_label)
+
+        new_features = [
+            "• Moderne GTK4 + Libadwaita Oberfläche",
+            "• Virtual Scrolling für bessere Performance",
+            "• Deutsche Beschreibungen in Listenansicht",
+            "• Schnellere Tabellenansicht",
+            "• Verbesserte Tooltips"
+        ]
+
+        for feature in new_features:
+            feature_label = Gtk.Label(label=feature)
+            feature_label.set_halign(Gtk.Align.START)
+            feature_label.set_margin_start(20)
+            feature_label.set_margin_top(2)
+            main_box.append(feature_label)
+
+        # Danke-Text
+        thanks_label = Gtk.Label(label="Danke fürs Testen! 🎉")
+        thanks_label.set_halign(Gtk.Align.START)
+        thanks_label.set_margin_start(20)
+        thanks_label.set_margin_top(10)
+        main_box.append(thanks_label)
+
+        # Separator
+        sep5 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep5.set_margin_top(15)
+        main_box.append(sep5)
+
+        # === LIZENZ ===
+        license_label = Gtk.Label(
+            label="Lizenziert unter GNU General Public License v3.0"
         )
-        about.add_link(
-            _("Impressum"),
-            "https://nicolettas-muggelbude.github.io/myapps/impressum"
-        )
-        about.add_link(
-            _("Datenschutz"),
-            "https://nicolettas-muggelbude.github.io/myapps/datenschutz"
-        )
+        license_label.add_css_class("dim-label")
+        license_label.set_margin_top(15)
+        license_label.set_margin_bottom(15)
+        main_box.append(license_label)
 
-        # Release Notes - Was ist neu?
-        about.set_release_notes(_(
-            "<p><b>Neu in Version 0.2.0:</b></p>"
-            "<ul>"
-            "<li>Moderne GTK4 + Libadwaita Oberfläche</li>"
-            "<li>Virtual Scrolling für bessere Performance</li>"
-            "<li>Deutsche Beschreibungen in Listenansicht</li>"
-            "<li>Schnellere Tabellenansicht mit englischen Beschreibungen</li>"
-            "<li>Verbesserte Tooltips</li>"
-            "</ul>"
-            "<p>Danke fürs Testen! 🎉</p>"
-        ))
+        # === SCHLIESSEN-BUTTON ===
+        close_btn = Gtk.Button(label=_("Schließen"))
+        close_btn.add_css_class("pill")
+        close_btn.set_halign(Gtk.Align.CENTER)
+        close_btn.connect("clicked", lambda b: dialog.close())
+        close_btn.set_size_request(200, -1)
+        close_btn.set_margin_bottom(10)
+        main_box.append(close_btn)
 
-        about.present()
+        dialog.present()
 
     def _set_status(self, message):
         """Setzt Statusbar Text"""
