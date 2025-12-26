@@ -710,20 +710,76 @@ class MyAppsWindow(Adw.ApplicationWindow):
         dialog.destroy()
 
     def _on_about(self, action, param):
-        """About Dialog"""
+        """About Dialog - Freundlich und informativ wie vorher!"""
         about = Adw.AboutWindow()
         about.set_transient_for(self)
+
+        # Basis-Infos
         about.set_application_name("MyApps")
         about.set_version(VERSION)
+        about.set_application_icon("system-software-install")  # System Icon
         about.set_developer_name("Linux Guides DE Community")
         about.set_license_type(Gtk.License.GPL_3_0)
-        about.set_website("https://github.com/nicolettas-muggelbude/myapps")
-        about.set_issue_url("https://github.com/nicolettas-muggelbude/myapps/issues")
-        about.set_developers(["nicolettas-muggelbude", "Linux Guides DE Community Contributors"])
+        about.set_copyright("© 2024 Linux Guides DE Community")
+
+        # Freundliche Beschreibung
         about.set_comments(_("Tool zum Auflisten und Verwalten installierter Linux-Anwendungen"))
 
-        # Spenden-Link (PC-Wittfoot UG verwaltet NUR Spenden, nicht Entwicklung!)
-        about.add_link(_("Spenden via PayPal (verwaltet von PC-Wittfoot UG)"), "https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL")
+        # Entwickler & Contributors
+        about.set_developers([
+            "nicolettas-muggelbude https://github.com/nicolettas-muggelbude",
+            "Linux Guides DE Community Contributors"
+        ])
+
+        # Credits - Wer hat geholfen?
+        about.add_credit_section(
+            _("Entwickelt für"),
+            ["Linux Guides DE Community https://t.me/LinuxGuidesDECommunity"]
+        )
+
+        about.add_credit_section(
+            _("UI Framework"),
+            ["GTK4 + Libadwaita https://gtk.org"]
+        )
+
+        # Danksagungen
+        about.add_acknowledgement_section(
+            _("Besonderer Dank an"),
+            ["Beta-Tester der Linux Guides DE Community",
+             "Alle Contributors auf GitHub"]
+        )
+
+        # Links
+        about.set_website("https://github.com/nicolettas-muggelbude/myapps")
+        about.set_issue_url("https://github.com/nicolettas-muggelbude/myapps/issues")
+        about.set_support_url("https://t.me/LinuxGuidesDECommunity")
+
+        # Spenden - Freundlich formuliert!
+        about.add_link(
+            "💙 Projekt unterstützen (PayPal)",
+            "https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"
+        )
+        about.add_link(
+            _("Impressum"),
+            "https://nicolettas-muggelbude.github.io/myapps/impressum"
+        )
+        about.add_link(
+            _("Datenschutz"),
+            "https://nicolettas-muggelbude.github.io/myapps/datenschutz"
+        )
+
+        # Release Notes - Was ist neu?
+        about.set_release_notes(_(
+            "<p><b>Neu in Version 0.2.0:</b></p>"
+            "<ul>"
+            "<li>Moderne GTK4 + Libadwaita Oberfläche</li>"
+            "<li>Virtual Scrolling für bessere Performance</li>"
+            "<li>Deutsche Beschreibungen in Listenansicht</li>"
+            "<li>Schnellere Tabellenansicht mit englischen Beschreibungen</li>"
+            "<li>Verbesserte Tooltips</li>"
+            "</ul>"
+            "<p>Danke fürs Testen! 🎉</p>"
+        ))
 
         about.present()
 
