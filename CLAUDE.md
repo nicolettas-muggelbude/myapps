@@ -474,38 +474,31 @@ from pathlib import Path
 - Searchbar implementiert (Issue #2)
 - GitHub Issues kommentiert und kommuniziert
 - Screenshots-Ordner erstellt mit README
+- Screenshots erstellt (4 Stück: main-window, table-view, search-demo, dark-mode)
+- **Flathub Submission erfolgreich!** 🎉
+  - Pull Request: https://github.com/flathub/flathub/pull/7404
+  - Status: Wartet auf Review
+  - Datum: 26.12.2024
 
 ### 🔄 Nächste Schritte für User
-1. **Screenshots erstellen** für Flathub: ✅ ERLEDIGT
-   - `docs/screenshots/main-window.png` (86 KB) ✅
-   - `docs/screenshots/table-view.png` (154 KB) ✅
-   - `docs/screenshots/search-demo.png` (37 KB) ✅
-   - `docs/screenshots/dark-mode.png` (84 KB) ✅
-   - MetaInfo XML aktualisiert ✅
+1. ✅ **Screenshots erstellen** - ERLEDIGT
+2. ✅ **Flatpak bauen und testen** - ERLEDIGT (erfolgreich getestet)
+3. ✅ **Flathub Submission** - ERLEDIGT (PR #7404)
 
-2. **Flatpak bauen und testen** (Optional):
-   ```bash
-   # flatpak-builder installieren (falls nicht vorhanden)
-   sudo apt install flatpak-builder
+4. **Flathub Review abwarten**:
+   - Beobachte PR #7404 für Updates
+   - Reagiere auf Feedback von Maintainern
+   - Review-Prozess: 1-2 Wochen erwartet
 
-   # Flatpak bauen und installieren
-   cd /home/nicole/projekte/app_lister
-   flatpak-builder --user --install --force-clean build-dir io.github.nicolettas-muggelbude.myapps.yml
-
-   # Testen
-   flatpak run io.github.nicolettas-muggelbude.myapps
-   ```
-
-3. **Community Testing**:
+5. **Community Testing** (parallel):
    - v0.2.0 DEB-Paket auf verschiedenen Systemen testen
    - Feedback sammeln via GitHub Issues
    - Bug-Reports bearbeiten
 
-4. **Flathub Submission** (nach Screenshots):
-   - Fork von flathub/flathub Repository
-   - io.github.nicolettas-muggelbude.myapps Manifest einreichen
-   - Screenshots hochladen
-   - Pull Request erstellen
+6. **Nach Flathub Approval**:
+   - Ankündigung in Linux Guides DE Community
+   - README aktualisieren mit Flathub-Installation
+   - Social Media Ankündigung
 
 ### 🎯 Geplant für v0.3.0
 - Virtual Scrolling ohne Pagination (echtes ListView-Scrolling)
