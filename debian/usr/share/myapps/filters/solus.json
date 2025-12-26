@@ -1,0 +1,16 @@
+{
+  "description": "Solus spezifische System-App-Filter",
+  "version": "1.0",
+  "keywords": [
+    "eopkg",
+    "solus-",
+    "budgie-",
+    "solbuild",
+    "usysconf",
+    "ypkg",
+    "solus-hardware-config",
+    "solus-sc",
+    "system.base",
+    "system.devel"
+  ]
+}
