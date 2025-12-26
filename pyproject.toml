@@ -29,8 +29,13 @@ classifiers = [
 ]
 
 dependencies = [
-    "ttkbootstrap>=1.10.1",
-    "Pillow>=10.0.0",
+    "PyGObject>=3.42.0",  # GTK4 Bindings
+    "Pillow>=10.0.0",     # Icon Loading
+]
+
+[project.optional-dependencies]
+legacy = [
+    "ttkbootstrap>=1.10.1",  # Fallback für alte tkinter GUI
 ]
 
 [project.urls]

@@ -34,16 +34,16 @@ def main():
         logger.info(f"Basis-Verzeichnis: {base_dir}")
 
         # Importiere GUI-Modul
-        from .gui import MyAppsGUI
+        from .gui_gtk import MyAppsGUI  # GTK4 GUI (v0.2.0+)
         from .i18n import init_i18n
 
         # Initialisiere i18n
         locale_dir = base_dir / "locales"
         _ = init_i18n(str(locale_dir))
 
-        # Erstelle und starte GUI
+        # Erstelle und starte GTK4 App
         app = MyAppsGUI(str(base_dir))
-        app.run()
+        app.run(sys.argv)
 
     except KeyboardInterrupt:
         logger.info("MyApps durch Benutzer beendet")
