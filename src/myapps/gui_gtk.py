@@ -149,17 +149,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         css = """
         /* MyApps GTK4 Custom Styles */
 
-        /* List Item Hover-Effekt */
-        .package-item {
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: background-color 200ms ease;
-        }
-
-        .package-item:hover {
-            background-color: alpha(@accent_bg_color, 0.1);
-        }
-
         /* Pagination Info */
         .pagination-info {
             opacity: 0.7;
@@ -392,9 +381,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Tooltip: Immer setzen (Beschreibung oder Fallback)
         tooltip = pkg.description if pkg.description else f"{pkg.name}\n{pkg.version} ({pkg.package_type.upper()})"
         box.set_tooltip_text(tooltip)
-
-        # Hover-Effekt: CSS-Klasse hinzufügen
-        box.add_css_class("package-item")
 
         # Context Menu Handler
         def on_right_click(gesture, n_press, x, y):
