@@ -380,6 +380,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         # Tooltip: Immer setzen (Beschreibung oder Fallback)
         tooltip = pkg.description if pkg.description else f"{pkg.name}\n{pkg.version} ({pkg.package_type.upper()})"
+        box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
         # Context Menu Handler
