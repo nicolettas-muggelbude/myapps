@@ -524,20 +524,40 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
+        # Hole lokalisierte Beschreibungen PARALLEL für dpkg-Pakete
+        deb_packages = [pkg for pkg in page_packages if pkg.package_type == "deb"]
+        localized_descriptions = {}
+
+        if deb_packages:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                # Starte parallele apt-cache Aufrufe
+                future_to_pkg = {
+                    executor.submit(self._get_localized_description, pkg.name): pkg.name
+                    for pkg in deb_packages
+                }
+
+                # Sammle Ergebnisse
+                for future in as_completed(future_to_pkg):
+                    pkg_name = future_to_pkg[future]
+                    try:
+                        desc = future.result()
+                        if desc:
+                            localized_descriptions[pkg_name] = desc
+                    except Exception:
+                        pass  # Fallback auf englische Beschreibung
+
         # Add to Model (wrapped in PackageItem) mit lokalisierten Beschreibungen
+        from .package_manager import Package
         for pkg in page_packages:
-            # Für dpkg-Pakete: Hole lokalisierte Beschreibung (nur für sichtbare 100 Pakete)
-            if pkg.package_type == "deb":
-                localized_desc = self._get_localized_description(pkg.name)
-                if localized_desc:
-                    # Erstelle temporäres Package mit lokalisierter Beschreibung
-                    from .package_manager import Package
-                    pkg = Package(
-                        name=pkg.name,
-                        version=pkg.version,
-                        package_type=pkg.package_type,
-                        description=localized_desc
-                    )
+            # Nutze lokalisierte Beschreibung falls vorhanden
+            if pkg.name in localized_descriptions:
+                pkg = Package(
+                    name=pkg.name,
+                    version=pkg.version,
+                    package_type=pkg.package_type,
+                    description=localized_descriptions[pkg.name]
+                )
 
             self.list_store.append(PackageItem(pkg))
 
