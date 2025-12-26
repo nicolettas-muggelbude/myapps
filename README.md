@@ -87,7 +87,7 @@ sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 type
 
 **📦 Professionelle Pakete für 11 Distributionen über openSUSE Build Service:**
 
-[![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
+[![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
 
 **Debian/Ubuntu:**
 ```bash
@@ -122,7 +122,7 @@ sudo zypper refresh && sudo zypper install myapps
 - Fedora 42, 43
 - openSUSE Leap 16, Slowroll
 
-[Alle OBS-Pakete ansehen →](https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps)
+[Alle OBS-Pakete ansehen →](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
 
 ---
 

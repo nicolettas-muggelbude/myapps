@@ -1,7 +1,7 @@
 #!/bin/bash
 # MyApps DEB-Paket Build-Script
 # ⚠️  WARNUNG: Dieses Paket ist NUR für Testing/Development!
-# ⚠️  Für Production bitte OBS-Pakete nutzen: https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+# ⚠️  Für Production bitte OBS-Pakete nutzen: https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps
 
 set -e
 
@@ -18,7 +18,7 @@ PACKAGE_NAME="myapps_${VERSION}_all.deb"
 
 echo -e "${BLUE}=== MyApps DEB-Paket Builder ===${NC}"
 echo -e "${YELLOW}⚠️  WARNING: This package is for TESTING/DEVELOPMENT only!${NC}"
-echo -e "${YELLOW}⚠️  For production use: https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps${NC}"
+echo -e "${YELLOW}⚠️  For production use: https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps${NC}"
 echo ""
 echo -e "Version: ${GREEN}${VERSION}${NC}"
 echo ""
