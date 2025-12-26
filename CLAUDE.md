@@ -476,15 +476,23 @@ from pathlib import Path
 - Screenshots-Ordner erstellt mit README
 
 ### 🔄 Nächste Schritte für User
-1. **Screenshots erstellen** für Flathub:
-   - `docs/screenshots/main-window.png` (Pflicht)
-   - Optional: table-view.png, search-demo.png, dark-mode.png
-   - Empfohlene Größe: 1200x850px
-   - Siehe `docs/screenshots/README.md` für Details
+1. **Screenshots erstellen** für Flathub: ✅ ERLEDIGT
+   - `docs/screenshots/main-window.png` (86 KB) ✅
+   - `docs/screenshots/table-view.png` (154 KB) ✅
+   - `docs/screenshots/search-demo.png` (37 KB) ✅
+   - `docs/screenshots/dark-mode.png` (84 KB) ✅
+   - MetaInfo XML aktualisiert ✅
 
 2. **Flatpak bauen und testen** (Optional):
    ```bash
+   # flatpak-builder installieren (falls nicht vorhanden)
+   sudo apt install flatpak-builder
+
+   # Flatpak bauen und installieren
+   cd /home/nicole/projekte/app_lister
    flatpak-builder --user --install --force-clean build-dir io.github.nicolettas-muggelbude.myapps.yml
+
+   # Testen
    flatpak run io.github.nicolettas-muggelbude.myapps
    ```
 
