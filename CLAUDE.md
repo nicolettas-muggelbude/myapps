@@ -599,79 +599,64 @@ sudo zypper install myapps
 ## Aktueller Projekt-Stand (26.12.2024)
 
 ### ✅ Abgeschlossen
-- v0.2.0 Release vollständig
-- DEB-Paket gebaut und zu GitHub Release hinzugefügt
-- Flatpak-Manifest, Desktop Entry und MetaInfo XML erstellt
-- Searchbar implementiert (Issue #2)
-- GitHub Issues kommentiert und kommuniziert
-- Screenshots-Ordner erstellt mit README
-- Screenshots erstellt (4 Stück: main-window, table-view, search-demo, dark-mode)
-- **OBS Builds erfolgreich** - 11 Distributionen (Debian, Ubuntu, Fedora, openSUSE)
-- **AUR-Paket live** - https://aur.archlinux.org/packages/myapps
-- **Flathub Submission eingereicht** 🎉
+- **v0.2.0 Release** vollständig
+  - DEB-Paket gebaut und zu GitHub Release hinzugefügt
+  - Flatpak-Manifest, Desktop Entry und MetaInfo XML erstellt
+  - Searchbar implementiert (Issue #2)
+  - Screenshots erstellt (4 Stück: main-window, table-view, search-demo, dark-mode)
+
+- **OBS (openSUSE Build Service)** ✅ KOMPLETT
+  - Account: https://build.opensuse.org
+  - Projekt: home:nicoletta:myapps
+  - **11 Distributionen erfolgreich gebaut:**
+    - Fedora 41, 42, 43
+    - openSUSE Leap 16, Slowroll, Tumbleweed
+    - Debian 12 (Bookworm), 13 (Trixie)
+    - Ubuntu 22.04 LTS, 24.04 LTS, 25.10
+  - **Download-Portal:** https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps
+  - **Behobene Probleme:**
+    - Menu-Integration mit %post/%postun Scripts (RPM) und postinst/postrm (DEB)
+    - Icon-Deinstallation explizit in postrm implementiert
+    - Locales-Fehler behoben (aus myapps.install entfernt)
+    - Icon-Verzeichnisse mit hicolor-icon-theme dependency + %dir Direktiven
+
+- **AUR (Arch User Repository)** ✅ KOMPLETT
+  - **Live:** https://aur.archlinux.org/packages/myapps
+  - PKGBUILD + .SRCINFO hochgeladen
+  - Erfolgreich getestet mit makepkg -si
+
+- **Flathub Submission** ❌ ABGELEHNT
   - Pull Request: https://github.com/flathub/flathub/pull/7404
-  - Status: **Wartet auf Exception-Genehmigung**
-  - Datum: 26.12.2024
-  - **Problem:** MyApps braucht Zugriff auf /var/lib/* für Paketmanager-DBs
-  - **Lösung:** Exception bei Flathub beantragt
-  - **Build-Fehler:**
-    - `finish-args-host-var-access` - /var/lib Zugriff verboten (Exception beantragt)
-    - `runtime-is-eol-org.gnome.Platform-47` - Runtime veraltet (Antwort abwarten)
+  - Grund: /var/lib Zugriff wird generell nicht gewährt (Sicherheitspolitik)
+  - Alternative: OBS-Pakete (native System-Integration)
+  - PR sauber geschlossen am 26.12.2024
 
-### 🔄 Nächste Schritte für User
-1. ✅ **Screenshots erstellen** - ERLEDIGT
-2. ✅ **Flatpak bauen und testen** - ERLEDIGT (erfolgreich getestet)
-3. ✅ **Flathub Submission** - ERLEDIGT (PR #7404)
-4. ✅ **Exception-Anfrage gestellt** - ERLEDIGT
-5. ❌ **Flathub ABGELEHNT** - "then this application is not suitable for flathub"
-   - **Grund:** /var/lib Zugriff wird generell nicht gewährt (Sicherheitspolitik)
-   - **Alternative:** openSUSE Build Service (OBS) für native Pakete
-   - **PR geschlossen:** Sauber beendet am 26.12.2024
+- **Packaging-Strategie festgelegt:**
+  - **Production (Empfohlen):** OBS (11 Distros) + AUR (Arch)
+  - **Testing Only:** GitHub DEB (bundelt Pillow, nicht für Production)
+  - **Nicht verfügbar:** Flatpak (Flathub abgelehnt)
 
-6. **OBS Setup** ⏳ (AKTUELL):
-   - ✅ **OBS Account erstellt:** https://build.opensuse.org
-   - ✅ **Projekt erstellt:** home:nicoletta:myapps
-   - ✅ **Package erstellt:** myapps
-   - ✅ **Source Tarball hochgeladen:** myapps-0.2.0.tar.gz (5.7 MB)
-   - ✅ **RPM .spec Datei hochgeladen:** myapps.spec (mit hicolor-icon-theme Fix + %dir Direktiven)
-   - ✅ **Debian-Dateien hochgeladen:** debian.control, debian.rules, debian.changelog
-   - ⏳ **Build-Status:** Builds laufen für alle Distributionen!
+- **Dokumentation vollständig überarbeitet:**
+  - README.md + README.en.md: OBS + AUR als primäre Installationsmethoden
+  - build-deb.sh: Warnhinweise für Testing-Only-Status hinzugefügt
+  - GitHub Release Notes v0.2.0 aktualisiert
+  - OBS-Links auf benutzerfreundliches Download-Portal geändert (software.opensuse.org)
 
-   **Build-Status (11 Distributionen):**
-   - ✅ **Fedora 41, 42, 43** - Erfolgreich gebaut!
-   - ✅ **openSUSE Leap 16, Slowroll, Tumbleweed** - Erfolgreich gebaut!
-   - ✅ **Debian 12** (Bookworm) - Erfolgreich gebaut!
-   - ✅ **Debian 13** (Trixie) - Erfolgreich gebaut!
-   - ✅ **Ubuntu 22.04 LTS** (Jammy) - Erfolgreich gebaut!
-   - ✅ **Ubuntu 24.04 LTS** (Noble) - Erfolgreich gebaut!
-   - ✅ **Ubuntu 25.10** (Plucky) - Erfolgreich gebaut!
+- **Bug-Reports bearbeitet:**
+  - Issue #13, #14 (Pillow-Import-Fehler) → auf OBS-Pakete verwiesen
+  - Menu-Integration-Problem (Mint) → behoben in build-deb.sh + OBS debian/
+  - Icon-Deinstallation (Debian) → behoben mit explizitem rm -f in postrm
 
-   **Behobene Build-Probleme:**
-   - ~~Icon-Verzeichnisse nicht owned (openSUSE)~~ → **BEHOBEN** (hicolor-icon-theme dependency + %dir Direktiven)
-   - ~~Debian/Ubuntu excluded~~ → **BEHOBEN** (debian.tar.gz mit control, rules, changelog, source/options)
-   - ~~pybuild-plugin-pyproject nicht verfügbar~~ → **BEHOBEN** (setup.py wird während Build generiert)
-   - ~~dpkg-source unexpected changes~~ → **BEHOBEN** (extend-diff-ignore in debian/source/options)
+### 🔄 Aktuell laufend
+- **Community Testing** (v0.2.0):
+  - Testing auf verschiedenen Systemen
+  - Feedback sammeln via GitHub Issues
+  - Bug-Reports bearbeiten
 
-7. ✅ **OBS Build-Erfolg erreicht!** Alle 11 Distributionen erfolgreich gebaut!
-
-8. **AUR-Paket (Arch Linux)** ✅ (ABGESCHLOSSEN):
-   - ✅ **PKGBUILD erstellt** - Arch Linux Build-Script
-   - ✅ **AUR Account erstellt** - https://aur.archlinux.org
-   - ✅ **SSH-Key zu AUR hinzugefügt**
-   - ✅ **AUR Repository geklont** - `git clone ssh://aur@aur.archlinux.org/myapps.git`
-   - ✅ **PKGBUILD + .SRCINFO hochgeladen**
-   - ✅ **Live auf AUR:** https://aur.archlinux.org/packages/myapps
-
-9. **Nach kompletter Paketierung:**
-   - Repository-URLs in README eintragen (OBS + AUR)
-   - Installations-Anleitung für alle Distros schreiben
-   - Ankündigung in Linux Guides DE Community
-   - v0.2.0 als stabil markieren
-
-8. **Community Testing** (parallel):
-   - v0.2.0 DEB-Paket auf verschiedenen Systemen testen
-   - Feedback sammeln via GitHub Issues
-   - Bug-Reports bearbeiten
+### 📋 Nächste Schritte
+- Ankündigung in Linux Guides DE Community
+- v0.2.0 nach erfolgreichem Community-Testing als stabil markieren
+- Planung für v0.3.0 Features beginnen
 
 ### 🎯 Geplant für v0.3.0
 - Virtual Scrolling ohne Pagination (echtes ListView-Scrolling)
