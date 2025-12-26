@@ -66,37 +66,59 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 
 ## Installation
 
-### From DEB Package (Debian/Ubuntu/Mint)
+### Prerequisites
+
+**Since version 0.2.0, MyApps requires GTK4 + Libadwaita:**
 
 ```bash
-# Download DEB package from release
-sudo dpkg -i myapps_0.1.0_all.deb
+# Debian/Ubuntu/Mint
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
+
+# Arch/Manjaro
+sudo pacman -S python-gobject gtk4 libadwaita python-pillow
+
+# Fedora/RHEL/CentOS
+sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
+
+# openSUSE
+sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
+```
+
+### From DEB Package (Debian/Ubuntu/Mint)
+
+[![Download DEB](https://img.shields.io/badge/Download-DEB_Package_v0.2.0-0078D4?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+
+```bash
+# After download, install
+sudo dpkg -i myapps_0.2.0_all.deb
+
+# If dependencies are missing
+sudo apt-get install -f
 
 # Launch
 myapps
 ```
 
-### As AppImage (all distributions)
+### As Flatpak (recommended - all distributions)
+
+**Recommended since version 0.2.0:**
 
 ```bash
-# Download AppImage from release
-chmod +x MyApps-0.1.0-x86_64.AppImage
+# Install Flatpak (if not already installed)
+# Debian/Ubuntu: sudo apt install flatpak
+# Arch: sudo pacman -S flatpak
+# Fedora: sudo dnf install flatpak
+
+# Install MyApps (not yet available - Flathub review in progress)
+# flatpak install flathub io.github.nicolettas-muggelbude.myapps
 
 # Launch
-./MyApps-0.1.0-x86_64.AppImage
+# flatpak run io.github.nicolettas-muggelbude.myapps
 ```
 
-**Note:** The AppImage requires `python3`, `python3-tk` and `python3-pil` on your system:
-```bash
-# Debian/Ubuntu/Mint
-sudo apt install python3 python3-tk python3-pil python3-pil.imagetk
+### ~~As AppImage~~ (discontinued since v0.2.0)
 
-# Arch/Manjaro
-sudo pacman -S python tk python-pillow
-
-# Fedora
-sudo dnf install python3 python3-tkinter python3-pillow python3-pillow-tk
-```
+**Reason:** GTK4 dependencies are difficult to bundle in AppImage. Use DEB or Flatpak instead.
 
 ### From Source (Development)
 

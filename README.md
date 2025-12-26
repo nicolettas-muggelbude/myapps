@@ -85,9 +85,14 @@ sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 type
 
 ### Aus DEB-Paket (Debian/Ubuntu/Mint)
 
+[![Download DEB](https://img.shields.io/badge/Download-DEB_Paket_v0.2.0-0078D4?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+
 ```bash
-# Download des DEB-Pakets aus dem Release
+# Nach dem Download installieren
 sudo dpkg -i myapps_0.2.0_all.deb
+
+# Falls Dependencies fehlen
+sudo apt-get install -f
 
 # Starten
 myapps
@@ -103,11 +108,11 @@ myapps
 # Arch: sudo pacman -S flatpak
 # Fedora: sudo dnf install flatpak
 
-# MyApps installieren (noch nicht verfügbar - Release kommt bald)
-# flatpak install flathub de.pc-wittfoot.myapps
+# MyApps installieren (noch nicht verfügbar - Flathub Review läuft)
+# flatpak install flathub io.github.nicolettas-muggelbude.myapps
 
 # Starten
-# flatpak run de.pc-wittfoot.myapps
+# flatpak run io.github.nicolettas-muggelbude.myapps
 ```
 
 ### ~~Als AppImage~~ (discontinued ab v0.2.0)
