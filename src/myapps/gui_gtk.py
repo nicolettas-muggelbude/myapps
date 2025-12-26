@@ -378,8 +378,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.name_label.set_text(pkg.name)
         box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
 
-        # Tooltip: Immer setzen (Beschreibung oder Fallback)
-        tooltip = pkg.description if pkg.description else f"{pkg.name}\n{pkg.version} ({pkg.package_type.upper()})"
+        # Tooltip: Umfassende Paket-Informationen
+        tooltip_lines = [
+            f"📦 {pkg.name}",
+            f"📌 Version: {pkg.version}",
+            f"🔧 Typ: {pkg.package_type.upper()}",
+        ]
+        if pkg.description:
+            tooltip_lines.append(f"\n📄 {pkg.description}")
+
+        tooltip = "\n".join(tooltip_lines)
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
