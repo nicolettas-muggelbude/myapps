@@ -135,10 +135,45 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self.set_title(f"MyApps v{VERSION}")
         self.set_default_size(1200, 850)
 
+        # CSS Styling laden
+        self._load_css()
+
         # UI aufbauen
         self._build_ui()
 
         logger.info("Hauptfenster erstellt")
+
+    def _load_css(self):
+        """Lädt Custom CSS für Styling"""
+        css_provider = Gtk.CssProvider()
+        css = """
+        /* MyApps GTK4 Custom Styles */
+
+        /* List Item Hover-Effekt */
+        .package-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 200ms ease;
+        }
+
+        .package-item:hover {
+            background-color: alpha(@accent_bg_color, 0.1);
+        }
+
+        /* Pagination Info */
+        .pagination-info {
+            opacity: 0.7;
+        }
+        """
+        css_provider.load_from_data(css.encode())
+
+        # Zu Display hinzufügen
+        Gtk.StyleContext.add_provider_for_display(
+            self.get_display(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+        logger.info("CSS Styling geladen")
 
     def _build_ui(self):
         """Baut die GTK4 UI auf"""
@@ -347,16 +382,19 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_list_bind(self, factory, list_item):
         """Bind: Verknüpft Package-Daten mit Widget"""
-        pkg = list_item.get_item()  # Package-Objekt
+        pkg = list_item.get_item()  # PackageItem-Objekt
         box = list_item.get_child()
 
         # Set Data
         box.name_label.set_text(pkg.name)
         box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
 
-        # Tooltip mit Beschreibung
-        if pkg.description:
-            box.set_tooltip_text(pkg.description)
+        # Tooltip: Immer setzen (Beschreibung oder Fallback)
+        tooltip = pkg.description if pkg.description else f"{pkg.name}\n{pkg.version} ({pkg.package_type.upper()})"
+        box.set_tooltip_text(tooltip)
+
+        # Hover-Effekt: CSS-Klasse hinzufügen
+        box.add_css_class("package-item")
 
         # Context Menu Handler
         def on_right_click(gesture, n_press, x, y):
