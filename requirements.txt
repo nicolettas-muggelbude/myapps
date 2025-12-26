@@ -1,10 +1,15 @@
 # MyApps Dependencies
 
-# GUI Framework
-ttkbootstrap>=1.10.1
+# WICHTIG: GTK4-Dependencies müssen über den System-Package-Manager installiert werden!
+# Siehe README.md oder CONTRIBUTING.md für Installationsanweisungen
 
 # Icon/Image-Verarbeitung
 Pillow>=10.0.0
 
-# Optional: Für Packaging
-# PyInstaller>=6.0.0  # Für AppImage/Executable
+# Legacy GUI (nur für v0.1.x)
+# ttkbootstrap>=1.10.1
+
+# Entwickler-Dependencies (optional)
+# pytest>=7.0.0
+# black>=23.0.0
+# flake8>=6.0.0

@@ -2,6 +2,8 @@
 
 Vielen Dank für dein Interesse an MyApps! Wir freuen uns über Beiträge aus der Community.
 
+> **Hinweis:** Ab Version 0.2.0 nutzt MyApps **GTK4 + Libadwaita** statt tkinter. Bitte stelle sicher, dass du die neuen System-Dependencies installiert hast (siehe unten).
+
 ## Wie kann ich beitragen?
 
 ### Filter-Keywords vorschlagen
@@ -43,21 +45,42 @@ Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neu
 
 ## Entwicklungsumgebung einrichten
 
+### Voraussetzungen (GTK4 + Libadwaita)
+
+**Ab Version 0.2.0 benötigt MyApps GTK4 und Libadwaita!**
+
+```bash
+# Debian/Ubuntu/Mint
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
+
+# Arch/Manjaro
+sudo pacman -S python-gobject gtk4 libadwaita python-pillow
+
+# Fedora/RHEL/CentOS
+sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
+
+# openSUSE
+sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
+```
+
+### Installation
+
 ```bash
 # Repository klonen
 git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
-# Virtual Environment erstellen
-python3 -m venv venv
-source venv/bin/activate
-
-# Dependencies installieren
+# Python-Dependencies installieren (minimal, da GTK4 über System installiert ist)
 pip install -r requirements.txt
+
+# ODER: Mit pip install in editable mode
+pip install -e .
 
 # App starten
 python3 -m src.myapps.main
 ```
+
+**Wichtig:** PyGObject/GTK4 kann NICHT via pip installiert werden - nur über den System-Package-Manager!
 
 ## Pakete bauen und testen
 
@@ -126,8 +149,25 @@ def meine_funktion(param: str) -> bool:
 Bevor du einen Pull Request erstellst:
 
 1. Teste die App auf deiner Distribution
-2. Prüfe ob alle Features funktionieren
+2. Prüfe ob alle Features funktionieren:
+   - **Listenansicht**: Icons, deutsche Beschreibungen, Tooltips
+   - **Tabellenansicht**: Alle Spalten sichtbar, schnelles Umschalten
+   - **Pagination**: Vor/Zurück-Navigation funktioniert
+   - **Export**: TXT, CSV, JSON-Export funktioniert
+   - **About-Dialog**: Alle Infos und Links funktionieren
+   - **Rechtsklick-Menü**: "Als System-App markieren" funktioniert
 3. Füge Screenshots bei GUI-Änderungen hinzu
+
+### GTK4-spezifische Tests
+
+Für Version 0.2.0+ mit GTK4:
+
+- [ ] App startet ohne Fehler
+- [ ] Dark Mode funktioniert (folgt System-Theme)
+- [ ] Virtual Scrolling funktioniert flüssig (auch bei 1000+ Paketen)
+- [ ] Icons werden korrekt angezeigt
+- [ ] Lokalisierte Beschreibungen (DE) in Listenansicht
+- [ ] Performance: View-Wechsel < 2 Sekunden
 
 ## Distro-Testing
 
