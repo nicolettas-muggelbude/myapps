@@ -378,16 +378,14 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.name_label.set_text(pkg.name)
         box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
 
-        # Tooltip: Umfassende Paket-Informationen
-        tooltip_lines = [
-            f"📦 {pkg.name}",
-            f"📌 Version: {pkg.version}",
-            f"🔧 Typ: {pkg.package_type.upper()}",
-        ]
+        # Tooltip: Zeigt Paketbeschreibung (Funktion des Pakets)
         if pkg.description:
-            tooltip_lines.append(f"\n📄 {pkg.description}")
+            # Beschreibung vorhanden: Zeige nur diese (Info ist bereits sichtbar in der Liste)
+            tooltip = pkg.description
+        else:
+            # Keine Beschreibung: Zeige zumindest Paketname als Fallback
+            tooltip = f"{pkg.name}\n(Keine Beschreibung verfügbar)"
 
-        tooltip = "\n".join(tooltip_lines)
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
