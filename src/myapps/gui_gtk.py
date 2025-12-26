@@ -512,7 +512,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
             self._populate_table_view()
 
     def _populate_list_view(self):
-        """Füllt ListView (paginiert)"""
+        """Füllt ListView (paginiert) mit lokalisierten Beschreibungen"""
         # Clear
         self.list_store.remove_all()
 
@@ -524,8 +524,21 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sorted_packages = sorted(self.gui.filtered_packages, key=lambda p: (p.package_type, p.name))
         page_packages = sorted_packages[start_idx:end_idx]
 
-        # Add to Model (wrapped in PackageItem)
+        # Add to Model (wrapped in PackageItem) mit lokalisierten Beschreibungen
         for pkg in page_packages:
+            # Für dpkg-Pakete: Hole lokalisierte Beschreibung (nur für sichtbare 100 Pakete)
+            if pkg.package_type == "deb":
+                localized_desc = self._get_localized_description(pkg.name)
+                if localized_desc:
+                    # Erstelle temporäres Package mit lokalisierter Beschreibung
+                    from .package_manager import Package
+                    pkg = Package(
+                        name=pkg.name,
+                        version=pkg.version,
+                        package_type=pkg.package_type,
+                        description=localized_desc
+                    )
+
             self.list_store.append(PackageItem(pkg))
 
     def _populate_table_view(self):
@@ -544,6 +557,26 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Add to Model (wrapped in PackageItem)
         for pkg in page_packages:
             self.table_store.append(PackageItem(pkg))
+
+    def _get_localized_description(self, package_name: str) -> Optional[str]:
+        """Holt lokalisierte Beschreibung via apt-cache (nur für List View)"""
+        import subprocess
+        try:
+            result = subprocess.run(
+                ["apt-cache", "show", package_name],
+                capture_output=True,
+                text=True,
+                timeout=2  # Timeout nach 2 Sekunden
+            )
+            if result.returncode == 0:
+                # Parse für Description (respektiert LANG)
+                for line in result.stdout.splitlines():
+                    if line.startswith("Description:") or line.startswith("Description-de:"):
+                        desc = line.split(":", 1)[1].strip()
+                        return desc if desc else None
+        except Exception:
+            pass  # Bei Fehler: Nutze englische Beschreibung als Fallback
+        return None
 
     def _update_pagination_controls(self):
         """Aktualisiert Pagination Controls"""
