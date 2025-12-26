@@ -549,26 +549,70 @@ class IconManagerGTK:
 
     def _create_placeholder_icon(self) -> GdkPixbuf.Pixbuf:
         """
-        Erstellt ein einfaches Platzhalter-Icon (GTK4-Version)
+        Erstellt ein Platzhalter-Icon (GTK4-Version) - nutzt System-Paketsymbol
 
         Returns:
             GdkPixbuf.Pixbuf-Objekt mit Platzhalter
         """
-        # Erstelle ein graues Quadrat mit PIL, dann konvertiere zu GdkPixbuf
-        img = Image.new("RGBA", (self.icon_size, self.icon_size), (128, 128, 128, 255))
+        # Versuche System-Paketsymbol zu laden
+        try:
+            from gi.repository import Gtk, Gdk
+            display = Gdk.Display.get_default()
+            if display:
+                icon_theme = Gtk.IconTheme.get_for_display(display)
+            else:
+                # Fallback auf default theme
+                icon_theme = Gtk.IconTheme.new()
+                icon_theme.set_theme_name("Adwaita")
 
-        # Konvertiere PIL Image zu GdkPixbuf
+            # Versuche verschiedene Paket-Icon-Namen (in Prioritätsreihenfolge)
+            icon_names = [
+                "package-x-generic",      # Generisches Paket-Icon
+                "application-x-deb",      # DEB-Paket-Icon
+                "package",                # Fallback
+                "system-software-install" # Software-Installation-Icon
+            ]
+
+            for icon_name in icon_names:
+                try:
+                    icon_paintable = icon_theme.lookup_icon(
+                        icon_name,
+                        None,  # fallbacks
+                        self.icon_size,
+                        1,  # scale
+                        0,  # text_dir
+                        0   # flags
+                    )
+
+                    # Lade als Pixbuf
+                    icon_file = icon_paintable.get_file()
+                    if icon_file:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                            icon_file.get_path(),
+                            self.icon_size,
+                            self.icon_size,
+                            True
+                        )
+                        logger.debug(f"Placeholder-Icon geladen: {icon_name}")
+                        return pixbuf
+                except Exception:
+                    continue
+
+        except Exception as e:
+            logger.debug(f"Fehler beim Laden des System-Icons: {e}")
+
+        # Fallback: Erstelle ein graues Quadrat mit PIL
+        img = Image.new("RGBA", (self.icon_size, self.icon_size), (128, 128, 128, 255))
         img_bytes = img.tobytes()
         pixbuf = GdkPixbuf.Pixbuf.new_from_data(
             img_bytes,
             GdkPixbuf.Colorspace.RGB,
-            True,  # has_alpha
-            8,  # bits_per_sample
+            True,
+            8,
             img.width,
             img.height,
-            img.width * 4  # rowstride (4 bytes per pixel for RGBA)
+            img.width * 4
         )
-
         return pixbuf
 
     def clear_cache(self) -> None:
