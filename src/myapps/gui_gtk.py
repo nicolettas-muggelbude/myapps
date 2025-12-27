@@ -24,8 +24,42 @@ from .icons import IconManagerGTK
 
 logger = logging.getLogger(__name__)
 
-# Version
-VERSION = "0.2.0"
+
+def get_version_from_pyproject() -> str:
+    """
+    Liest die Version aus pyproject.toml.
+    Fallback auf "0.0.0" wenn Datei nicht gefunden oder parsing fehlschlägt.
+    """
+    try:
+        # Suche pyproject.toml im Projekt-Root
+        current_file = Path(__file__)
+        # Von src/myapps/gui_gtk.py -> src/myapps -> src -> projekt_root
+        project_root = current_file.parent.parent.parent
+        pyproject_path = project_root / "pyproject.toml"
+
+        if not pyproject_path.exists():
+            logger.warning(f"pyproject.toml nicht gefunden: {pyproject_path}")
+            return "0.0.0"
+
+        # Parse pyproject.toml (einfaches String-Parsing)
+        with open(pyproject_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip().startswith('version ='):
+                    # Extrahiere Version: version = "0.2.1" -> 0.2.1
+                    version = line.split('=')[1].strip().strip('"').strip("'")
+                    logger.info(f"Version aus pyproject.toml gelesen: {version}")
+                    return version
+
+        logger.warning("Keine version = Zeile in pyproject.toml gefunden")
+        return "0.0.0"
+
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Version: {e}")
+        return "0.0.0"
+
+
+# Version automatisch aus pyproject.toml lesen
+VERSION = get_version_from_pyproject()
 
 
 class PackageItem(GObject.Object):
@@ -920,8 +954,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sep4.set_margin_top(15)
         main_box.append(sep4)
 
-        # === NEU IN 0.2.0 ===
-        whats_new_label = Gtk.Label(label="✨ Neu in Version 0.2.0:")
+        # === NEU IN AKTUELLER VERSION ===
+        whats_new_label = Gtk.Label(label=f"✨ Neu in Version {VERSION}:")
         whats_new_label.add_css_class("title-4")
         whats_new_label.set_halign(Gtk.Align.START)
         whats_new_label.set_margin_top(15)
