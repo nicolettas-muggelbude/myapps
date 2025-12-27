@@ -580,6 +580,31 @@ sudo zypper install myapps
 - Alle Terminal-Ausgaben auf Deutsch
 - Diese CLAUDE.md kontinuierlich fortführen
 
+### Versionsverwaltung:
+**WICHTIG**: Version wird automatisch aus pyproject.toml gelesen!
+
+#### Versionsänderung durchführen:
+1. **NUR** `pyproject.toml` ändern:
+   ```toml
+   version = "X.Y.Z"
+   ```
+2. **NICHT** manuell ändern:
+   - ❌ `src/myapps/gui_gtk.py` (VERSION wird automatisch gelesen)
+   - ❌ About-Dialog (verwendet VERSION Konstante)
+   - ❌ Irgendwo anders im Code
+
+#### Wie es funktioniert:
+- `get_version_from_pyproject()` in `gui_gtk.py`
+- Liest `pyproject.toml` beim App-Start
+- Setzt `VERSION` Konstante automatisch
+- Fallback: `"0.0.0"` bei Fehler
+- About-Dialog zeigt: `f"Version {VERSION}"`
+
+#### Vorteile:
+- ✅ Single Source of Truth (pyproject.toml)
+- ✅ Keine vergessenen Version-Updates
+- ✅ Konsistenz garantiert
+
 ### Release Notes Format:
 **WICHTIG**: Alle Releases MÜSSEN diesem Format folgen für Konsistenz!
 
