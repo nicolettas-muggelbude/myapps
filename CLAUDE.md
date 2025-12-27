@@ -605,6 +605,43 @@ sudo zypper install myapps
 - ✅ Keine vergessenen Version-Updates
 - ✅ Konsistenz garantiert
 
+### Changelog-Verwaltung (WHATS_NEW.md):
+**WICHTIG**: Changelog wird automatisch aus WHATS_NEW.md geladen!
+
+#### Neue Version hinzufügen:
+1. **WHATS_NEW.md** bearbeiten:
+   ```markdown
+   ## vX.Y.Z
+   - Feature 1 Beschreibung
+   - Feature 2 Beschreibung
+   - Fix: Bugfix Beschreibung
+   ```
+2. Version-Header MUSS Format `## vX.Y.Z` haben (exakt!)
+3. Features MÜSSEN mit `- ` beginnen (Bullet-Point)
+4. Reihenfolge: Neueste Version OBEN
+
+#### Wie es funktioniert:
+- `get_whats_new(version)` in `gui_gtk.py`
+- Liest `WHATS_NEW.md` beim Öffnen des About-Dialogs
+- Findet Version-Sektion via `## vX.Y.Z` Header
+- Extrahiert alle Zeilen mit `- ` Präfix
+- Zeigt Features im About-Dialog dynamisch an
+- Fallback: "Keine Changelog-Informationen verfügbar"
+
+#### Release-Workflow:
+1. `pyproject.toml` Version ändern → `version = "X.Y.Z"`
+2. `WHATS_NEW.md` neue Sektion oben hinzufügen → `## vX.Y.Z`
+3. Packaging-Dateien aktualisieren (spec, changelog, dsc, PKGBUILD)
+4. Git Tag erstellen → `git tag -a vX.Y.Z -m "..."`
+5. GitHub Release erstellen mit Release Notes
+6. **Fertig!** About-Dialog zeigt automatisch korrekte Version + Features
+
+#### Vorteile:
+- ✅ Single Source of Truth für Changelog (WHATS_NEW.md)
+- ✅ Keine hartcodierten Features im Code
+- ✅ Konsistenz zwischen Releases und About-Dialog
+- ✅ Einfach erweiterbar für neue Versionen
+
 ### Release Notes Format:
 **WICHTIG**: Alle Releases MÜSSEN diesem Format folgen für Konsistenz!
 
