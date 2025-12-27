@@ -581,20 +581,63 @@ sudo zypper install myapps
 - Diese CLAUDE.md kontinuierlich fortführen
 
 ### Release Notes Format:
-- **WICHTIG**: Impressum und Datenschutz-Links gehören DIREKT UNTER den Spendenbutton!
-  - Grund: Die rechtlichen Hinweise sind nur für die Spenden relevant
-  - Format:
-    ```
-    ## 💝 MyApps unterstützen
-    [Spendenbutton und Beschreibung]
+**WICHTIG**: Alle Releases MÜSSEN diesem Format folgen für Konsistenz!
 
-    **Rechtliches:**
-    [Impressum] | [Datenschutz]
+#### Download-Buttons (IMMER einbinden):
+```markdown
+## 📦 Installation
 
-    ---
+### **OBS-Pakete** - Empfohlen ✅
 
-    **Vollständiges Changelog:** ...
-    ```
+[![OBS Download](https://img.shields.io/badge/Download-OBS_Pakete-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
+
+**Installationsanleitung hier...**
+
+---
+
+### **AUR-Paket** - Arch Linux ✅
+
+[![AUR Download](https://img.shields.io/badge/Download-AUR-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
+
+**Installationsanleitung hier...**
+
+---
+```
+
+#### Spendenbutton (IMMER am Ende):
+```markdown
+## 💝 MyApps unterstützen
+
+Dieses Projekt ist **Open Source** (GPLv3) und wird von der Community entwickelt!
+
+[![Spenden via PayPal](https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL)
+
+**Spenden gehen an:** PC-Wittfoot UG (Spendenverwalter)
+**Verwendung:** Serverkosten, Hardware, Entwicklerzeit für MyApps
+
+**Hinweis:** Die Entwicklung erfolgt durch die Linux Guides DE Community (Open Source).
+PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
+
+**Rechtliches:**
+[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Datenschutz](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
+
+---
+
+**Changelog:** https://github.com/nicolettas-muggelbude/myapps/compare/vX.X.X...vY.Y.Y
+```
+
+#### Vollständige Struktur:
+1. **Titel** mit Emoji (z.B. "# MyApps v0.2.1 - Bugfix Release")
+2. **Kurzbeschreibung** in Bold
+3. **Separator** (`---`)
+4. **Änderungen/Features** (mit Emojis und Checkmarks)
+5. **Separator** (`---`)
+6. **📦 Installation** (OBS + AUR Buttons)
+7. **Separator** (`---`)
+8. **🙏 Danke** (optional, bei Community-Beiträgen)
+9. **Separator** (`---`)
+10. **💝 Spendenbutton** mit Rechtlichem
+11. **Changelog-Link** am Ende
 
 ## Aktueller Projekt-Stand (26.12.2024)
 
