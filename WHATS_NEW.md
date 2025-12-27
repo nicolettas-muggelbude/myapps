@@ -2,6 +2,11 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.2.2
+- Fix: NameError auf Systemen ohne tkinter (OBS-Pakete)
+- Fix: ImageTk Type Hints als String-Literale
+- Betrifft alle 11 OBS-Distributionen
+
 ## v0.2.1
 - Fix: Basis-Verzeichnis-Erkennung für /usr/share/myapps
 - Fix: GTK4 SearchEntry placeholder Kompatibilität
