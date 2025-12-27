@@ -67,8 +67,8 @@ class IconManager:
         self.icon_size = icon_size
         self.fallback_dir = Path(fallback_dir) if fallback_dir else None
         self.use_shared_icon = use_shared_icon
-        self._icon_cache: Dict[str, ImageTk.PhotoImage] = {}
-        self._default_icon: Optional[ImageTk.PhotoImage] = None
+        self._icon_cache: Dict[str, "ImageTk.PhotoImage"] = {}
+        self._default_icon: Optional["ImageTk.PhotoImage"] = None
 
         # Erweitere Suchpfade mit expanduser
         self.icon_search_paths = [
@@ -78,7 +78,7 @@ class IconManager:
             Path(p).expanduser() for p in self.SNAP_ICON_PATHS
         ]
 
-    def get_icon(self, package_name: str, package_type: str) -> ImageTk.PhotoImage:
+    def get_icon(self, package_name: str, package_type: str) -> "ImageTk.PhotoImage":
         """
         Holt das Icon für ein Paket
 
@@ -269,7 +269,7 @@ class IconManager:
 
         return variants
 
-    def _load_and_resize_icon(self, icon_path: Path) -> ImageTk.PhotoImage:
+    def _load_and_resize_icon(self, icon_path: Path) -> "ImageTk.PhotoImage":
         """
         Lädt ein Icon und skaliert es auf die Zielgröße
 
@@ -293,7 +293,7 @@ class IconManager:
 
         return ImageTk.PhotoImage(img)
 
-    def _get_default_icon(self) -> ImageTk.PhotoImage:
+    def _get_default_icon(self) -> "ImageTk.PhotoImage":
         """
         Gibt das Standard-Fallback-Icon zurück
 
@@ -317,7 +317,7 @@ class IconManager:
         self._default_icon = self._create_placeholder_icon()
         return self._default_icon
 
-    def _create_placeholder_icon(self) -> ImageTk.PhotoImage:
+    def _create_placeholder_icon(self) -> "ImageTk.PhotoImage":
         """
         Erstellt ein einfaches Platzhalter-Icon
 
