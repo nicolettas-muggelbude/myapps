@@ -584,12 +584,14 @@ sudo zypper install myapps
 **WICHTIG**: Alle Releases MÜSSEN diesem Format folgen für Konsistenz!
 
 #### Download-Buttons (IMMER einbinden):
-```markdown
+**WICHTIG:** HTML verwenden (nicht Markdown), da GitHub Markdown-Syntax escaped!
+
+```html
 ## 📦 Installation
 
 ### **OBS-Pakete** - Empfohlen ✅
 
-[![OBS Download](https://img.shields.io/badge/Download-OBS_Pakete-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
+<a href="https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps"><img src="https://img.shields.io/badge/Download-OBS_Pakete-73BA25?style=for-the-badge&logo=opensuse&logoColor=white" alt="OBS Download"></a>
 
 **Installationsanleitung hier...**
 
@@ -597,7 +599,7 @@ sudo zypper install myapps
 
 ### **AUR-Paket** - Arch Linux ✅
 
-[![AUR Download](https://img.shields.io/badge/Download-AUR-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://aur.archlinux.org/packages/myapps)
+<a href="https://aur.archlinux.org/packages/myapps"><img src="https://img.shields.io/badge/Download-AUR-1793D1?style=for-the-badge&logo=archlinux&logoColor=white" alt="AUR Download"></a>
 
 **Installationsanleitung hier...**
 
@@ -605,12 +607,14 @@ sudo zypper install myapps
 ```
 
 #### Spendenbutton (IMMER am Ende):
-```markdown
+**WICHTIG:** HTML verwenden (nicht Markdown), da GitHub Markdown-Syntax escaped!
+
+```html
 ## 💝 MyApps unterstützen
 
 Dieses Projekt ist **Open Source** (GPLv3) und wird von der Community entwickelt!
 
-[![Spenden via PayPal](https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL)
+<a href="https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"><img src="https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Spenden via PayPal"></a>
 
 **Spenden gehen an:** PC-Wittfoot UG (Spendenverwalter)
 **Verwendung:** Serverkosten, Hardware, Entwicklerzeit für MyApps
