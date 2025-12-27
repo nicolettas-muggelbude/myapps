@@ -623,7 +623,11 @@ sudo zypper install myapps
 - **AUR (Arch User Repository)** ✅ KOMPLETT
   - **Live:** https://aur.archlinux.org/packages/myapps
   - PKGBUILD + .SRCINFO hochgeladen
-  - Erfolgreich getestet mit makepkg -si
+  - **Tarball-Dateinamen-Problem behoben (27.12.2024):**
+    - v0.2.0 GitHub-Tarball enthält alte Dateinamen (de.pc-wittfoot.myapps.*)
+    - PKGBUILD nutzt if/else Fallback für Kompatibilität
+    - Installiert korrekt als io.github.nicolettas-muggelbude.myapps.*
+  - Erfolgreich getestet mit makepkg -si (yay -S myapps)
 
 - **Flathub Submission** ❌ ABGELEHNT
   - Pull Request: https://github.com/flathub/flathub/pull/7404
@@ -646,6 +650,7 @@ sudo zypper install myapps
   - Issue #13, #14 (Pillow-Import-Fehler) → auf OBS-Pakete verwiesen
   - Menu-Integration-Problem (Mint) → behoben in build-deb.sh + OBS debian/
   - Icon-Deinstallation (Debian) → behoben mit explizitem rm -f in postrm
+  - AUR Installation-Fehler (CachyOS) → PKGBUILD Fallback für alte Dateinamen (27.12.2024)
 
 ### 🔄 Aktuell laufend
 - **Community Testing** (v0.2.0):
