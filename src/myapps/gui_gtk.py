@@ -241,8 +241,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         header.pack_start(export_btn)
 
         # Search Entry (zentral im Title-Bereich)
-        self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text(_("Apps durchsuchen..."))
+        self.search_entry = Gtk.SearchEntry(placeholder_text=_("Apps durchsuchen..."))
         self.search_entry.set_size_request(300, -1)
         self.search_entry.connect("search-changed", self._on_search_changed)
         header.set_title_widget(self.search_entry)
