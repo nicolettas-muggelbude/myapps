@@ -705,9 +705,26 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 10. **💝 Spendenbutton** mit Rechtlichem
 11. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (26.12.2024)
+## Aktueller Projekt-Stand (27.12.2024)
 
 ### ✅ Abgeschlossen
+
+- **v0.2.2 Release** (27.12.2024) - AKTUELL
+  - **Kritischer Bugfix:** NameError auf OBS-Paketen behoben
+  - **Problem:** ImageTk Type Hints wurden zur Parse-Zeit aufgelöst
+  - **Lösung:** Type Hints als String-Literale geschrieben
+  - **Betroffene Systeme:** Alle 11 OBS-Distributionen
+  - **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.2.2
+  - **AUR aktualisiert:** https://aur.archlinux.org/packages/myapps
+  - **OBS-Upload pending:** myapps-0.2.2.tar.gz, myapps.spec, debian.tar.gz, myapps.dsc
+  - **Automation:** Version und Changelog werden automatisch aus pyproject.toml und WHATS_NEW.md geladen
+
+- **v0.2.1 Release** (27.12.2024)
+  - **Basis-Verzeichnis-Fix:** /usr/share/myapps wird korrekt erkannt
+  - **GTK4 SearchEntry Fix:** placeholder_text als Parameter statt Methode
+  - **AUR PKGBUILD Fix:** Fallback für alte Dateinamen
+  - **Automatisierung:** Version und Changelog aus Dateien gelesen
+
 - **v0.2.0 Release** vollständig
   - DEB-Paket gebaut und zu GitHub Release hinzugefügt
   - Flatpak-Manifest, Desktop Entry und MetaInfo XML erstellt
