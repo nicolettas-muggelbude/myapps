@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.2.1
+Version:        0.2.2
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -114,6 +114,11 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Fri Dec 27 2024 MyApps Contributors <noreply@github.com> - 0.2.2-1
+- Fix: NameError on systems without tkinter (all OBS packages)
+- Fix: ImageTk type hints as string literals
+- Critical bugfix for v0.2.1
+
 * Fri Dec 27 2024 MyApps Contributors <noreply@github.com> - 0.2.1-1
 - Fix: Base directory detection for /usr/share/myapps
 - Fix: GTK4 SearchEntry placeholder compatibility
