@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.2.0
+Version:        0.2.1
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -114,6 +114,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Fri Dec 27 2024 MyApps Contributors <noreply@github.com> - 0.2.1-1
+- Fix: Base directory detection for /usr/share/myapps
+- Fix: GTK4 SearchEntry placeholder compatibility
+- Fix: Locales and filters not found on Ubuntu 22.04/Mint 21.3
+- Fixes #13
+
 * Thu Dec 26 2024 MyApps Contributors <noreply@github.com> - 0.2.0-1
 - Initial OBS release
 - GTK4 + Libadwaita migration
