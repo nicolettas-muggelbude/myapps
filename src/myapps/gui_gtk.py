@@ -62,6 +62,60 @@ def get_version_from_pyproject() -> str:
 VERSION = get_version_from_pyproject()
 
 
+def get_whats_new(version: str) -> List[str]:
+    """
+    Liest die What's New Features für eine Version aus WHATS_NEW.md.
+
+    Args:
+        version: Version im Format "X.Y.Z"
+
+    Returns:
+        Liste von Feature-Strings, leer wenn Version nicht gefunden
+    """
+    try:
+        # Suche WHATS_NEW.md im Projekt-Root
+        current_file = Path(__file__)
+        project_root = current_file.parent.parent.parent
+        whats_new_path = project_root / "WHATS_NEW.md"
+
+        if not whats_new_path.exists():
+            logger.warning(f"WHATS_NEW.md nicht gefunden: {whats_new_path}")
+            return []
+
+        # Parse WHATS_NEW.md
+        features = []
+        in_version_section = False
+        version_header = f"## v{version}"
+
+        with open(whats_new_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.rstrip()
+
+                # Start der gesuchten Version
+                if line.startswith(version_header):
+                    in_version_section = True
+                    continue
+
+                # Ende der Sektion (nächste Version oder Ende)
+                if in_version_section and line.startswith("## v"):
+                    break
+
+                # Features sammeln (Zeilen die mit "- " beginnen)
+                if in_version_section and line.startswith("- "):
+                    features.append(line[2:])  # Entferne "- " Präfix
+
+        if features:
+            logger.info(f"Gefundene Features für v{version}: {len(features)}")
+        else:
+            logger.warning(f"Keine Features für v{version} in WHATS_NEW.md gefunden")
+
+        return features
+
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen von WHATS_NEW.md: {e}")
+        return []
+
+
 class PackageItem(GObject.Object):
     """GObject-Wrapper für Package-Objekte (für Gio.ListStore)"""
 
@@ -962,20 +1016,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
         whats_new_label.set_margin_bottom(5)
         main_box.append(whats_new_label)
 
-        new_features = [
-            "• Moderne GTK4 + Libadwaita Oberfläche",
-            "• Virtual Scrolling für bessere Performance",
-            "• Deutsche Beschreibungen in Listenansicht",
-            "• Schnellere Tabellenansicht",
-            "• Verbesserte Tooltips"
-        ]
+        # Lade Features aus WHATS_NEW.md
+        new_features = get_whats_new(VERSION)
 
-        for feature in new_features:
-            feature_label = Gtk.Label(label=feature)
-            feature_label.set_halign(Gtk.Align.START)
-            feature_label.set_margin_start(20)
-            feature_label.set_margin_top(2)
-            main_box.append(feature_label)
+        # Zeige Features (oder Fallback-Nachricht)
+        if new_features:
+            for feature in new_features:
+                feature_label = Gtk.Label(label=f"• {feature}")
+                feature_label.set_halign(Gtk.Align.START)
+                feature_label.set_margin_start(20)
+                feature_label.set_margin_top(2)
+                main_box.append(feature_label)
+        else:
+            # Fallback wenn keine Features gefunden
+            no_info_label = Gtk.Label(label="Keine Changelog-Informationen verfügbar.")
+            no_info_label.add_css_class("dim-label")
+            no_info_label.set_halign(Gtk.Align.START)
+            no_info_label.set_margin_start(20)
+            main_box.append(no_info_label)
 
         # Danke-Text
         thanks_label = Gtk.Label(label="Danke fürs Testen! 🎉")
