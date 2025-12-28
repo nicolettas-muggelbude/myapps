@@ -2,6 +2,12 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.2.3
+- Fix: Version 0.0.0 in System-Installationen behoben
+- Fix: Changelog nicht verfügbar in System-Installationen behoben
+- pyproject.toml und WHATS_NEW.md werden jetzt installiert
+- About-Dialog zeigt korrekte Version und Features
+
 ## v0.2.2
 - Fix: NameError auf Systemen ohne tkinter (OBS-Pakete)
 - Fix: ImageTk Type Hints als String-Literale
