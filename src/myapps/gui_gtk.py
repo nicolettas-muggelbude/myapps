@@ -28,17 +28,25 @@ logger = logging.getLogger(__name__)
 def get_version_from_pyproject() -> str:
     """
     Liest die Version aus pyproject.toml.
+    Sucht zuerst in /usr/share/myapps/ (System-Installation),
+    dann im Projekt-Root (Development).
     Fallback auf "0.0.0" wenn Datei nicht gefunden oder parsing fehlschlägt.
     """
     try:
-        # Suche pyproject.toml im Projekt-Root
-        current_file = Path(__file__)
-        # Von src/myapps/gui_gtk.py -> src/myapps -> src -> projekt_root
-        project_root = current_file.parent.parent.parent
-        pyproject_path = project_root / "pyproject.toml"
+        # Suchpfade in Prioritätsreihenfolge
+        search_paths = [
+            Path("/usr/share/myapps/pyproject.toml"),  # System-Installation (OBS/DEB)
+            Path(__file__).parent.parent.parent / "pyproject.toml",  # Development
+        ]
 
-        if not pyproject_path.exists():
-            logger.warning(f"pyproject.toml nicht gefunden: {pyproject_path}")
+        pyproject_path = None
+        for path in search_paths:
+            if path.exists():
+                pyproject_path = path
+                break
+
+        if not pyproject_path:
+            logger.warning(f"pyproject.toml nicht gefunden in: {[str(p) for p in search_paths]}")
             return "0.0.0"
 
         # Parse pyproject.toml (einfaches String-Parsing)
@@ -47,10 +55,10 @@ def get_version_from_pyproject() -> str:
                 if line.strip().startswith('version ='):
                     # Extrahiere Version: version = "0.2.1" -> 0.2.1
                     version = line.split('=')[1].strip().strip('"').strip("'")
-                    logger.info(f"Version aus pyproject.toml gelesen: {version}")
+                    logger.info(f"Version aus {pyproject_path} gelesen: {version}")
                     return version
 
-        logger.warning("Keine version = Zeile in pyproject.toml gefunden")
+        logger.warning(f"Keine version = Zeile in {pyproject_path} gefunden")
         return "0.0.0"
 
     except Exception as e:
@@ -65,6 +73,8 @@ VERSION = get_version_from_pyproject()
 def get_whats_new(version: str) -> List[str]:
     """
     Liest die What's New Features für eine Version aus WHATS_NEW.md.
+    Sucht zuerst in /usr/share/myapps/ (System-Installation),
+    dann im Projekt-Root (Development).
 
     Args:
         version: Version im Format "X.Y.Z"
@@ -73,13 +83,20 @@ def get_whats_new(version: str) -> List[str]:
         Liste von Feature-Strings, leer wenn Version nicht gefunden
     """
     try:
-        # Suche WHATS_NEW.md im Projekt-Root
-        current_file = Path(__file__)
-        project_root = current_file.parent.parent.parent
-        whats_new_path = project_root / "WHATS_NEW.md"
+        # Suchpfade in Prioritätsreihenfolge
+        search_paths = [
+            Path("/usr/share/myapps/WHATS_NEW.md"),  # System-Installation (OBS/DEB)
+            Path(__file__).parent.parent.parent / "WHATS_NEW.md",  # Development
+        ]
 
-        if not whats_new_path.exists():
-            logger.warning(f"WHATS_NEW.md nicht gefunden: {whats_new_path}")
+        whats_new_path = None
+        for path in search_paths:
+            if path.exists():
+                whats_new_path = path
+                break
+
+        if not whats_new_path:
+            logger.warning(f"WHATS_NEW.md nicht gefunden in: {[str(p) for p in search_paths]}")
             return []
 
         # Parse WHATS_NEW.md

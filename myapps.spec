@@ -76,6 +76,10 @@ fi
 mkdir -p %{buildroot}%{_datadir}/myapps/assets
 cp -r assets/* %{buildroot}%{_datadir}/myapps/assets/
 
+# Install pyproject.toml and WHATS_NEW.md for version/changelog info
+install -Dm644 pyproject.toml %{buildroot}%{_datadir}/myapps/pyproject.toml
+install -Dm644 WHATS_NEW.md %{buildroot}%{_datadir}/myapps/WHATS_NEW.md
+
 %files
 %license LICENSE
 %doc README.md
