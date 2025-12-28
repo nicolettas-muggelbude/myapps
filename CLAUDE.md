@@ -779,25 +779,81 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - AUR Installation-Fehler (CachyOS) → PKGBUILD Fallback für alte Dateinamen (27.12.2024)
 
 ### 🔄 Aktuell laufend
-- **Community Testing** (v0.2.0):
+- **Community Testing** (v0.2.3):
   - Testing auf verschiedenen Systemen
   - Feedback sammeln via GitHub Issues
   - Bug-Reports bearbeiten
+  - **Performance-Feedback:** User mit Mint (~400 Apps) berichten von langsamen Seitenwechseln
 
-### 📋 Nächste Schritte
-- Ankündigung in Linux Guides DE Community
-- v0.2.0 nach erfolgreichem Community-Testing als stabil markieren
-- Planung für v0.3.0 Features beginnen
+### 📋 Roadmap
 
-### 🎯 Geplant für v0.3.0
-- Virtual Scrolling ohne Pagination (echtes ListView-Scrolling)
-- .desktop-only View (Issue #4)
-- Größen-Information für Pakete (Issue #5)
-- Performance-Optimierungen: Caching, Lazy-Loading (Issue #9)
-- Icon-Anzeige in ListView/ColumnView
+#### **v0.2.4 - Performance-Release** (NÄCHSTE VERSION)
+**Issue #17** - Performance-Optimierungen (kritisch!)
 
-### 📋 Offene Fragen
-- Wie gut performt v0.2.0 auf echten Linux-Maschinen?
-- Funktioniert das Flatpak-Manifest beim Build?
-- Benötigen wir zusätzliche Flatpak-Permissions?
-- Soll CSS-Styling für v0.3.0 hinzugefügt werden?
+**Problem:** User mit Mint (~2000 Pakete, ~400 gefilterte Apps) berichten:
+- Seitenwechsel spürbar langsam
+- App-Start dauert zu lange
+
+**Geplante Fixes:**
+1. **Icon-Caching** (größter Impact)
+   - Icons nur einmal laden, dann cachen
+   - ~80% schnellerer Seitenwechsel
+2. **Sortierung optimieren**
+   - Nur einmal nach Filterung sortieren
+   - 5-10x schnellerer Seitenwechsel
+3. **Event Handler Cleanup**
+   - Context Menu in `setup` statt `bind`
+   - Memory Leak beheben
+
+**Aufwand:** 2-3h Implementierung + 1h Testing
+**Priorität:** KRITISCH - muss vor v0.3.0 (Scope-Dropdown)
+
+---
+
+#### **v0.3.0 - Such-Scope & Features**
+**Issue #16** - Scope-Dropdown für Suche
+
+**Features:**
+1. **Scope-Dropdown vor Suchfeld**
+   - "Nur User-Apps" (Standard) → ~800 Apps
+   - "Alle Pakete" → ~2000+ Pakete
+   - Nur aktiv bei Liste/Tabelle View
+2. **Mindestens 5 Zeichen für Suche**
+   - Schränkt Ergebnisse deutlich ein
+3. **Pagination im Suchmodus**
+   - Funktioniert bereits ✅
+4. **Tooltips im Suchmodus**
+   - Funktioniert bereits ✅
+
+**Voraussetzung:** v0.2.4 Performance-Fixes fertig!
+
+---
+
+#### **v0.3.1 - Desktop Apps View**
+**Issue #4** - .desktop-only View
+
+**Features:**
+1. **Neue Ansicht:** Desktop Apps (neben Liste & Tabelle)
+2. **Desktop-App-Erkennung (Option B):**
+   - Parse `/usr/share/applications/`
+   - Parse `~/.local/share/applications/`
+   - Flatpak/Snap-spezifische Pfade
+3. **Scope-Integration:**
+   - Bei Desktop Apps View: Scope deaktiviert
+   - Suche beschränkt sich automatisch auf Desktop Apps
+
+---
+
+#### **v0.4.0 - Weitere Features**
+- **Issue #5:** Größen-Information für Pakete
+- Virtual Scrolling (echtes ListView-Scrolling, weg von Pagination)
+- Icon-Anzeige in ListView/ColumnView (aktuell nur Platzhalter)
+
+#### **v1.0.0 - Stable Release**
+- Nach umfangreichem Community-Testing
+- Alle kritischen Bugs behoben
+- Performance optimiert
+
+#### **v2.0.0 - Major Features**
+- Deinstallations-Funktion
+- Update-Benachrichtigungen
