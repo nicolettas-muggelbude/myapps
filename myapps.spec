@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.2.2
+Version:        0.2.3
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -118,6 +118,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Fri Dec 27 2024 MyApps Contributors <noreply@github.com> - 0.2.3-1
+- Fix: Version 0.0.0 in About dialog (all OBS/AUR packages)
+- Fix: No changelog information available
+- Install pyproject.toml and WHATS_NEW.md to /usr/share/myapps/
+- About dialog now shows correct version and features
+
 * Fri Dec 27 2024 MyApps Contributors <noreply@github.com> - 0.2.2-1
 - Fix: NameError on systems without tkinter (all OBS packages)
 - Fix: ImageTk type hints as string literals
