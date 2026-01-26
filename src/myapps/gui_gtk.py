@@ -485,16 +485,23 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         box.append(text_box)
 
-        # Context Menu Setup
+        # Context Menu Setup (einmalig!) - v0.2.4 Memory Leak Fix
         gesture = Gtk.GestureClick.new()
         gesture.set_button(3)  # Rechtsklick
+
+        def on_right_click(gesture, n_press, x, y):
+            # Hole aktuelles Package zur Laufzeit (nicht bei Setup!)
+            pkg = list_item.get_item()
+            if pkg:
+                self._show_context_menu(box, pkg, x, y)
+
+        gesture.connect("pressed", on_right_click)
         box.add_controller(gesture)
 
         # Store widgets für später
         box.icon = icon
         box.name_label = name_label
         box.info_label = info_label
-        box.gesture = gesture
 
         list_item.set_child(box)
 
@@ -527,11 +534,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
-        # Context Menu Handler
-        def on_right_click(gesture, n_press, x, y):
-            self._show_context_menu(box, pkg, x, y)
-
-        box.gesture.connect("pressed", on_right_click)
+        # Context Menu Handler ist bereits in setup() verbunden (v0.2.4)
+        # Kein Handler-Setup in bind() nötig!
 
     def _create_table_view(self):
         """Erstellt die ColumnView (Table)"""
