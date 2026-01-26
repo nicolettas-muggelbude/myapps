@@ -705,7 +705,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 10. **💝 Spendenbutton** mit Rechtlichem
 11. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (27.12.2024)
+## Aktueller Projekt-Stand (26.01.2026)
 
 ### ✅ Abgeschlossen
 
@@ -777,12 +777,24 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - Menu-Integration-Problem (Mint) → behoben in build-deb.sh + OBS debian/
   - Icon-Deinstallation (Debian) → behoben mit explizitem rm -f in postrm
   - AUR Installation-Fehler (CachyOS) → PKGBUILD Fallback für alte Dateinamen (27.12.2024)
+  - **Issue #15 (Export-Format-Bug) → behoben (26.01.2026):**
+    - Problem: Export war immer .txt, auch wenn CSV/JSON gewählt wurde
+    - Ursache: Format-Erkennung basierte auf Dateinamen, aber FileChooserDialog fügte Endung nicht automatisch hinzu
+    - Lösung 1: Filter-basierte Format-Erkennung (aktiver Filter bestimmt Format)
+    - Lösung 2: Default-Dateiname ohne Endung ("myapps-export")
+    - Lösung 3: Automatisches Hinzufügen der korrekten Endung basierend auf Filter
+    - Lösung 4: Eigener Überschreiben-Dialog mit Adw.MessageDialog
+    - Lösung 5: GTK4-kompatible FileChooserDialog (ohne parent im Constructor)
+    - Status: ✅ Alle Formate (TXT/CSV/JSON) funktionieren korrekt
 
 ### 🔄 Aktuell laufend
+- **Bug-Fixes für v0.2.4** (26.01.2026):
+  - ✅ Issue #15 behoben: Export-Format-Bug (alle Formate TXT/CSV/JSON funktionieren)
+  - Weitere Bug-Reports werden bearbeitet
+
 - **Community Testing** (v0.2.3):
   - Testing auf verschiedenen Systemen
   - Feedback sammeln via GitHub Issues
-  - Bug-Reports bearbeiten
   - **Performance-Feedback:** User mit Mint (~400 Apps) berichten von langsamen Seitenwechseln
 
 ### 📋 Roadmap

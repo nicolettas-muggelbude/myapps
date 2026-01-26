@@ -822,17 +822,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
             dialog.present()
             return
 
-        # File Chooser Dialog
+        # GTK4 FileChooserDialog (ohne parent in Constructor)
         dialog = Gtk.FileChooserDialog(
             title=_("Paketliste exportieren"),
-            parent=self,
             action=Gtk.FileChooserAction.SAVE
         )
+        dialog.set_transient_for(self)  # Setze parent NACH Erstellung
+        dialog.set_modal(True)
+
         dialog.add_buttons(
             _("Abbrechen"), Gtk.ResponseType.CANCEL,
             _("Exportieren"), Gtk.ResponseType.ACCEPT
         )
-        dialog.set_current_name("myapps-export.txt")
+        dialog.set_current_name("myapps-export")
+
+        # Setze Default-Ordner auf HOME
+        import os
+        home_folder = Gio.File.new_for_path(os.path.expanduser("~"))
+        dialog.set_current_folder(home_folder)
 
         # Format Filter
         filter_txt = Gtk.FileFilter()
@@ -860,22 +867,59 @@ class MyAppsWindow(Adw.ApplicationWindow):
             if file:
                 file_path = file.get_path()
 
-                # Format aus Dateiendung ermitteln
-                fmt = "txt"
-                if file_path.endswith(".csv"):
+                # Ermittle Format aus aktuellem Filter
+                current_filter = dialog.get_filter()
+                filter_name = current_filter.get_name() if current_filter else "Text (.txt)"
+
+                # Bestimme Format und Dateiendung basierend auf Filter
+                if "CSV" in filter_name:
                     fmt = "csv"
-                elif file_path.endswith(".json"):
+                    extension = ".csv"
+                elif "JSON" in filter_name:
                     fmt = "json"
-
-                # Export durchführen (verwendet search_filtered_packages!)
-                success = Exporter.export(self.gui.search_filtered_packages, file_path, fmt)
-
-                if success:
-                    self._set_status(f"{_('Exportiert')}: {file_path}")
+                    extension = ".json"
                 else:
-                    self._set_status(_("Export fehlgeschlagen"))
+                    fmt = "txt"
+                    extension = ".txt"
+
+                # Füge Dateiendung hinzu falls sie fehlt
+                if not file_path.endswith(extension):
+                    # Entferne evtl. falsche Endung (.txt vom Default)
+                    if file_path.endswith(".txt") or file_path.endswith(".csv") or file_path.endswith(".json"):
+                        file_path = file_path.rsplit(".", 1)[0]
+                    file_path = file_path + extension
+
+                # Prüfe ob Datei existiert und frage nach
+                from pathlib import Path
+                if Path(file_path).exists():
+                    overwrite_dialog = Adw.MessageDialog.new(self)
+                    overwrite_dialog.set_heading(_("Datei überschreiben?"))
+                    overwrite_dialog.set_body(f"{_('Die Datei existiert bereits')}: {Path(file_path).name}")
+                    overwrite_dialog.add_response("cancel", _("Abbrechen"))
+                    overwrite_dialog.add_response("overwrite", _("Überschreiben"))
+                    overwrite_dialog.set_response_appearance("overwrite", Adw.ResponseAppearance.DESTRUCTIVE)
+                    overwrite_dialog.connect("response", self._on_overwrite_response, file_path, fmt)
+                    overwrite_dialog.present()
+                else:
+                    # Datei existiert nicht, direkt exportieren
+                    self._do_export(file_path, fmt)
 
         dialog.destroy()
+
+    def _on_overwrite_response(self, dialog, response, file_path, fmt):
+        """Überschreiben-Dialog Response"""
+        if response == "overwrite":
+            self._do_export(file_path, fmt)
+        dialog.destroy()
+
+    def _do_export(self, file_path, fmt):
+        """Führt Export durch"""
+        success = Exporter.export(self.gui.search_filtered_packages, file_path, fmt)
+
+        if success:
+            self._set_status(f"{_('Exportiert')}: {file_path}")
+        else:
+            self._set_status(_("Export fehlgeschlagen"))
 
     def _on_about(self, action, param):
         """About Dialog - Alles auf einer Seite wie vorher!"""
