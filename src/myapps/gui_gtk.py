@@ -244,6 +244,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         self.gui = gui  # Referenz zur App
 
+        # Icon-Cache für Performance-Optimierung (v0.2.4)
+        # Key: "pkg_name_pkg_type", Value: GdkPixbuf
+        self.icon_cache = {}
+
         # Fenster-Einstellungen
         self.set_title(f"MyApps v{VERSION}")
         self.set_default_size(1200, 850)
@@ -808,6 +812,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_refresh_clicked(self, button):
         """Refresh Button Handler"""
+        # Cache leeren bei Refresh (v0.2.4)
+        self.icon_cache.clear()
+
         self.gui.current_page = 0
         self._set_status(_("Aktualisiere") + "...")
         GLib.idle_add(self.gui._start_loading_packages)
