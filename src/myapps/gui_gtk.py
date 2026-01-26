@@ -654,25 +654,31 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Wendet Suchfilter auf filtered_packages an"""
         if not self.gui.search_query:
             # Keine Suche: Zeige alle gefilterten Pakete
-            self.gui.search_filtered_packages = self.gui.filtered_packages
-            return
+            packages = self.gui.filtered_packages
+        else:
+            # Suche in Name und Beschreibung
+            query = self.gui.search_query
+            matching = []
 
-        # Suche in Name und Beschreibung
-        query = self.gui.search_query
-        matching = []
+            for pkg in self.gui.filtered_packages:
+                # Suche in Name (case-insensitive)
+                if query in pkg.name.lower():
+                    matching.append(pkg)
+                    continue
 
-        for pkg in self.gui.filtered_packages:
-            # Suche in Name (case-insensitive)
-            if query in pkg.name.lower():
-                matching.append(pkg)
-                continue
+                # Suche in Beschreibung (falls vorhanden)
+                if pkg.description and query in pkg.description.lower():
+                    matching.append(pkg)
+                    continue
 
-            # Suche in Beschreibung (falls vorhanden)
-            if pkg.description and query in pkg.description.lower():
-                matching.append(pkg)
-                continue
+            packages = matching
 
-        self.gui.search_filtered_packages = matching
+        # Sortiere EINMAL nach Filterung/Suche und cache das Ergebnis (v0.2.4)
+        # Sortierung: Erst nach Typ (deb, snap, flatpak), dann alphabetisch
+        self.gui.search_filtered_packages = sorted(
+            packages,
+            key=lambda p: (p.package_type, p.name.lower())
+        )
 
     def _on_loading_error(self, error_msg):
         """Callback bei Lade-Fehler"""
@@ -697,9 +703,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         start_idx = self.gui.current_page * self.gui.items_per_page
         end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
 
-        # Sortieren
-        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
-        page_packages = sorted_packages[start_idx:end_idx]
+        # Nutze vorsortierte Liste (sortiert in _apply_search_filter) - v0.2.4
+        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
 
         # Hole lokalisierte Beschreibungen PARALLEL für dpkg-Pakete
         deb_packages = [pkg for pkg in page_packages if pkg.package_type == "deb"]
@@ -747,9 +752,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         start_idx = self.gui.current_page * self.gui.items_per_page
         end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
 
-        # Sortieren
-        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
-        page_packages = sorted_packages[start_idx:end_idx]
+        # Nutze vorsortierte Liste (sortiert in _apply_search_filter) - v0.2.4
+        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
 
         # Add to Model (wrapped in PackageItem)
         for pkg in page_packages:
