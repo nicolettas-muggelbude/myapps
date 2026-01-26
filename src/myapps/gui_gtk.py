@@ -503,8 +503,13 @@ class MyAppsWindow(Adw.ApplicationWindow):
         pkg = list_item.get_item()  # PackageItem-Objekt
         box = list_item.get_child()
 
-        # Icon laden
-        pixbuf = self.gui.icon_manager.get_icon(pkg.name, pkg.package_type)
+        # Icon-Caching: Nur einmal laden, dann aus Cache (v0.2.4)
+        cache_key = f"{pkg.name}_{pkg.package_type}"
+        if cache_key not in self.icon_cache:
+            self.icon_cache[cache_key] = self.gui.icon_manager.get_icon(
+                pkg.name, pkg.package_type
+            )
+        pixbuf = self.icon_cache[cache_key]
         box.icon.set_from_pixbuf(pixbuf)
 
         # Set Data
