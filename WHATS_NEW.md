@@ -2,6 +2,13 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.2.4
+- Performance: Icon-Caching implementiert (Icons werden nur einmal geladen)
+- Performance: Sortierung optimiert (nur einmal nach Filterung)
+- Fix: Memory Leak bei vielen Seitenwechseln behoben
+- Fix: Export-Format-Bug behoben (CSV/JSON funktionieren korrekt)
+- Seitenwechsel deutlich schneller und flüssiger
+
 ## v0.2.3
 - Fix: Version 0.0.0 in System-Installationen behoben
 - Fix: Changelog nicht verfügbar in System-Installationen behoben
