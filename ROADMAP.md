@@ -6,64 +6,101 @@ Dieser Plan zeigt die geplante Entwicklung von MyApps.
 
 ## 📍 Aktueller Stand
 
-**Aktuelle Version:** v0.2.3
-**Status:** Beta - Community Testing läuft
+**Aktuelle Version:** v0.2.4
+**Status:** Performance-Release - Testing läuft
 **Verfügbar:** OBS (11 Distributionen), AUR (Arch Linux)
 
 ---
 
 ## 🚀 Geplante Releases
 
-### v0.2.4 - Performance-Release ⚡ (NÄCHSTE VERSION)
+### v0.2.4 - Performance-Release ⚡
 
 **Priorität:** 🔴 KRITISCH
-**Status:** Geplant
+**Status:** ✅ Fertig (26.01.2026)
 **Issue:** [#17](https://github.com/nicolettas-muggelbude/myapps/issues/17)
-**Aufwand:** ~4 Stunden
+**Aufwand:** ~4 Stunden (wie geplant)
 
-#### Problem
-User mit Mint (~2000 Pakete, ~400 gefilterte Apps) berichten:
-- Seitenwechsel spürbar langsam
-- App-Start dauert zu lange
-- 4 Seiten (100 Apps/Seite) fühlen sich träge an
+#### Problem (gelöst)
+User mit Mint (~2000 Pakete, ~400 gefilterte Apps) berichteten:
+- Seitenwechsel spürbar langsam ✅ BEHOBEN
+- App-Start dauert zu lange ✅ VERBESSERT
+- 4 Seiten (100 Apps/Seite) fühlen sich träge an ✅ BEHOBEN
 
-#### Identifizierte Bottlenecks
+#### Implementierte Optimierungen
 
-| Bottleneck | Impact | Lösung | Verbesserung |
-|------------|--------|--------|--------------|
-| Icons bei jedem Seitenwechsel neu laden | 🔥🔥🔥 Kritisch | Icon-Cache implementieren | ~80% schneller |
-| Sortierung bei jedem Seitenwechsel | 🔥🔥 Hoch | Einmal nach Filterung sortieren | 5-10x schneller |
-| Event Handler Memory Leak | 🔥 Mittel | Handler in `setup` statt `bind` | Weniger RAM-Verbrauch |
+| Optimierung | Implementiert | Commits |
+|-------------|---------------|---------|
+| Icon-Cache Dictionary | ✅ | `b0ff7e4` |
+| Icon-Caching in List View | ✅ | `76edd05` |
+| Sortierung optimiert | ✅ | `873747c` |
+| Memory Leak behoben | ✅ | `d95b3b5` |
 
-#### Geplante Fixes
+#### Erreichte Verbesserungen
 
-1. **Icon-Caching** (größter Impact)
+1. **Icon-Caching** ✅
+   - Icons werden nur einmal geladen und gecacht
+   - Cache shared zwischen allen Views
+   - Cache-Key: `{pkg_name}_{pkg_type}`
+   - Gecachte Seiten laden deutlich schneller
+
    ```python
-   # Icons nur einmal laden, dann cachen
-   self.icon_cache = {}  # Package-Name -> GdkPixbuf
+   # Implementiert in MyAppsWindow
+   self.icon_cache = {}  # Cache Dictionary
 
+   # In _on_list_bind()
+   cache_key = f"{pkg.name}_{pkg.package_type}"
    if cache_key not in self.icon_cache:
-       self.icon_cache[cache_key] = self.icon_manager.get_icon(...)
+       self.icon_cache[cache_key] = self.gui.icon_manager.get_icon(...)
+   pixbuf = self.icon_cache[cache_key]
    ```
 
-2. **Sortierung optimieren**
+2. **Sortierung optimiert** ✅
+   - Sortierung nur EINMAL in `_apply_search_filter()`
+   - Kein Re-Sortieren bei jedem Seitenwechsel
+   - Von O(n log n) zu O(1) bei Seitenwechsel
+   - Sortierung: Erst nach Typ (deb, flatpak, snap), dann alphabetisch
+
    ```python
-   # Nach Filterung einmal sortieren und speichern
-   def _on_packages_loaded(self, packages):
-       self.search_filtered_packages = sorted(packages, ...)
+   # In _apply_search_filter()
+   self.gui.search_filtered_packages = sorted(
+       packages,
+       key=lambda p: (p.package_type, p.name.lower())
+   )
 
-   # Nicht mehr bei jedem Seitenwechsel sortieren
+   # In _populate_list_view() - keine Sortierung mehr!
+   page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
    ```
 
-3. **Event Handler Cleanup**
+3. **Memory Leak behoben** ✅
+   - Event Handler von `bind()` nach `setup()` verschoben
+   - Handler wird nur EINMAL pro Widget verbunden
+   - Handler nutzt `list_item.get_item()` zur Laufzeit
+   - Stabiler Memory-Verbrauch
+
    ```python
-   # Context Menu nur in setup (einmal), nicht in bind
-   def _on_list_setup(self, factory, list_item):
-       gesture.connect("pressed", handler)
+   # In _on_list_setup() - nur einmal!
+   def on_right_click(gesture, n_press, x, y):
+       pkg = list_item.get_item()  # Zur Laufzeit holen
+       if pkg:
+           self._show_context_menu(box, pkg, x, y)
+
+   gesture.connect("pressed", on_right_click)
    ```
 
-#### Warum zuerst?
-**Voraussetzung für v0.3.0!** Das Scope-Dropdown fügt "Alle Pakete" (2000+) hinzu. Ohne Performance-Fixes wird das unerträglich langsam.
+#### Performance-Ergebnisse
+
+**Seitenwechsel:**
+- Deutlich schneller und flüssiger
+- Gecachte Seiten laden sehr schnell
+- App fühlt sich insgesamt performanter an
+
+**Memory:**
+- Stabiler Verbrauch auch bei vielen Seitenwechseln
+- Kein kontinuierlicher Memory-Anstieg mehr
+
+#### Warum wichtig?
+**Voraussetzung für v0.3.0 erfüllt!** Die Performance-Basis ist gelegt. Das geplante Scope-Dropdown mit "Alle Pakete" (2000+) kann jetzt implementiert werden.
 
 ---
 
@@ -277,9 +314,9 @@ Erste **produktionsreife** Version für breite Nutzerbasis.
 
 ## 🎯 Meilensteine
 
-| Version | Fokus | Status | ETA |
-|---------|-------|--------|-----|
-| v0.2.4 | ⚡ Performance | 🟡 Geplant | TBD |
+| Version | Fokus | Status | Datum |
+|---------|-------|--------|-------|
+| v0.2.4 | ⚡ Performance | ✅ Fertig | 26.01.2026 |
 | v0.3.0 | 🔍 Such-Scope | 🟡 Geplant | Nach v0.2.4 |
 | v0.3.1 | 🖥️ Desktop Apps | 🟡 Geplant | Nach v0.3.0 |
 | v0.4.0 | 📊 Features | 💭 Ideen | TBD |
@@ -314,5 +351,5 @@ Diese Roadmap ist nicht in Stein gemeißelt! Vorschläge und Feedback sind willk
 
 ---
 
-**Letzte Aktualisierung:** 28. Dezember 2024
-**Nächstes Review:** Nach v0.2.4 Release
+**Letzte Aktualisierung:** 26. Januar 2026
+**Nächstes Review:** Nach v0.3.0 Release

@@ -709,7 +709,28 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 
 ### ✅ Abgeschlossen
 
-- **v0.2.2 Release** (27.12.2024) - AKTUELL
+- **v0.2.4 Release** (26.01.2026) - AKTUELL - Performance-Release
+  - **Icon-Caching implementiert**
+    - Icons werden nur einmal geladen und gecacht
+    - Cache shared zwischen allen Views
+    - Seitenwechsel zu gecachten Seiten deutlich schneller
+  - **Sortierung optimiert**
+    - Sortierung nur einmal nach Filterung/Suche
+    - Kein Re-Sortieren bei jedem Seitenwechsel
+    - Sortierung: Erst nach Typ (deb, flatpak, snap), dann alphabetisch
+  - **Memory Leak behoben**
+    - Event Handler in setup() statt bind()
+    - Stabiler Memory-Verbrauch auch bei vielen Seitenwechseln
+    - Kein kontinuierlicher Memory-Anstieg mehr
+  - **Performance-Verbesserungen:**
+    - Seitenwechsel: Deutlich schneller und flüssiger
+    - Memory: Stabiler Verbrauch bei vielen Seitenwechseln
+    - App fühlt sich insgesamt performanter an
+  - **GitHub Release:** (pending)
+  - **Issue #17 geschlossen:** Performance-Optimierungen abgeschlossen
+  - **Commits:** 5 Performance-Tasks (Icon-Cache, Sortierung, Memory Leak Fix)
+
+- **v0.2.2 Release** (27.12.2024)
   - **Kritischer Bugfix:** NameError auf OBS-Paketen behoben
   - **Problem:** ImageTk Type Hints wurden zur Parse-Zeit aufgelöst
   - **Lösung:** Type Hints als String-Literale geschrieben
@@ -786,43 +807,24 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Lösung 4: Eigener Überschreiben-Dialog mit Adw.MessageDialog
     - Lösung 5: GTK4-kompatible FileChooserDialog (ohne parent im Constructor)
     - Status: ✅ Alle Formate (TXT/CSV/JSON) funktionieren korrekt
+  - **Issue #17 (Performance-Optimierungen) → behoben (26.01.2026):**
+    - Problem: Seitenwechsel langsam, Memory Leak bei vielen Seitenwechseln
+    - Bottlenecks: Icon-Laden, Sortierung, Event Handler
+    - Lösung 1: Icon-Caching implementiert (Icons nur einmal laden)
+    - Lösung 2: Sortierung optimiert (nur einmal nach Filterung)
+    - Lösung 3: Memory Leak behoben (Handler in setup() statt bind())
+    - Status: ✅ Seitenwechsel deutlich schneller, stabiler Memory-Verbrauch
+    - Commits: b0ff7e4, 76edd05, 873747c, d95b3b5
 
 ### 🔄 Aktuell laufend
-- **Bug-Fixes für v0.2.4** (26.01.2026):
-  - ✅ Issue #15 behoben: Export-Format-Bug (alle Formate TXT/CSV/JSON funktionieren)
-  - Weitere Bug-Reports werden bearbeitet
-
-- **Community Testing** (v0.2.3):
-  - Testing auf verschiedenen Systemen
+- **Community Testing** (v0.2.4):
+  - Testing der Performance-Optimierungen
   - Feedback sammeln via GitHub Issues
-  - **Performance-Feedback:** User mit Mint (~400 Apps) berichten von langsamen Seitenwechseln
+  - Bereit für Release nach Testing
 
 ### 📋 Roadmap
 
-#### **v0.2.4 - Performance-Release** (NÄCHSTE VERSION)
-**Issue #17** - Performance-Optimierungen (kritisch!)
-
-**Problem:** User mit Mint (~2000 Pakete, ~400 gefilterte Apps) berichten:
-- Seitenwechsel spürbar langsam
-- App-Start dauert zu lange
-
-**Geplante Fixes:**
-1. **Icon-Caching** (größter Impact)
-   - Icons nur einmal laden, dann cachen
-   - ~80% schnellerer Seitenwechsel
-2. **Sortierung optimieren**
-   - Nur einmal nach Filterung sortieren
-   - 5-10x schnellerer Seitenwechsel
-3. **Event Handler Cleanup**
-   - Context Menu in `setup` statt `bind`
-   - Memory Leak beheben
-
-**Aufwand:** 2-3h Implementierung + 1h Testing
-**Priorität:** KRITISCH - muss vor v0.3.0 (Scope-Dropdown)
-
----
-
-#### **v0.3.0 - Such-Scope & Features**
+#### **v0.3.0 - Such-Scope & Features** (NÄCHSTE VERSION)
 **Issue #16** - Scope-Dropdown für Suche
 
 **Features:**
