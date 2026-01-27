@@ -52,6 +52,8 @@ locales/*/LC_MESSAGES/*.mo
 *.deb
 *.rpm
 *.AppImage
+*.tar.gz
+debian.tar.gz
 AppDir/
 packaging/build/
 packaging/dist/
