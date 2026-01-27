@@ -390,13 +390,25 @@ sudo zypper install myapps
 ```
 
 **Build-Workflow:**
-1. Source Tarball erstellen: `git archive --format=tar.gz --prefix=myapps-0.2.0/ -o myapps-0.2.0.tar.gz HEAD`
-2. .spec Datei schreiben (defines build steps)
-3. In OBS hochladen (Web UI oder `osc` CLI)
-4. Repositories auswählen (welche Distros)
-5. Builds triggern (automatisch nach Upload)
-6. Warten auf Build-Ergebnisse (5-15 Min pro Distro)
-7. Repository-URLs in README eintragen
+1. Source Tarball erstellen: `git archive --format=tar.gz --prefix=myapps-X.Y.Z/ -o myapps-X.Y.Z.tar.gz vX.Y.Z`
+2. **WICHTIG:** setup.py muss im Tarball enthalten sein (Debian pybuild Kompatibilität)
+   - Minimal setup.py: `from setuptools import setup; setup()`
+   - Alle Konfiguration bleibt in pyproject.toml
+3. debian.tar.gz erstellen mit **Debian Source Package Struktur**:
+   - `debian/changelog` - Versionshistorie (dpkg-Format)
+   - `debian/control` - Package-Metadaten + Dependencies
+   - `debian/rules` - Build-Skript (dh mit pybuild)
+   - `debian/compat` - Debhelper Level (10+)
+   - `debian/source/format` - "3.0 (quilt)"
+   - `debian/postinst` / `debian/postrm` - Maintainer-Scripts
+   - **NICHT**: DEB-Paket-Struktur (usr/share/, usr/bin/) - das baut OBS!
+4. myapps.dsc erstellen mit korrekten SHA256/MD5-Checksums
+5. myapps.spec aktualisieren (Version, Changelog)
+6. In OBS hochladen (Web UI oder `osc` CLI)
+7. Repositories auswählen (welche Distros)
+8. Builds triggern (automatisch nach Upload)
+9. Warten auf Build-Ergebnisse (5-15 Min pro Distro)
+10. Repository-URLs in README eintragen
 
 **Vorteile gegenüber Flathub:**
 - ✅ Kein Sandbox (voller System-Zugriff)
@@ -408,6 +420,31 @@ sudo zypper install myapps
 - ❌ Kein App Store UI (Terminal-Installation)
 - ❌ Nutzer müssen Repo manuell hinzufügen
 - ❌ Keine automatische Sandbox-Sicherheit
+
+**Häufige Build-Fehler & Lösungen (v0.2.4 Erkenntnisse):**
+
+1. **"can't open file setup.py"** (Debian Builds)
+   - **Problem:** Debian pybuild erwartet setup.py, auch wenn pyproject.toml vorhanden
+   - **Lösung:** Minimal setup.py hinzufügen: `from setuptools import setup; setup()`
+   - **Best Practice:** setup.py committen und in Git-Repo behalten
+
+2. **"debian/changelog: No such file"** (Debian Builds)
+   - **Problem:** debian.tar.gz enthält DEB-Paket-Struktur statt Source Package
+   - **Lösung:** Korrekte Struktur in debian.tar.gz:
+     - `debian/changelog` (dpkg-Format mit Version + Datum)
+     - `debian/control` (Package-Metadaten)
+     - `debian/rules` (Build-Skript mit dh + pybuild)
+     - `debian/compat` (Debhelper Level)
+     - `debian/source/format` (3.0 quilt)
+   - **NICHT:** usr/share/, usr/bin/ (wird von OBS gebaut!)
+
+3. **Checksums stimmen nicht** (myapps.dsc)
+   - **Problem:** Alte Tarball-Version hochgeladen
+   - **Lösung:**
+     - Alte Dateien auf OBS LÖSCHEN
+     - Neue Checksums berechnen: `sha256sum` + `md5sum` + `stat -c "%s"`
+     - myapps.dsc aktualisieren
+     - Neue Dateien hochladen
 
 ### Flatpak (Flathub - ABGELEHNT)
 **Status:** ❌ Nicht verfügbar auf Flathub
@@ -575,6 +612,13 @@ sudo zypper install myapps
 3. Changelog erweitern
 4. Tests hinzufügen (wenn möglich)
 
+### Bei OBS-Releases:
+1. **Immer setup.py im Repo behalten** (Debian pybuild braucht es!)
+2. **debian.tar.gz Struktur prüfen** (Source Package, nicht DEB-Struktur)
+3. **Alte Dateien auf OBS löschen** vor Upload neuer Versionen
+4. **Checksums in myapps.dsc** mit sha256sum/md5sum/stat verifizieren
+5. **Git-Tag erst nach setup.py** erstellen (sonst fehlt es im Tarball)
+
 ### User-Präferenzen:
 - Keine explizite Nachfrage bei neuen Script-Versionen
 - Alle Terminal-Ausgaben auf Deutsch
@@ -705,11 +749,11 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 10. **💝 Spendenbutton** mit Rechtlichem
 11. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (26.01.2026)
+## Aktueller Projekt-Stand (27.01.2026)
 
 ### ✅ Abgeschlossen
 
-- **v0.2.4 Release** (26.01.2026) - AKTUELL - Performance-Release
+- **v0.2.4 Release** (27.01.2026) - ✅ RELEASED - Performance-Release
   - **Icon-Caching implementiert**
     - Icons werden nur einmal geladen und gecacht
     - Cache shared zwischen allen Views
@@ -729,6 +773,11 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.2.4
   - **Issue #17 geschlossen:** Performance-Optimierungen abgeschlossen
   - **Commits:** 5 Performance-Tasks (Icon-Cache, Sortierung, Memory Leak Fix)
+  - **OBS-Pakete erfolgreich gebaut:**
+    - setup.py hinzugefügt für Debian pybuild Kompatibilität (Minimal-Wrapper für pyproject.toml)
+    - debian.tar.gz mit korrekter Debian Source Package Struktur (changelog, control, rules, compat, source/format)
+    - Alle 11 Distributionen bauen erfolgreich
+    - Download: https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps
 
 - **v0.2.2 Release** (27.12.2024)
   - **Kritischer Bugfix:** NameError auf OBS-Paketen behoben
@@ -818,9 +867,9 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 
 ### 🔄 Aktuell laufend
 - **Community Testing** (v0.2.4):
-  - Testing der Performance-Optimierungen
+  - OBS-Pakete verfügbar für alle 11 Distributionen
+  - Performance-Optimierungen werden getestet
   - Feedback sammeln via GitHub Issues
-  - Bereit für Release nach Testing
 
 ### 📋 Roadmap
 
