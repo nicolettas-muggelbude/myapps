@@ -726,7 +726,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Seitenwechsel: Deutlich schneller und flüssiger
     - Memory: Stabiler Verbrauch bei vielen Seitenwechseln
     - App fühlt sich insgesamt performanter an
-  - **GitHub Release:** (pending)
+  - **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.2.4
   - **Issue #17 geschlossen:** Performance-Optimierungen abgeschlossen
   - **Commits:** 5 Performance-Tasks (Icon-Cache, Sortierung, Memory Leak Fix)
 
