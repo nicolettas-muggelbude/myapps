@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" version="1.1" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3584e4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1c71d8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="8" y="8" width="112" height="112" rx="24" ry="24" fill="url(#gradient)"/>
+
+  <!-- App grid (3x3) -->
+  <!-- Row 1 -->
+  <rect x="24" y="24" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="54" y="24" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="84" y="24" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Row 2 -->
+  <rect x="24" y="54" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="54" y="54" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="84" y="54" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Row 3 -->
+  <rect x="24" y="84" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="54" y="84" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+  <rect x="84" y="84" width="20" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Search magnifier overlay (bottom right) -->
+  <circle cx="96" cy="96" r="16" fill="#ffffff" opacity="0.95"/>
+  <circle cx="96" cy="96" r="10" fill="none" stroke="#1c71d8" stroke-width="3"/>
+  <line x1="104" y1="104" x2="110" y2="110" stroke="#1c71d8" stroke-width="3" stroke-linecap="round"/>
+</svg>

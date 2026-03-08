@@ -865,18 +865,34 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Status: ✅ Seitenwechsel deutlich schneller, stabiler Memory-Verbrauch
     - Commits: b0ff7e4, 76edd05, 873747c, d95b3b5
 
-### ✅ v0.3.0 - Such-Scope & Features (08.03.2026)
-- **Scope-Dropdown** "Nur User-Apps" / "Alle Pakete" (Issue #16)
-  - Standard: Nur User-Apps (~800 Apps)
-  - "Alle Pakete": Komplette Paketliste (~2000+ Pakete)
-  - Dropdown direkt vor dem Suchfeld in der HeaderBar
-- **Mindestens 5 Zeichen** für Suche (Statusbar-Feedback)
-- Statusbar zeigt beim Start: "X User-Apps geladen • Y Pakete gesamt"
+### ✅ v0.3.0 - Scope, Größe, Datum & Sortierung (08.03.2026) — RELEASED
+- **Scope-Dropdown** "Nur User-Apps" / "Alle Pakete" (Issue #16) ✅
+- **Installierte Größe** in Liste und Tabelle (Issue #5) ✅
+  - dpkg (${Installed-Size}), rpm (%{SIZE}), pacman (pacman -Qi)
+  - flatpak (installed-size Spalte), snap (du -sb Batch)
+- **Installationsdatum** in Liste und Tabelle (Issue #10) ✅
+  - dpkg (dpkg.log + gzip-Archive), rpm (%{INSTALLTIME})
+  - pacman (pacman -Qi), flatpak/snap (Filesystem-Zeitstempel)
+  - Lokalisierte Anzeige: "26. Dez. 2024" (DE) / "Dec 26, 2024" (EN)
+- **Sortierfunktion** 7 Optionen (Issue #11) ✅
+  - Standard, Name A-Z/Z-A, Größte/Kleinste, Neueste/Älteste
+- **Mindestens 5 Zeichen** für Suche (Statusbar-Feedback) ✅
+- **Performance:** Kein Einfrieren beim Tabelle→Liste Wechsel ✅
+  - Sofortiges Rendern + async Hintergrund-Laden für Beschreibungen
+- **Git-Tag:** v0.3.0
+- **Tarball:** myapps-0.3.0.tar.gz (5.7 MB)
+- **OBS + AUR Update:** Ausstehend (Dateien vorbereitet)
+- **GitHub Release:** Ausstehend
 
 ### 🔄 Aktuell laufend
-- **Development** (v0.3.0):
-  - Implementierung fertig, noch nicht released
-  - OBS + AUR Update steht aus
+- **Release v0.3.0:**
+  - ✅ Code implementiert und committed
+  - ✅ Git-Tag v0.3.0 erstellt
+  - ✅ Tarball myapps-0.3.0.tar.gz erstellt
+  - ✅ myapps.spec, PKGBUILD, myapps.dsc, debian.tar.gz aktualisiert
+  - ⏳ OBS-Upload (myapps-0.3.0.tar.gz, myapps.spec, myapps.dsc, debian.tar.gz)
+  - ⏳ AUR PKGBUILD + .SRCINFO Push
+  - ⏳ GitHub Release erstellen
 
 ### 📋 Roadmap
 
@@ -885,20 +901,17 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 
 **Features:**
 1. **Neue Ansicht:** Desktop Apps (neben Liste & Tabelle)
-2. **Desktop-App-Erkennung (Option B):**
+2. **Desktop-App-Erkennung:**
    - Parse `/usr/share/applications/`
    - Parse `~/.local/share/applications/`
    - Flatpak/Snap-spezifische Pfade
-3. **Scope-Integration:**
-   - Bei Desktop Apps View: Scope deaktiviert
-   - Suche beschränkt sich automatisch auf Desktop Apps
 
 ---
 
 #### **v0.4.0 - Weitere Features**
-- **Issue #5:** Größen-Information für Pakete
 - Virtual Scrolling (echtes ListView-Scrolling, weg von Pagination)
 - Icon-Anzeige in ListView/ColumnView (aktuell nur Platzhalter)
+- Update-Status prüfen
 
 #### **v1.0.0 - Stable Release**
 - Nach umfangreichem Community-Testing
