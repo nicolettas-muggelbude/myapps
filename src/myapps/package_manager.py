@@ -3,8 +3,11 @@ Paketmanager-Abstraktionsmodul für MyApps
 Unterstützt verschiedene Paketmanager auf unterschiedlichen Linux-Distributionen
 """
 
+import gzip
 import subprocess
 import logging
+from datetime import datetime
+from pathlib import Path
 from typing import Optional, List
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -19,6 +22,8 @@ class Package:
     version: str
     package_type: str  # z.B. "deb", "rpm", "snap", "flatpak"
     description: Optional[str] = None
+    size: Optional[int] = None         # Installierte Größe in Bytes (Issue #5)
+    install_date: Optional[str] = None  # Installationsdatum "YYYY-MM-DD" (Issue #10)
 
 
 class PackageManagerBase(ABC):
@@ -73,13 +78,16 @@ class DpkgPackageManager(PackageManagerBase):
         """Gibt alle installierten DEB-Pakete zurück"""
         packages = []
 
-        # Hole Pakete MIT Beschreibungen in einem Befehl (schnell)
+        # Hole Pakete MIT Beschreibungen und Größe in einem Befehl (Issue #5)
         output = self._run_command([
             "dpkg-query", "-W",
-            "--showformat=${Package}\t${Version}\t${Description}\n"
+            "--showformat=${Package}\t${Version}\t${Description}\t${Installed-Size}\n"
         ])
         if not output:
             return packages
+
+        # Installationsdaten aus dpkg.log lesen (Issue #10)
+        install_dates = self._get_install_dates()
 
         for line in output.splitlines():
             if not line.strip():
@@ -91,15 +99,55 @@ class DpkgPackageManager(PackageManagerBase):
                 version = parts[1].strip()
                 description = parts[2].strip() if len(parts) >= 3 else None
 
+                # Größe in KB → Bytes umrechnen (${Installed-Size} gibt KB)
+                size = None
+                if len(parts) >= 4:
+                    try:
+                        size_kb = int(parts[3].strip())
+                        size = size_kb * 1024
+                    except (ValueError, IndexError):
+                        pass
+
                 packages.append(Package(
                     name=package_name,
                     version=version,
                     package_type="deb",
-                    description=description
+                    description=description,
+                    size=size,
+                    install_date=install_dates.get(package_name)
                 ))
 
         logger.info(f"DEB: {len(packages)} Pakete gefunden")
         return packages
+
+    def _get_install_dates(self) -> dict:
+        """
+        Liest Installationsdaten aus /var/log/dpkg.log* (inkl. rotierte/komprimierte Logs).
+        Älteste Dateien zuerst lesen, damit neuere Einträge gewinnen.
+        """
+        dates = {}
+        # Alle dpkg.log Dateien, älteste zuerst (reverse=True: .2.gz → .1 → aktuell)
+        log_files = sorted(Path("/var/log").glob("dpkg.log*"), reverse=True)
+
+        for log_file in log_files:
+            try:
+                if log_file.suffix == ".gz":
+                    opener, mode = gzip.open, "rt"
+                else:
+                    opener, mode = open, "r"
+
+                with opener(log_file, mode, encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        # Format: "2024-12-26 10:15:23 install packagename:amd64 ..."
+                        parts = line.split()
+                        if len(parts) >= 4 and parts[2] in ("install", "upgrade"):
+                            pkg_name = parts[3].split(":")[0]  # Architektur-Suffix entfernen
+                            dates[pkg_name] = parts[0]  # "YYYY-MM-DD"
+            except Exception as e:
+                logger.debug(f"Fehler beim Lesen von {log_file}: {e}")
+
+        logger.info(f"DEB: Installationsdaten für {len(dates)} Pakete geladen")
+        return dates
 
     def get_package_description(self, package_name: str) -> Optional[str]:
         """
@@ -158,6 +206,9 @@ class PacmanPackageManager(PackageManagerBase):
         if not output:
             return packages
 
+        # Größen + Installationsdaten via pacman -Qi (ein Aufruf, Issue #5 + #10)
+        pkg_info = self._get_package_info()
+
         for line in output.splitlines():
             if not line.strip():
                 continue
@@ -166,15 +217,89 @@ class PacmanPackageManager(PackageManagerBase):
             if len(parts) >= 2:
                 package_name = parts[0]
                 version = parts[1]
+                info = pkg_info.get(package_name, {})
 
                 packages.append(Package(
                     name=package_name,
                     version=version,
-                    package_type="pkg"
+                    package_type="pkg",
+                    size=info.get("size"),
+                    install_date=info.get("date")
                 ))
 
         logger.info(f"Pacman: {len(packages)} Pakete gefunden")
         return packages
+
+    def _get_package_info(self) -> dict:
+        """
+        Holt Größen + Installationsdaten aus einem einzigen 'pacman -Qi' Aufruf.
+        Gibt dict {pkg_name: {"size": int|None, "date": str|None}} zurück.
+        """
+        info = {}
+        output = self._run_command(["pacman", "-Qi"])
+        if not output:
+            return info
+
+        current_name = None
+        current = {}
+
+        for line in output.splitlines():
+            if line.startswith("Name "):
+                # Neues Paket beginnt — vorheriges speichern
+                if current_name:
+                    info[current_name] = current
+                current_name = line.split(":", 1)[1].strip()
+                current = {}
+            elif line.startswith("Installed Size") and current_name:
+                current["size"] = self._parse_size(line.split(":", 1)[1].strip())
+            elif line.startswith("Install Date") and current_name:
+                current["date"] = self._parse_date(line.split(":", 1)[1].strip())
+
+        # Letztes Paket nicht vergessen
+        if current_name:
+            info[current_name] = current
+
+        return info
+
+    def _parse_size(self, size_str: str) -> Optional[int]:
+        """Parst Größenstrings wie '74.87 KiB', '1.23 MiB', '2.00 GiB'"""
+        try:
+            parts = size_str.split()
+            if len(parts) >= 2:
+                value = float(parts[0])
+                unit = parts[1].upper()
+                if unit == "B":
+                    return int(value)
+                elif unit in ("KIB", "KB"):
+                    return int(value * 1024)
+                elif unit in ("MIB", "MB"):
+                    return int(value * 1024 * 1024)
+                elif unit in ("GIB", "GB"):
+                    return int(value * 1024 * 1024 * 1024)
+        except Exception:
+            pass
+        return None
+
+    def _parse_date(self, date_str: str) -> Optional[str]:
+        """
+        Parst Pacman-Datumsformat in 'YYYY-MM-DD'.
+        Typisches Format: "Thu 26 Dec 2024 10:15:23 AM CET"
+        """
+        # Zeitzone am Ende entfernen (letztes Wort)
+        parts = date_str.rsplit(" ", 1)
+        date_clean = parts[0].strip()
+
+        formats = [
+            "%a %d %b %Y %I:%M:%S %p",  # "Thu 26 Dec 2024 10:15:23 AM"
+            "%a %d %b %Y %H:%M:%S",      # "Thu 26 Dec 2024 10:15:23"
+        ]
+        for fmt in formats:
+            try:
+                dt = datetime.strptime(date_clean, fmt)
+                return dt.strftime("%Y-%m-%d")
+            except ValueError:
+                continue
+        return None
 
 
 class RpmPackageManager(PackageManagerBase):
@@ -187,8 +312,11 @@ class RpmPackageManager(PackageManagerBase):
         """Gibt alle installierten RPM-Pakete zurück"""
         packages = []
 
-        # rpm -qa gibt alle installierten Pakete aus
-        output = self._run_command(["rpm", "-qa", "--queryformat", "%{NAME} %{VERSION}-%{RELEASE}\n"])
+        # rpm -qa gibt alle installierten Pakete aus (Größe + Datum, Issue #5 + #10)
+        output = self._run_command([
+            "rpm", "-qa", "--queryformat",
+            "%{NAME}\t%{VERSION}-%{RELEASE}\t%{SIZE}\t%{INSTALLTIME}\n"
+        ])
         if not output:
             return packages
 
@@ -196,15 +324,34 @@ class RpmPackageManager(PackageManagerBase):
             if not line.strip():
                 continue
 
-            parts = line.split(maxsplit=1)
+            parts = line.split("\t")
             if len(parts) >= 2:
                 package_name = parts[0]
                 version = parts[1]
 
+                # Größe direkt in Bytes (%{SIZE} liefert Bytes)
+                size = None
+                if len(parts) >= 3:
+                    try:
+                        size = int(parts[2].strip())
+                    except (ValueError, IndexError):
+                        pass
+
+                # Installationsdatum aus Unix-Timestamp (%{INSTALLTIME})
+                install_date = None
+                if len(parts) >= 4:
+                    try:
+                        timestamp = int(parts[3].strip())
+                        install_date = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+                    except (ValueError, OSError):
+                        pass
+
                 packages.append(Package(
                     name=package_name,
                     version=version,
-                    package_type="rpm"
+                    package_type="rpm",
+                    size=size,
+                    install_date=install_date
                 ))
 
         logger.info(f"RPM: {len(packages)} Pakete gefunden")
@@ -260,23 +407,63 @@ class SnapPackageManager(PackageManagerBase):
         if not output:
             return packages
 
+        # Snap-Namen sammeln für Batch-Aufruf
+        snap_data = []
         for line in output.splitlines()[1:]:  # Überspringe Header
             if not line.strip():
                 continue
-
             parts = line.split()
             if len(parts) >= 2:
-                package_name = parts[0]
-                version = parts[1]
+                snap_data.append((parts[0], parts[1]))
 
-                packages.append(Package(
-                    name=package_name,
-                    version=version,
-                    package_type="snap"
-                ))
+        # Größen in einem Aufruf (Issue #5)
+        snap_names = [name for name, _ in snap_data]
+        sizes = self._get_sizes(snap_names)
+
+        for package_name, version in snap_data:
+            packages.append(Package(
+                name=package_name,
+                version=version,
+                package_type="snap",
+                size=sizes.get(package_name),
+                install_date=self._get_install_date(package_name)
+            ))
 
         logger.info(f"Snap: {len(packages)} Pakete gefunden")
         return packages
+
+    def _get_sizes(self, snap_names: List[str]) -> dict:
+        """Holt installierte Größen aller Snaps in einem einzigen du-Aufruf"""
+        sizes = {}
+        paths = [f"/snap/{name}/current" for name in snap_names
+                 if Path(f"/snap/{name}/current").exists()]
+        if not paths:
+            return sizes
+        try:
+            result = subprocess.run(
+                ["du", "-sb"] + paths,
+                capture_output=True, text=True, timeout=30
+            )
+            if result.returncode == 0:
+                for line in result.stdout.splitlines():
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        snap_name = Path(parts[1]).parent.name  # /snap/<name>/current → <name>
+                        sizes[snap_name] = int(parts[0])
+        except Exception as e:
+            logger.debug(f"Snap du-Aufruf fehlgeschlagen: {e}")
+        return sizes
+
+    def _get_install_date(self, snap_name: str) -> Optional[str]:
+        """Liest Installationsdatum aus mtime von /snap/<name>/current"""
+        path = Path(f"/snap/{snap_name}/current")
+        try:
+            if path.exists():
+                mtime = path.stat().st_mtime
+                return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+        except OSError:
+            pass
+        return None
 
 
 class FlatpakPackageManager(PackageManagerBase):
@@ -289,7 +476,11 @@ class FlatpakPackageManager(PackageManagerBase):
         """Gibt alle installierten Flatpak-Apps zurück"""
         packages = []
 
-        output = self._run_command(["flatpak", "list", "--app", "--columns=name,application,version"])
+        # installed-size Spalte hinzugefügt (Issue #5)
+        output = self._run_command([
+            "flatpak", "list", "--app",
+            "--columns=name,application,version,installed-size"
+        ])
         if not output:
             return packages
 
@@ -303,16 +494,47 @@ class FlatpakPackageManager(PackageManagerBase):
                 app_id = parts[1].strip()
                 version = parts[2].strip() if len(parts) >= 3 else "unknown"
 
+                # Größe: installed-size liefert Bytes als int (Issue #5)
+                size = None
+                if len(parts) >= 4:
+                    try:
+                        size = int(parts[3].strip())
+                    except ValueError:
+                        pass
+
+                # Datum aus Filesystem (Issue #10)
+                install_date = self._get_install_date(app_id)
+
                 # Verwende App-ID als Namen (z.B. org.mozilla.firefox)
                 packages.append(Package(
                     name=app_id,
                     version=version,
                     package_type="flatpak",
-                    description=display_name
+                    description=display_name,
+                    size=size,
+                    install_date=install_date
                 ))
 
         logger.info(f"Flatpak: {len(packages)} Pakete gefunden")
         return packages
+
+    def _get_install_date(self, app_id: str) -> Optional[str]:
+        """
+        Liest Installationsdatum aus mtime des Flatpak-App-Verzeichnisses.
+        Prüft System- und User-Installation.
+        """
+        search_paths = [
+            Path("/var/lib/flatpak/app") / app_id,
+            Path.home() / ".local/share/flatpak/app" / app_id,
+        ]
+        for path in search_paths:
+            try:
+                if path.exists():
+                    mtime = path.stat().st_mtime
+                    return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+            except OSError:
+                pass
+        return None
 
 
 class PackageManagerFactory:

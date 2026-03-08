@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+# Icon-Cache aktualisieren
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+fi
+
+# Desktop-Database aktualisieren
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+
+exit 0

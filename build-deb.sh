@@ -48,7 +48,7 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: all
-Depends: python3 (>= 3.8), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1, python3-pil
+Depends: python3 (>= 3.8), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0, gir1.2-adw-1
 Recommends: libadwaita-1-0
 Maintainer: nicolettas-muggelbude <noreply@github.com>
 Description: Tool zum Auflisten und Verwalten installierter Linux-Anwendungen

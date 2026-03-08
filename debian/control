@@ -1,0 +1,31 @@
+Source: myapps
+Section: utils
+Priority: optional
+Maintainer: MyApps Contributors <noreply@github.com>
+Build-Depends: debhelper (>= 10),
+               dh-python,
+               python3-all,
+               python3-setuptools
+Standards-Version: 4.5.0
+Homepage: https://github.com/nicolettas-muggelbude/myapps
+
+Package: myapps
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3 (>= 3.8),
+         python3-gi,
+         gir1.2-gtk-4.0,
+         gir1.2-adw-1,
+         python3-pillow | python3-pil,
+         hicolor-icon-theme
+Description: Linux package manager overview with GTK4 + Libadwaita
+ MyApps is a user-friendly tool for Linux that displays all installed
+ applications in a clean interface - without system clutter.
+ .
+ Features:
+  * Multi-distribution support (Debian, Ubuntu, Arch, Fedora, etc.)
+  * Modern GTK4 + Libadwaita interface with native dark mode
+  * Search function (name + description)
+  * Export functions (TXT, CSV, JSON)
+  * Multilingual (German, English)

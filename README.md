@@ -7,7 +7,8 @@
 
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-  [![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/nicolettas-muggelbude/myapps)
+  [![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
+  [![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
 </div>
 
 [English](README.en.md) | **Deutsch**
@@ -31,13 +32,18 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 - Dark Mode (folgt System-Theme)
 - Virtual Scrolling (10.000+ Pakete kein Problem)
 - Tabellenansicht & Listenansicht
-- Umschaltbar per Knopfdruck
 
-🔍 **Intelligentes Filtern**
+🔍 **Suche & Filter**
+- Scope-Dropdown: "Nur User-Apps" oder "Alle Pakete"
+- Live-Suche in Name + Beschreibung (ab 5 Zeichen)
 - Automatische Erkennung von System-Apps
 - Distro-spezifische Filter
 - Eigene Filter hinzufügen (Rechtsklick)
-- Community-erweiterbar
+
+📊 **Paket-Informationen**
+- Installierte Größe (dpkg, rpm, pacman, flatpak, snap)
+- Installationsdatum (dpkg, rpm, pacman, flatpak, snap)
+- Sortierfunktion: Name, Größe, Datum (auf- und absteigend)
 
 📤 **Export-Funktionen**
 - Text (TXT)
@@ -67,11 +73,14 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 
 ### Voraussetzungen
 
-**Ab Version 0.2.0 benötigt MyApps GTK4 + Libadwaita:**
+**MyApps benötigt GTK4 + Libadwaita als System-Pakete:**
 
 ```bash
-# Debian/Ubuntu/Mint
+# Debian 12 / Linux Mint
 sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
+
+# Ubuntu 24.04 LTS (python3-pil wurde zu python3-pillow umbenannt)
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pillow
 
 # Arch/Manjaro
 sudo pacman -S python-gobject gtk4 libadwaita python-pillow
@@ -82,6 +91,8 @@ sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
 # openSUSE
 sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
 ```
+
+> **Hinweis Ubuntu 24.04:** Das Paket `python3-pil` existiert dort nicht mehr — bitte `python3-pillow` verwenden.
 
 ### Aus OBS (Empfohlen - Debian/Ubuntu/Fedora/openSUSE)
 
@@ -147,13 +158,11 @@ makepkg -si
 
 **⚠️ WARNUNG:** Dieses Paket ist NUR für Testing/Development gedacht!
 
-**Für Production bitte OBS-Pakete nutzen** (siehe oben) - diese sind professioneller und folgen Linux-Standards.
-
-[![Download DEB](https://img.shields.io/badge/Download-DEB_Testing-FFA500?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/nicolettas-muggelbude/myapps/releases/download/v0.2.0/myapps_0.2.0_all.deb)
+**Für Production bitte OBS-Pakete nutzen** (siehe oben).
 
 ```bash
 # Nach dem Download installieren
-sudo dpkg -i myapps_0.2.0_all.deb
+sudo dpkg -i myapps_0.3.0_all.deb
 
 # Falls Dependencies fehlen
 sudo apt-get install -f
@@ -161,11 +170,6 @@ sudo apt-get install -f
 # Starten
 myapps
 ```
-
-**Bekannte Probleme:**
-- Bundelt Pillow (größer als OBS-Paket)
-- Installiert nach /usr/share/myapps/ statt /usr/lib/
-- Nicht für Production empfohlen
 
 ### ~~Als Flatpak~~ (Nicht verfügbar)
 
@@ -175,7 +179,7 @@ myapps
 
 ### ~~Als AppImage~~ (discontinued ab v0.2.0)
 
-**Hinweis:** AppImage wird ab v0.2.0 nicht mehr angeboten, da GTK4-System-Dependencies schwer zu bundeln sind. Nutze stattdessen DEB-Paket oder Flatpak.
+AppImage wird ab v0.2.0 nicht mehr angeboten, da GTK4-System-Dependencies schwer zu bundeln sind.
 
 ### Aus Quellcode (Development)
 
@@ -184,20 +188,27 @@ myapps
 git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
-# System-Dependencies installieren (siehe oben unter "Voraussetzungen")
-# Debian/Ubuntu/Mint:
+# 1. System-Pakete installieren (PFLICHT - GTK4 kann nicht via pip gebaut werden!)
+# Ubuntu 24.04:
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pillow
+# Ubuntu 22.04 / Debian 12:
 sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
 
-# Virtual Environment erstellen (optional)
-python3 -m venv venv
+# 2. venv MIT --system-site-packages (damit python3-gi verfügbar ist)
+python3 -m venv --system-site-packages venv
 source venv/bin/activate
 
-# Python-Dependencies installieren
-pip install -e .
+# 3. Nur Pillow via pip (PyGObject kommt vom System)
+pip install -e . --no-deps
+pip install Pillow
 
-# App starten
+# 4. App starten
 python3 -m myapps.main
+# oder einfach:
+./run-dev.sh
 ```
+
+> **Wichtig:** `pip install -e .` **ohne** `--no-deps` schlägt fehl, weil pip versucht PyGObject zu kompilieren — das benötigt `pkg-config` + `libcairo2-dev`. GTK-Bindings müssen als System-Paket kommen.
 
 ## Pakete selbst bauen
 
@@ -207,96 +218,61 @@ python3 -m myapps.main
 # Build-Script ausführen
 ./build-deb.sh
 
-# Optinal: Spezifische Version
-./build-deb.sh 0.1.0
+# Optional: Spezifische Version
+./build-deb.sh 0.3.0
 
 # Installieren
-sudo dpkg -i myapps_0.1.0_all.deb
-```
-
-### AppImage bauen
-
-```bash
-# appimagetool herunterladen (einmalig)
-wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-chmod +x appimagetool-x86_64.AppImage
-mv appimagetool-x86_64.AppImage appimagetool
-
-# Für WSL/Systeme ohne FUSE: Tool extrahieren
-./appimagetool --appimage-extract
-mv squashfs-root appimagetool-extracted
-
-# Build-Script ausführen
-./build-appimage.sh
-
-# Optinal: Spezifische Version
-./build-appimage.sh 0.1.0
-
-# Ausführen
-chmod +x MyApps-0.1.0-x86_64.AppImage
-./MyApps-0.1.0-x86_64.AppImage
+sudo dpkg -i myapps_0.3.0_all.deb
 ```
 
 ## Verwendung
 
 1. **App starten**: Öffne MyApps aus dem Anwendungsmenü oder Terminal
-2. **Pakete laden**: Beim Start werden automatisch alle Pakete geladen
-3. **Ansicht wechseln**: Klicke auf "Ansicht wechseln" für Tabelle ↔ Liste
-4. **Exportieren**: Klicke auf "Exportieren" und wähle das Format
-5. **Filtern**: Rechtsklick auf ein Paket → "Als System-App markieren"
+2. **Pakete laden**: Beim Start werden automatisch alle User-Apps geladen
+3. **Scope wechseln**: Dropdown neben der Suche → "Nur User-Apps" oder "Alle Pakete"
+4. **Suchen**: Mindestens 5 Zeichen eingeben für Live-Suche
+5. **Sortieren**: Dropdown in der Navigationsleiste → nach Name, Größe oder Datum
+6. **Ansicht wechseln**: Buttons oben → Liste oder Tabelle
+7. **Exportieren**: Klicke auf "Exportieren" und wähle das Format (TXT/CSV/JSON)
+8. **Filtern**: Rechtsklick auf ein Paket → "Als System-App markieren"
 
 ## Unterstützte Paketmanager
 
-| Paketmanager | Distributionen | Status |
-|--------------|----------------|--------|
-| dpkg | Debian, Ubuntu, Mint | ✅ |
-| pacman | Arch, Manjaro | ✅ |
-| rpm/dnf | Fedora, RHEL, CentOS | ✅ |
-| rpm/zypper | openSUSE | ✅ |
-| eopkg | Solus | ✅ |
-| snap | Alle | ✅ |
-| flatpak | Alle | ✅ |
-
-## Beitragen
-
-Beiträge sind herzlich willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Details.
-
-### Filter-Keywords vorschlagen
-
-Findest du System-Pakete die nicht gefiltert werden? Öffne ein [Issue](https://github.com/nicolettas-muggelbude/myapps/issues)!
-
-### Tester gesucht!
-
-Wir brauchen Community-Tester für verschiedene Distributionen:
-- Debian
-- Ubuntu & Varianten
-- Arch Linux & Derivate
-- Fedora
-- Solus
-- openSUSE
+| Paketmanager | Distributionen | Größe | Datum |
+|--------------|----------------|-------|-------|
+| dpkg | Debian, Ubuntu, Mint | ✅ | ✅ |
+| pacman | Arch, Manjaro | ✅ | ✅ |
+| rpm/dnf | Fedora, RHEL, CentOS | ✅ | ✅ |
+| rpm/zypper | openSUSE | ✅ | ✅ |
+| flatpak | Alle | ✅ | ✅ |
+| snap | Alle | ✅ | ✅ |
+| eopkg | Solus | — | — |
 
 ## Roadmap
 
 ### v0.1.x (Stable - tkinter) ✅
 - [x] Multi-Distro-Support
 - [x] Moderne GUI mit Dark Mode
-- [x] Icons mit Fallback
 - [x] Export-Funktionen
 - [x] Mehrsprachigkeit (DE/EN)
-- [x] Distro-spezifische Filter
-- [x] User-Filter
-- [x] Pagination (100 Apps/Seite)
 
-### v0.2.0 (Aktuell - GTK4 Migration) ⏳
+### v0.2.x (GTK4 Migration) ✅
 - [x] GTK4 + Libadwaita GUI
-- [x] Virtual Scrolling (10.000+ Pakete)
-- [x] Kein X-Server BadAlloc mehr
-- [x] Native GNOME Integration
-- [ ] Community Testing
+- [x] Virtual Scrolling
+- [x] Suchfunktion
+- [x] OBS-Pakete (11 Distributionen)
+- [x] AUR-Paket
+- [x] Performance-Optimierungen (Icon-Cache, Memory Leak Fix)
 
-### v0.3.0 (Geplant)
-- [ ] Installationsdatum anzeigen
-- [ ] Sortier-Funktionen
+### v0.3.0 (Aktuell) ✅
+- [x] Scope-Dropdown: User-Apps vs. Alle Pakete
+- [x] Installierte Größe (dpkg, rpm, pacman, flatpak, snap)
+- [x] Installationsdatum (dpkg, rpm, pacman, flatpak, snap)
+- [x] Sortierfunktion (Name, Größe, Datum)
+- [x] Mindest-Zeichen für Suche (5 Zeichen)
+
+### v0.3.1 (Geplant)
+- [ ] Desktop Apps View (.desktop-Dateien)
 
 ### v0.4.0 (Geplant)
 - [ ] Update-Status prüfen
@@ -304,26 +280,31 @@ Wir brauchen Community-Tester für verschiedene Distributionen:
 
 ### v1.0.0 (Stable)
 - [ ] Community-Testing abgeschlossen
-- [ ] Bug-Fixes
 - [ ] Stabile Version
 
 ### v2.0.0 (Zukunft)
 - [ ] Deinstallations-Funktion
-- [ ] Paket-Details-Ansicht
 
 ## Häufige Fragen
 
 **Q: Warum werden manche Apps nicht angezeigt?**
-A: Sie wurden wahrscheinlich als System-Apps gefiltert. Du kannst eigene Filter in `~/.config/myapps/user-filters.json` anpassen.
+A: Sie wurden wahrscheinlich als System-Apps gefiltert. Wechsle im Scope-Dropdown zu "Alle Pakete" oder passe eigene Filter in `~/.config/myapps/user-filters.json` an.
+
+**Q: `pip install -e .` schlägt fehl mit pycairo-Fehler?**
+A: GTK-Bindings können nicht via pip kompiliert werden. Installiere `python3-gi` als System-Paket und nutze `pip install -e . --no-deps`. Siehe Abschnitt "Aus Quellcode" oben.
+
+**Q: Ubuntu 24.04: `python3-pil` nicht gefunden?**
+A: In Ubuntu 24.04 wurde das Paket zu `python3-pillow` umbenannt. Nutze `sudo apt install python3-pillow`.
 
 **Q: Wird meine Distribution unterstützt?**
 A: Siehe "Unterstützte Paketmanager" oben. Weitere Distributionen können hinzugefügt werden.
 
-**Q: Kann ich zur Filterliste beitragen?**
-A: Ja! Öffne ein Issue mit deinen Filter-Vorschlägen.
-
 **Q: Ist MyApps sicher?**
-A: MyApps ist Open Source (GPLv3) und führt nur lesende Operationen aus (kein `sudo` nötig). Der Code kann überprüft werden.
+A: MyApps ist Open Source (GPLv3) und führt nur lesende Operationen aus (kein `sudo` nötig).
+
+## Beitragen
+
+Beiträge sind herzlich willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Details.
 
 ## Lizenz
 

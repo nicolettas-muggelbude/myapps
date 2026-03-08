@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v0.2.0 (Beta - GTK4 Migration)
+- **Version**: v0.3.0 (Beta - Scope-Suche)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
@@ -749,7 +749,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 10. **💝 Spendenbutton** mit Rechtlichem
 11. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (27.01.2026)
+## Aktueller Projekt-Stand (08.03.2026)
 
 ### ✅ Abgeschlossen
 
@@ -865,32 +865,20 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Status: ✅ Seitenwechsel deutlich schneller, stabiler Memory-Verbrauch
     - Commits: b0ff7e4, 76edd05, 873747c, d95b3b5
 
+### ✅ v0.3.0 - Such-Scope & Features (08.03.2026)
+- **Scope-Dropdown** "Nur User-Apps" / "Alle Pakete" (Issue #16)
+  - Standard: Nur User-Apps (~800 Apps)
+  - "Alle Pakete": Komplette Paketliste (~2000+ Pakete)
+  - Dropdown direkt vor dem Suchfeld in der HeaderBar
+- **Mindestens 5 Zeichen** für Suche (Statusbar-Feedback)
+- Statusbar zeigt beim Start: "X User-Apps geladen • Y Pakete gesamt"
+
 ### 🔄 Aktuell laufend
-- **Community Testing** (v0.2.4):
-  - OBS-Pakete verfügbar für alle 11 Distributionen
-  - Performance-Optimierungen werden getestet
-  - Feedback sammeln via GitHub Issues
+- **Development** (v0.3.0):
+  - Implementierung fertig, noch nicht released
+  - OBS + AUR Update steht aus
 
 ### 📋 Roadmap
-
-#### **v0.3.0 - Such-Scope & Features** (NÄCHSTE VERSION)
-**Issue #16** - Scope-Dropdown für Suche
-
-**Features:**
-1. **Scope-Dropdown vor Suchfeld**
-   - "Nur User-Apps" (Standard) → ~800 Apps
-   - "Alle Pakete" → ~2000+ Pakete
-   - Nur aktiv bei Liste/Tabelle View
-2. **Mindestens 5 Zeichen für Suche**
-   - Schränkt Ergebnisse deutlich ein
-3. **Pagination im Suchmodus**
-   - Funktioniert bereits ✅
-4. **Tooltips im Suchmodus**
-   - Funktioniert bereits ✅
-
-**Voraussetzung:** v0.2.4 Performance-Fixes fertig!
-
----
 
 #### **v0.3.1 - Desktop Apps View**
 **Issue #4** - .desktop-only View

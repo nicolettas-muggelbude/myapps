@@ -2,6 +2,17 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.3.0
+- Feature: Sortierfunktion — Name, Größe, Installationsdatum (Issue #11)
+- Feature: Scope-Dropdown "Nur User-Apps" / "Alle Pakete" (Issue #16)
+- Feature: Mindestens 5 Zeichen für Suche (schränkt Ergebnisse ein)
+- Feature: Installierte Größe angezeigt in Liste und Tabelle (Issue #5)
+- Feature: Installationsdatum angezeigt in Liste und Tabelle (Issue #10)
+- Größen-Unterstützung: dpkg, rpm, pacman, flatpak, snap
+- Datums-Unterstützung: dpkg (dpkg.log), rpm (%{INSTALLTIME}), pacman (pacman -Qi), flatpak/snap (Filesystem)
+- Suche durchsucht jetzt optional alle installierten Pakete (~2000+)
+- Statusbar zeigt Gesamt-Paketanzahl beim Start
+
 ## v0.2.4
 - Performance: Icon-Caching implementiert (Icons werden nur einmal geladen)
 - Performance: Sortierung optimiert (nur einmal nach Filterung)

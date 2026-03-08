@@ -70,6 +70,28 @@ def get_version_from_pyproject() -> str:
 VERSION = get_version_from_pyproject()
 
 
+def format_size(size_bytes: Optional[int]) -> str:
+    """
+    Formatiert Bytes in lesbare Größenangabe (Issue #5)
+
+    Args:
+        size_bytes: Größe in Bytes oder None
+
+    Returns:
+        Lesbarer String z.B. "12.3 MB", "456 KB", "" wenn None
+    """
+    if size_bytes is None or size_bytes <= 0:
+        return ""
+    if size_bytes >= 1024 ** 3:
+        return f"{size_bytes / 1024**3:.1f} GB"
+    elif size_bytes >= 1024 ** 2:
+        return f"{size_bytes / 1024**2:.1f} MB"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.0f} KB"
+    else:
+        return f"{size_bytes} B"
+
+
 def get_whats_new(version: str) -> List[str]:
     """
     Liest die What's New Features für eine Version aus WHATS_NEW.md.
@@ -156,6 +178,18 @@ class PackageItem(GObject.Object):
     def description(self) -> str:
         return self.package.description or ""
 
+    @property
+    def size(self) -> Optional[int]:
+        return self.package.size
+
+    @property
+    def size_formatted(self) -> str:
+        return format_size(self.package.size)
+
+    @property
+    def install_date(self) -> str:
+        return self.package.install_date or ""
+
 
 class MyAppsGUI(Adw.Application):
     """GTK4 Hauptanwendung mit Libadwaita"""
@@ -184,6 +218,14 @@ class MyAppsGUI(Adw.Application):
 
         # Suche
         self.search_query = ""
+
+        # Scope für Suche (v0.3.0): "user" = User-Apps, "all" = alle Pakete
+        self.search_scope = "user"
+
+        # Sortierung (v0.3.0 Issue #11): Schlüssel für aktuelle Sortierung
+        # Mögliche Werte: "default", "name_asc", "name_desc",
+        #                 "size_asc", "size_desc", "date_asc", "date_desc"
+        self.sort_key = "default"
 
         # Manager initialisieren (UNVERÄNDERT!)
         self.distro_info = get_distro_info()
@@ -349,11 +391,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
         export_btn.connect("clicked", self._on_export_clicked)
         header.pack_start(export_btn)
 
-        # Search Entry (zentral im Title-Bereich)
-        self.search_entry = Gtk.SearchEntry(placeholder_text=_("Apps durchsuchen..."))
-        self.search_entry.set_size_request(300, -1)
+        # Title Widget: Scope-Dropdown + SearchEntry (v0.3.0)
+        title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        title_box.set_halign(Gtk.Align.CENTER)
+
+        # Scope Dropdown (Nur User-Apps / Alle Pakete)
+        scope_model = Gtk.StringList.new([_("Nur User-Apps"), _("Alle Pakete")])
+        self.scope_dropdown = Gtk.DropDown.new(scope_model, None)
+        self.scope_dropdown.set_selected(0)  # Standard: Nur User-Apps
+        self.scope_dropdown.connect("notify::selected", self._on_scope_changed)
+        title_box.append(self.scope_dropdown)
+
+        # Search Entry
+        self.search_entry = Gtk.SearchEntry(placeholder_text=_("Suchen (mind. 5 Zeichen)..."))
+        self.search_entry.set_size_request(280, -1)
         self.search_entry.connect("search-changed", self._on_search_changed)
-        header.set_title_widget(self.search_entry)
+        title_box.append(self.search_entry)
+
+        header.set_title_widget(title_box)
 
         # Menu Button (rechts)
         menu_btn = Gtk.MenuButton()
@@ -384,6 +439,17 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         return menu
 
+    # Sortieroptionen: (sort_key, Anzeigename)
+    _SORT_OPTIONS = [
+        ("default",   "Standard (Typ, Name)"),
+        ("name_asc",  "Name A → Z"),
+        ("name_desc", "Name Z → A"),
+        ("size_asc",  "Größe ↑ (klein → groß)"),
+        ("size_desc", "Größe ↓ (groß → klein)"),
+        ("date_asc",  "Datum ↑ (älteste)"),
+        ("date_desc", "Datum ↓ (neueste)"),
+    ]
+
     def _create_pagination_bar(self):
         """Erstellt die Pagination Navigation"""
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
@@ -397,6 +463,20 @@ class MyAppsWindow(Adw.ApplicationWindow):
         info_label.add_css_class("dim-label")
         info_label.set_halign(Gtk.Align.START)
         box.append(info_label)
+
+        # Sort-Dropdown (mitte-links) (v0.3.0 Issue #11)
+        sort_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        sort_label = Gtk.Label(label=_("Sortieren:"))
+        sort_label.add_css_class("dim-label")
+        sort_box.append(sort_label)
+
+        sort_labels = [label for _, label in self._SORT_OPTIONS]
+        sort_model = Gtk.StringList.new(sort_labels)
+        self.sort_dropdown = Gtk.DropDown.new(sort_model, None)
+        self.sort_dropdown.set_selected(0)
+        self.sort_dropdown.connect("notify::selected", self._on_sort_changed)
+        sort_box.append(self.sort_dropdown)
+        box.append(sort_box)
 
         # Spacer
         spacer = Gtk.Box()
@@ -521,7 +601,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         # Set Data
         box.name_label.set_text(pkg.name)
-        box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
+        size_str = f"  •  {pkg.size_formatted}" if pkg.size_formatted else ""
+        date_str = f"  •  {pkg.install_date}" if pkg.install_date else ""
+        box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}{size_str}{date_str}")
 
         # Tooltip: Zeigt Paketbeschreibung (Funktion des Pakets)
         if pkg.description:
@@ -550,6 +632,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._add_column(column_view, _("Name"), "name", expand=True)
         self._add_column(column_view, _("Version"), "version")
         self._add_column(column_view, _("Typ"), "package_type")
+        self._add_column(column_view, _("Größe"), "size_formatted")
+        self._add_column(column_view, _("Installiert am"), "install_date")
         self._add_column(column_view, _("Beschreibung"), "description", expand=True)
 
         # ScrolledWindow
@@ -637,52 +721,94 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._apply_search_filter()
         self._update_pagination_controls()
         self._populate_current_view()
-        self._set_status(f"{len(packages)} Apps " + _("geladen"))
+        # Zeige Gesamtzahl (User-Apps), Vollinfo im Tooltip/Scope
+        self._set_status(f"{len(packages)} " + _("User-Apps geladen") + f"  •  {len(self.gui.packages)} " + _("Pakete gesamt"))
         return GLib.SOURCE_REMOVE
 
     def _on_search_changed(self, search_entry):
         """Callback wenn Suchtext geändert wird"""
-        self.gui.search_query = search_entry.get_text().lower().strip()
+        query = search_entry.get_text().lower().strip()
+        self.gui.search_query = query
         self.gui.current_page = 0  # Zurück zu Seite 1
         self._apply_search_filter()
         self._update_pagination_controls()
         self._populate_current_view()
 
-        # Status Update
-        if self.gui.search_query:
-            self._set_status(f"{len(self.gui.search_filtered_packages)} Apps " + _("gefunden"))
+        # Status Update mit Mindest-Zeichen-Feedback (v0.3.0)
+        if query and len(query) < 5:
+            self._set_status(f"{_('Mindestens 5 Zeichen für Suche')} ({len(query)}/5)")
+        elif query:
+            self._set_status(f"{len(self.gui.search_filtered_packages)} " + _("Apps gefunden"))
         else:
-            self._set_status(f"{len(self.gui.filtered_packages)} Apps " + _("geladen"))
+            base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
+            self._set_status(f"{len(base)} " + _("Apps geladen"))
+
+    def _on_sort_changed(self, dropdown, _pspec):
+        """Callback wenn Sort-Dropdown geändert wird (v0.3.0 Issue #11)"""
+        idx = dropdown.get_selected()
+        self.gui.sort_key = self._SORT_OPTIONS[idx][0]
+        self.gui.current_page = 0
+        self._apply_search_filter()
+        self._update_pagination_controls()
+        self._populate_current_view()
+
+    def _on_scope_changed(self, dropdown, _pspec):
+        """Callback wenn Scope-Dropdown geändert wird (v0.3.0)"""
+        self.gui.search_scope = "all" if dropdown.get_selected() == 1 else "user"
+        self.gui.current_page = 0
+        self._apply_search_filter()
+        self._update_pagination_controls()
+        self._populate_current_view()
+
+        # Status Update
+        base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
+        label = _("Alle Pakete") if self.gui.search_scope == "all" else _("User-Apps")
+        self._set_status(f"{len(base)} {label} " + _("geladen"))
 
     def _apply_search_filter(self):
-        """Wendet Suchfilter auf filtered_packages an"""
-        if not self.gui.search_query:
-            # Keine Suche: Zeige alle gefilterten Pakete
-            packages = self.gui.filtered_packages
+        """Wendet Scope + Suchfilter an (v0.3.0: Scope-Dropdown + mind. 5 Zeichen)"""
+        # Basis-Liste je nach Scope (v0.3.0)
+        if self.gui.search_scope == "all":
+            base_packages = self.gui.packages
+        else:
+            base_packages = self.gui.filtered_packages
+
+        query = self.gui.search_query
+
+        # Suche: mindestens 5 Zeichen erforderlich (v0.3.0)
+        if not query or len(query) < 5:
+            # Kein Suchbegriff oder zu kurz: zeige Basis-Liste
+            packages = base_packages
         else:
             # Suche in Name und Beschreibung
-            query = self.gui.search_query
             matching = []
-
-            for pkg in self.gui.filtered_packages:
-                # Suche in Name (case-insensitive)
+            for pkg in base_packages:
                 if query in pkg.name.lower():
                     matching.append(pkg)
                     continue
-
-                # Suche in Beschreibung (falls vorhanden)
                 if pkg.description and query in pkg.description.lower():
                     matching.append(pkg)
                     continue
-
             packages = matching
 
-        # Sortiere EINMAL nach Filterung/Suche und cache das Ergebnis (v0.2.4)
-        # Sortierung: Erst nach Typ (deb, snap, flatpak), dann alphabetisch
-        self.gui.search_filtered_packages = sorted(
-            packages,
-            key=lambda p: (p.package_type, p.name.lower())
-        )
+        # Sortierung je nach gewähltem Sort-Key (v0.3.0 Issue #11)
+        sk = self.gui.sort_key
+        if sk == "name_asc":
+            key_fn, reverse = lambda p: p.name.lower(), False
+        elif sk == "name_desc":
+            key_fn, reverse = lambda p: p.name.lower(), True
+        elif sk == "size_asc":
+            key_fn, reverse = lambda p: (p.size or 0), False
+        elif sk == "size_desc":
+            key_fn, reverse = lambda p: (p.size or 0), True
+        elif sk == "date_asc":
+            key_fn, reverse = lambda p: (p.install_date or ""), False
+        elif sk == "date_desc":
+            key_fn, reverse = lambda p: (p.install_date or ""), True
+        else:  # "default": Typ, dann alphabetisch
+            key_fn, reverse = lambda p: (p.package_type, p.name.lower()), False
+
+        self.gui.search_filtered_packages = sorted(packages, key=key_fn, reverse=reverse)
 
     def _on_loading_error(self, error_msg):
         """Callback bei Lade-Fehler"""
