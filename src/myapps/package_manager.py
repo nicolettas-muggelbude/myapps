@@ -78,10 +78,13 @@ class DpkgPackageManager(PackageManagerBase):
         """Gibt alle installierten DEB-Pakete zurück"""
         packages = []
 
-        # Hole Pakete MIT Beschreibungen und Größe in einem Befehl (Issue #5)
+        # Hole Pakete mit Größe — OHNE ${Description}: mehrzeilige Beschreibungen
+        # brechen das Tab-Parsing (letzte Fortsetzungszeile enthält ${Installed-Size}
+        # nach einem Tab → wird als falscher Paketname geparst).
+        # Beschreibungen werden asynchron via apt-cache nachgeladen (gui_gtk.py).
         output = self._run_command([
             "dpkg-query", "-W",
-            "--showformat=${Package}\t${Version}\t${Description}\t${Installed-Size}\n"
+            "--showformat=${Package}\t${Version}\t${Installed-Size}\n"
         ])
         if not output:
             return packages
@@ -97,13 +100,16 @@ class DpkgPackageManager(PackageManagerBase):
             if len(parts) >= 2:
                 package_name = parts[0].strip()
                 version = parts[1].strip()
-                description = parts[2].strip() if len(parts) >= 3 else None
+
+                # Sicherheitscheck: Paketname darf keine Leerzeichen enthalten
+                if not package_name or " " in package_name:
+                    continue
 
                 # Größe in KB → Bytes umrechnen (${Installed-Size} gibt KB)
                 size = None
-                if len(parts) >= 4:
+                if len(parts) >= 3:
                     try:
-                        size_kb = int(parts[3].strip())
+                        size_kb = int(parts[2].strip())
                         size = size_kb * 1024
                     except (ValueError, IndexError):
                         pass
@@ -112,7 +118,7 @@ class DpkgPackageManager(PackageManagerBase):
                     name=package_name,
                     version=version,
                     package_type="deb",
-                    description=description,
+                    description=None,  # Wird asynchron via apt-cache geladen
                     size=size,
                     install_date=install_dates.get(package_name)
                 ))
