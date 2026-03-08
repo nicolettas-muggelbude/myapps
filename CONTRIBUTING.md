@@ -2,8 +2,6 @@
 
 Vielen Dank für dein Interesse an MyApps! Wir freuen uns über Beiträge aus der Community.
 
-> **Hinweis:** Ab Version 0.2.0 nutzt MyApps **GTK4 + Libadwaita** statt tkinter. Bitte stelle sicher, dass du die neuen System-Dependencies installiert hast (siehe unten).
-
 ## Wie kann ich beitragen?
 
 ### Filter-Keywords vorschlagen
@@ -11,10 +9,10 @@ Vielen Dank für dein Interesse an MyApps! Wir freuen uns über Beiträge aus de
 Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neue Filter-Keywords vorschlagen:
 
 1. Öffne ein [Issue](https://github.com/nicolettas-muggelbude/myapps/issues/new)
-2. Verwende den Titel: "Filter-Vorschlag: [Paketname]"
+2. Verwende den Titel: „Filter-Vorschlag: [Paketname]"
 3. Gib folgende Informationen an:
    - Paketname
-   - Distribution (z.B. Ubuntu 22.04)
+   - Distribution (z.B. Ubuntu 24.04)
    - Warum es ein System-Paket ist
    - Vorgeschlagenes Filter-Keyword
 
@@ -30,7 +28,7 @@ Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neu
 
 ### Features vorschlagen
 
-1. Öffne ein Issue mit dem Label "enhancement"
+1. Öffne ein Issue mit dem Label „enhancement"
 2. Beschreibe das gewünschte Feature
 3. Erkläre den Anwendungsfall
 4. Wir diskutieren die Machbarkeit
@@ -43,14 +41,19 @@ Wenn du System-Pakete findest, die nicht gefiltert werden sollten, kannst du neu
 4. Push zum Branch (`git push origin feature/MeinFeature`)
 5. Öffne einen Pull Request
 
+---
+
 ## Entwicklungsumgebung einrichten
 
-### Voraussetzungen (GTK4 + Libadwaita)
+### Voraussetzungen — System-Pakete (PFLICHT)
 
-**Ab Version 0.2.0 benötigt MyApps GTK4 und Libadwaita!**
+**GTK4-Bindings können NICHT via pip installiert werden — nur als System-Pakete!**
 
 ```bash
-# Debian/Ubuntu/Mint
+# Ubuntu 24.04 LTS
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pillow
+
+# Ubuntu 22.04 / Debian 12 / Linux Mint
 sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil
 
 # Arch/Manjaro
@@ -63,28 +66,38 @@ sudo dnf install python3-gobject gtk4 libadwaita python3-pillow
 sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 python3-Pillow
 ```
 
-### Installation
+> **Ubuntu 24.04:** Das Paket heißt `python3-pillow` (nicht mehr `python3-pil`).
+
+### Installation (Entwicklungsumgebung)
 
 ```bash
-# Repository klonen
+# 1. Repository klonen
 git clone https://github.com/nicolettas-muggelbude/myapps.git
 cd myapps
 
-# Python-Dependencies installieren (minimal, da GTK4 über System installiert ist)
-pip install -r requirements.txt
+# 2. venv MIT --system-site-packages erstellen
+#    (damit python3-gi aus dem System verfügbar ist)
+python3 -m venv --system-site-packages venv
+source venv/bin/activate
 
-# ODER: Mit pip install in editable mode
-pip install -e .
+# 3. Nur Pillow via pip installieren (PyGObject kommt vom System)
+pip install -e . --no-deps
+pip install Pillow
 
-# App starten
-python3 -m src.myapps.main
+# 4. App starten
+python3 -m myapps.main
+# oder einfach:
+./run-dev.sh
 ```
 
-**Wichtig:** PyGObject/GTK4 kann NICHT via pip installiert werden - nur über den System-Package-Manager!
+> **Warum `--no-deps`?**
+> Ohne dieses Flag versucht pip PyGObject von PyPI zu bauen.
+> Das schlägt fehl, weil `pkg-config` + `libcairo2-dev` als
+> Compiler-Abhängigkeiten fehlen. GTK-Bindings kommen immer vom System.
+
+---
 
 ## Pakete bauen und testen
-
-Wenn du Änderungen an der Paketierung vornimmst, kannst du die Pakete lokal bauen:
 
 ### DEB-Paket
 
@@ -93,32 +106,18 @@ Wenn du Änderungen an der Paketierung vornimmst, kannst du die Pakete lokal bau
 ./build-deb.sh
 
 # Installieren und testen
-sudo dpkg -i myapps_0.1.0_all.deb
+sudo dpkg -i myapps_0.3.0_all.deb
 myapps
 
 # Deinstallieren
 sudo dpkg -r myapps
 ```
 
-### AppImage
+### ~~AppImage~~ (discontinued ab v0.2.0)
 
-```bash
-# appimagetool herunterladen (einmalig)
-wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-chmod +x appimagetool-x86_64.AppImage
-mv appimagetool-x86_64.AppImage appimagetool
+AppImage wird nicht mehr angeboten. GTK4-System-Dependencies lassen sich nicht sinnvoll in AppImage bundeln.
 
-# Für WSL/Systeme ohne FUSE
-./appimagetool --appimage-extract
-mv squashfs-root appimagetool-extracted
-
-# AppImage bauen
-./build-appimage.sh
-
-# Testen
-chmod +x MyApps-0.1.0-x86_64.AppImage
-./MyApps-0.1.0-x86_64.AppImage
-```
+---
 
 ## Code-Stil
 
@@ -144,45 +143,61 @@ def meine_funktion(param: str) -> bool:
     return True
 ```
 
+---
+
 ## Testing
 
-Bevor du einen Pull Request erstellst:
+Bevor du einen Pull Request erstellst, teste bitte alle relevanten Bereiche:
 
-1. Teste die App auf deiner Distribution
-2. Prüfe ob alle Features funktionieren:
-   - **Listenansicht**: Icons, deutsche Beschreibungen, Tooltips
-   - **Tabellenansicht**: Alle Spalten sichtbar, schnelles Umschalten
-   - **Pagination**: Vor/Zurück-Navigation funktioniert
-   - **Export**: TXT, CSV, JSON-Export funktioniert
-   - **About-Dialog**: Alle Infos und Links funktionieren
-   - **Rechtsklick-Menü**: "Als System-App markieren" funktioniert
-3. Füge Screenshots bei GUI-Änderungen hinzu
-
-### GTK4-spezifische Tests
-
-Für Version 0.2.0+ mit GTK4:
-
+### Grundfunktionen
 - [ ] App startet ohne Fehler
 - [ ] Dark Mode funktioniert (folgt System-Theme)
-- [ ] Virtual Scrolling funktioniert flüssig (auch bei 1000+ Paketen)
-- [ ] Icons werden korrekt angezeigt
-- [ ] Lokalisierte Beschreibungen (DE) in Listenansicht
-- [ ] Performance: View-Wechsel < 2 Sekunden
+- [ ] Pakete werden beim Start geladen
+- [ ] Listenansicht: Icons, Beschreibungen, Tooltips
+- [ ] Tabellenansicht: Alle Spalten sichtbar, Spalten sortierbar
+- [ ] Ansicht wechseln (Liste ↔ Tabelle)
+- [ ] Pagination: Vor/Zurück-Navigation funktioniert
+
+### v0.3.0 Features
+- [ ] Scope-Dropdown: "Nur User-Apps" zeigt gefilterte Liste
+- [ ] Scope-Dropdown: "Alle Pakete" zeigt vollständige Paketliste
+- [ ] Suche: unter 5 Zeichen → Statusbar-Hinweis, keine Filterung
+- [ ] Suche: ab 5 Zeichen → Live-Filterung in Name + Beschreibung
+- [ ] Größe wird in Listenansicht angezeigt (falls verfügbar)
+- [ ] Größe-Spalte in Tabellenansicht
+- [ ] Datum-Spalte in Tabellenansicht
+- [ ] Sortierung: alle 7 Optionen funktionieren korrekt
+- [ ] Sortierung nach Größe: Pakete ohne Größe erscheinen am Ende
+- [ ] Sortierung nach Datum: Pakete ohne Datum erscheinen am Ende
+
+### Export & Sonstiges
+- [ ] Export TXT, CSV, JSON funktioniert
+- [ ] Export respektiert aktive Suche und Scope
+- [ ] Rechtsklick-Menü: „Als System-App markieren" funktioniert
+- [ ] About-Dialog: korrekte Version + Changelog aus WHATS_NEW.md
+- [ ] Performance: Seitenwechsel flüssig, kein Memory-Anstieg
+
+---
 
 ## Distro-Testing
 
 Wir suchen Tester für verschiedene Distributionen:
 
-- [ ] Debian
-- [ ] Ubuntu
+- [ ] Debian 12 (Bookworm)
+- [ ] Debian 13 (Trixie)
+- [ ] Ubuntu 22.04 LTS
+- [ ] Ubuntu 24.04 LTS
 - [ ] Linux Mint
 - [ ] Arch Linux
 - [ ] Manjaro
-- [ ] Fedora
+- [ ] Fedora 41/42/43
+- [ ] openSUSE Tumbleweed
+- [ ] openSUSE Leap 16
 - [ ] Solus
-- [ ] openSUSE
 
 Wenn du eine dieser Distributionen verwendest, teste MyApps und melde Bugs oder bestätige dass es funktioniert!
+
+---
 
 ## Übersetzungen
 
@@ -191,6 +206,8 @@ Aktuell werden Deutsch und Englisch unterstützt. Weitere Sprachen sind willkomm
 1. Kopiere `locales/de/LC_MESSAGES/myapps.po`
 2. Übersetze die Strings
 3. Erstelle einen Pull Request
+
+---
 
 ## Community-Richtlinien
 
@@ -206,4 +223,4 @@ Bei Fragen kannst du:
 - Eine Diskussion im Discussions-Bereich starten
 - Die Community im [Linux Guides DE Telegram-Chat](https://t.me/LinuxGuidesDECommunity) fragen
 
-Vielen Dank für deine Unterstützung! 🎉
+Vielen Dank für deine Unterstützung!
