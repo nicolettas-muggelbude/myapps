@@ -3,8 +3,10 @@ GTK4 + Libadwaita GUI für MyApps
 Native Linux Desktop Integration mit Virtual Scrolling
 """
 
+import locale
 import logging
 import threading
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
@@ -153,6 +155,32 @@ def get_whats_new(version: str) -> List[str]:
     except Exception as e:
         logger.error(f"Fehler beim Lesen von WHATS_NEW.md: {e}")
         return []
+
+
+def format_date(date_str: Optional[str]) -> str:
+    """
+    Formatiert ein ISO-Datum (YYYY-MM-DD) in ein lokalisiertes, lesbares Format.
+    Erkennt die System-Sprache und gibt das Datum entsprechend aus:
+      Deutsch:  "26. Dez. 2024"
+      Englisch: "Dec 26, 2024"
+
+    Args:
+        date_str: Datum im Format "YYYY-MM-DD" oder None
+
+    Returns:
+        Lokalisierter Datumsstring oder "" wenn None
+    """
+    if not date_str:
+        return ""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+        lang = (locale.getlocale()[0] or "").split("_")[0].lower()
+        if lang == "de":
+            return d.strftime("%-d. %b %Y")   # "26. Dez. 2024"
+        else:
+            return d.strftime("%b %-d, %Y")    # "Dec 26, 2024"
+    except (ValueError, AttributeError):
+        return date_str
 
 
 class PackageItem(GObject.Object):
@@ -561,13 +589,29 @@ class MyAppsWindow(Adw.ApplicationWindow):
         name_label.add_css_class("title-4")
         text_box.append(name_label)
 
-        # Info Label (Version + Typ)
+        # Info Row: Version+Typ links, Größe+Datum rechts
+        info_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+        # Links: Version + Typ
         info_label = Gtk.Label()
         info_label.set_halign(Gtk.Align.START)
         info_label.add_css_class("dim-label")
         info_label.add_css_class("caption")
-        text_box.append(info_label)
+        info_row.append(info_label)
 
+        # Spacer
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        info_row.append(spacer)
+
+        # Rechts: Größe + Datum
+        meta_label = Gtk.Label()
+        meta_label.set_halign(Gtk.Align.END)
+        meta_label.add_css_class("dim-label")
+        meta_label.add_css_class("caption")
+        info_row.append(meta_label)
+
+        text_box.append(info_row)
         box.append(text_box)
 
         # Context Menu Setup (einmalig!) - v0.2.4 Memory Leak Fix
@@ -587,6 +631,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.icon = icon
         box.name_label = name_label
         box.info_label = info_label
+        box.meta_label = meta_label
 
         list_item.set_child(box)
 
@@ -606,9 +651,17 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         # Set Data
         box.name_label.set_text(pkg.name)
-        size_str = f"  •  {pkg.size_formatted}" if pkg.size_formatted else ""
-        date_str = f"  •  {pkg.install_date}" if pkg.install_date else ""
-        box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}{size_str}{date_str}")
+
+        # Links: Version + Typ
+        box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
+
+        # Rechts: Größe + lokalisiertes Datum
+        meta_parts = []
+        if pkg.size_formatted:
+            meta_parts.append(pkg.size_formatted)
+        if pkg.install_date:
+            meta_parts.append(format_date(pkg.install_date))
+        box.meta_label.set_text("  •  ".join(meta_parts))
 
         # Tooltip: Zeigt Paketbeschreibung (Funktion des Pakets)
         if pkg.description:
