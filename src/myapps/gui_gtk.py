@@ -1205,13 +1205,18 @@ class MyAppsWindow(Adw.ApplicationWindow):
         scrolled.set_vexpand(True)
         dialog.set_child(scrolled)
 
+        # Adw.Clamp: begrenzt Inhaltsbreite auf max. 380px
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(380)
+        scrolled.set_child(clamp)
+
         # Hauptcontainer
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        main_box.set_margin_start(30)
-        main_box.set_margin_end(30)
+        main_box.set_margin_start(20)
+        main_box.set_margin_end(20)
         main_box.set_margin_top(20)
         main_box.set_margin_bottom(20)
-        scrolled.set_child(main_box)
+        clamp.set_child(main_box)
 
         # === TITEL ===
         title_label = Gtk.Label(label="MyApps")
