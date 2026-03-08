@@ -290,6 +290,11 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Key: "pkg_name_pkg_type", Value: GdkPixbuf
         self.icon_cache = {}
 
+        # Lokalisierte Beschreibungs-Cache (v0.3.0 Performance)
+        # Key: pkg_name, Value: lokalisierte Beschreibung
+        # Verhindert wiederholte apt-cache Aufrufe beim View-Wechsel
+        self.localized_desc_cache: dict = {}
+
         # Fenster-Einstellungen
         self.set_title(f"MyApps v{VERSION}")
         self.set_default_size(1200, 850)
@@ -825,53 +830,71 @@ class MyAppsWindow(Adw.ApplicationWindow):
             self._populate_table_view()
 
     def _populate_list_view(self):
-        """Füllt ListView (paginiert) mit lokalisierten Beschreibungen"""
-        # Clear
+        """
+        Füllt ListView sofort mit vorhandenen Daten, lädt lokalisierte
+        Beschreibungen asynchron nach (v0.3.0 Performance-Fix).
+        """
         self.list_store.remove_all()
 
-        # Pagination Range (verwendet search_filtered_packages!)
         start_idx = self.gui.current_page * self.gui.items_per_page
         end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
-
-        # Nutze vorsortierte Liste (sortiert in _apply_search_filter) - v0.2.4
         page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
+        page_number = self.gui.current_page
 
-        # Hole lokalisierte Beschreibungen PARALLEL für dpkg-Pakete
-        deb_packages = [pkg for pkg in page_packages if pkg.package_type == "deb"]
-        localized_descriptions = {}
+        # SOFORT rendern: gecachte Beschreibung oder englischer Fallback
+        from .package_manager import Package
+        for pkg in page_packages:
+            cached_desc = self.localized_desc_cache.get(pkg.name)
+            if cached_desc:
+                pkg = Package(
+                    name=pkg.name, version=pkg.version,
+                    package_type=pkg.package_type, description=cached_desc,
+                    size=pkg.size, install_date=pkg.install_date
+                )
+            self.list_store.append(PackageItem(pkg))
 
-        if deb_packages:
+        # Nur fehlende deb-Beschreibungen asynchron nachladen
+        missing = [
+            pkg for pkg in page_packages
+            if pkg.package_type == "deb" and pkg.name not in self.localized_desc_cache
+        ]
+        if not missing:
+            return  # Alles gecacht → fertig
+
+        def _load_in_background():
             from concurrent.futures import ThreadPoolExecutor, as_completed
+            results = {}
             with ThreadPoolExecutor(max_workers=10) as executor:
-                # Starte parallele apt-cache Aufrufe
-                future_to_pkg = {
+                future_to_name = {
                     executor.submit(self._get_localized_description, pkg.name): pkg.name
-                    for pkg in deb_packages
+                    for pkg in missing
                 }
-
-                # Sammle Ergebnisse
-                for future in as_completed(future_to_pkg):
-                    pkg_name = future_to_pkg[future]
+                for future in as_completed(future_to_name):
+                    pkg_name = future_to_name[future]
                     try:
                         desc = future.result()
                         if desc:
-                            localized_descriptions[pkg_name] = desc
+                            results[pkg_name] = desc
                     except Exception:
-                        pass  # Fallback auf englische Beschreibung
+                        pass
+            GLib.idle_add(self._apply_localized_descriptions, results, page_number)
 
-        # Add to Model (wrapped in PackageItem) mit lokalisierten Beschreibungen
-        from .package_manager import Package
-        for pkg in page_packages:
-            # Nutze lokalisierte Beschreibung falls vorhanden
-            if pkg.name in localized_descriptions:
-                pkg = Package(
-                    name=pkg.name,
-                    version=pkg.version,
-                    package_type=pkg.package_type,
-                    description=localized_descriptions[pkg.name]
-                )
+        threading.Thread(target=_load_in_background, daemon=True).start()
 
-            self.list_store.append(PackageItem(pkg))
+    def _apply_localized_descriptions(self, new_descriptions: dict, page_number: int):
+        """
+        Callback nach asynchronem Laden: Cache füllen und ListView aktualisieren
+        falls noch die gleiche Seite angezeigt wird.
+        """
+        self.localized_desc_cache.update(new_descriptions)
+
+        # Nur neu rendern wenn noch dieselbe Seite + ListView aktiv
+        if (self.stack.get_visible_child_name() == "list"
+                and self.gui.current_page == page_number
+                and new_descriptions):
+            self._populate_list_view()  # Jetzt alles gecacht → sofort fertig
+
+        return GLib.SOURCE_REMOVE
 
     def _populate_table_view(self):
         """Füllt Table View (paginiert)"""
@@ -951,8 +974,9 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_refresh_clicked(self, button):
         """Refresh Button Handler"""
-        # Cache leeren bei Refresh (v0.2.4)
+        # Caches leeren bei Refresh (v0.2.4 + v0.3.0)
         self.icon_cache.clear()
+        self.localized_desc_cache.clear()
 
         self.gui.current_page = 0
         self._set_status(_("Aktualisiere") + "...")
