@@ -881,18 +881,12 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - Sofortiges Rendern + async Hintergrund-Laden für Beschreibungen
 - **Git-Tag:** v0.3.0
 - **Tarball:** myapps-0.3.0.tar.gz (5.7 MB)
-- **OBS + AUR Update:** Ausstehend (Dateien vorbereitet)
-- **GitHub Release:** Ausstehend
+- **GitHub Release:** ✅ https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.3.0
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
 ### 🔄 Aktuell laufend
-- **Release v0.3.0:**
-  - ✅ Code implementiert und committed
-  - ✅ Git-Tag v0.3.0 erstellt
-  - ✅ Tarball myapps-0.3.0.tar.gz erstellt
-  - ✅ myapps.spec, PKGBUILD, myapps.dsc, debian.tar.gz aktualisiert
-  - ⏳ OBS-Upload (myapps-0.3.0.tar.gz, myapps.spec, myapps.dsc, debian.tar.gz)
-  - ⏳ AUR PKGBUILD + .SRCINFO Push
-  - ⏳ GitHub Release erstellen
+- **Community Testing v0.3.0** — OBS-Builds laufen durch, Feedback sammeln
 
 ### 📋 Roadmap
 
