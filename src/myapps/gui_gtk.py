@@ -1198,7 +1198,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         dialog.set_transient_for(self)
         dialog.set_modal(True)
         dialog.set_title(_("Über MyApps"))
-        dialog.set_default_size(420, 680)
+        dialog.set_default_size(500, 700)
 
         # ScrolledWindow für Inhalt
         scrolled = Gtk.ScrolledWindow()
@@ -1263,8 +1263,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         for link_text, url in links:
             btn = Gtk.Button(label=link_text)
             btn.connect("clicked", lambda b, u=url: webbrowser.open(u))
+            btn.set_halign(Gtk.Align.START)  # nur so breit wie der Text
             btn.set_margin_start(20)
-            btn.set_margin_end(20)
             btn.set_margin_top(2)
             btn.set_margin_bottom(2)
             main_box.append(btn)
@@ -1296,8 +1296,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         donate_btn = Gtk.Button(label="💰 Über PayPal spenden")
         donate_btn.add_css_class("suggested-action")
         donate_btn.connect("clicked", lambda b: webbrowser.open("https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"))
+        donate_btn.set_halign(Gtk.Align.START)  # nur so breit wie der Text
         donate_btn.set_margin_start(20)
-        donate_btn.set_margin_end(20)
         donate_btn.set_margin_bottom(5)
         main_box.append(donate_btn)
 
