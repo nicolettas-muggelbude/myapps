@@ -22,7 +22,7 @@ makedepends=(
     'python-wheel'
 )
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/nicolettas-muggelbude/myapps/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('SKIP')  # TODO: Update with actual checksum after release
+sha256sums=('608b16d6f270e57afa9d8b3bd2df593e2296f55e664d6caf0dab939d0bacfd31')
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"
