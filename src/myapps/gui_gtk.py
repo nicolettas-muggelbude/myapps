@@ -587,10 +587,12 @@ class MyAppsWindow(Adw.ApplicationWindow):
         name_label = Gtk.Label()
         name_label.set_halign(Gtk.Align.START)
         name_label.add_css_class("title-4")
+        name_label.set_ellipsize(3)  # ELLIPSIZE_END – verhindert Überlauf
         text_box.append(name_label)
 
         # Info Row: Version+Typ links, Größe+Datum rechts
         info_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        info_row.set_hexpand(True)  # MUSS expandieren damit Spacer wirkt!
 
         # Links: Version + Typ
         info_label = Gtk.Label()
@@ -721,6 +723,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
             if attr_name == "package_type":
                 value = value.upper() if value else ""
+            elif attr_name == "install_date":
+                value = format_date(value) if value else ""
 
             label.set_text(str(value or ""))
 
@@ -856,12 +860,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
         elif sk == "name_desc":
             key_fn, reverse = lambda p: p.name.lower(), True
         elif sk == "size_asc":
-            key_fn, reverse = lambda p: (p.size or 0), False
+            # None-Größe ans Ende (inf ist größer als alle echten Werte)
+            key_fn, reverse = lambda p: (p.size if p.size is not None else float('inf')), False
         elif sk == "size_desc":
-            key_fn, reverse = lambda p: (p.size or 0), True
+            # None-Größe ans Ende (bei desc: -1 ist kleiner als alle echten Werte)
+            key_fn, reverse = lambda p: (p.size if p.size is not None else -1), True
         elif sk == "date_asc":
-            key_fn, reverse = lambda p: (p.install_date or ""), False
+            # None-Datum ans Ende ("9999" > alle echten YYYY-MM-DD Strings)
+            key_fn, reverse = lambda p: (p.install_date or "9999-99-99"), False
         elif sk == "date_desc":
+            # None-Datum ans Ende (bei desc: "" < alle echten Datumstrings)
             key_fn, reverse = lambda p: (p.install_date or ""), True
         else:  # "default": Typ, dann alphabetisch
             key_fn, reverse = lambda p: (p.package_type, p.name.lower()), False
