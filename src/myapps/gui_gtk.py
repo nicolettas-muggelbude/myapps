@@ -1198,7 +1198,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         dialog.set_transient_for(self)
         dialog.set_modal(True)
         dialog.set_title(_("Über MyApps"))
-        dialog.set_default_size(550, 780)
+        dialog.set_default_size(420, 680)
 
         # ScrolledWindow für Inhalt
         scrolled = Gtk.ScrolledWindow()
