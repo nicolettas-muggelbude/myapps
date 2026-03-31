@@ -90,7 +90,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Spätere Versionen
 - **v0.3.0**: Virtual Scrolling (10.000+ Pakete ohne Pagination), .desktop-only View (Issue #4), Größen-Information (Issue #5), Performance-Optimierungen (Issue #9 - Caching)
-- **v0.4.0**: Update-Status prüfen, Installationsdatum
+- **v0.4.0**: Update-Benachrichtigung (via GitHub API), Virtual Scrolling, Icons
 - **v1.0.0**: Stabile Version nach Community-Testing, Snap-Paket
 - **v2.0.0**: Deinstallations-Funktion
 
@@ -905,7 +905,10 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 #### **v0.4.0 - Weitere Features**
 - Virtual Scrolling (echtes ListView-Scrolling, weg von Pagination)
 - Icon-Anzeige in ListView/ColumnView (aktuell nur Platzhalter)
-- Update-Status prüfen
+- **Update-Benachrichtigung**: Beim App-Start prüfen ob neue Version auf GitHub verfügbar
+  - Dezenter Hinweis (Statusbar oder Banner): "v0.3.2 verfügbar — via apt upgrade installierbar"
+  - Kein Auto-Updater — Updates kommen über den Paketmanager (OBS/AUR)
+  - Prüfung gegen GitHub Releases API (neueste Tag-Version)
 
 #### **v1.0.0 - Stable Release**
 - Nach umfangreichem Community-Testing
@@ -914,4 +917,3 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 
 #### **v2.0.0 - Major Features**
 - Deinstallations-Funktion
-- Update-Benachrichtigungen

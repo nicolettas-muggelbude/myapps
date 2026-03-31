@@ -27,8 +27,13 @@ def main():
             # PyInstaller/Frozen
             base_dir = Path(sys._MEIPASS)
         else:
-            # Development oder installiert
-            base_dir = Path(__file__).parent.parent.parent
+            # Versuche zuerst /usr/share/myapps (System-Installation via OBS/DEB)
+            system_base = Path("/usr/share/myapps")
+            if system_base.exists() and (system_base / "filters").exists():
+                base_dir = system_base
+            else:
+                # Development oder GitHub DEB (Fallback)
+                base_dir = Path(__file__).parent.parent.parent
 
         logger.info(f"MyApps startet...")
         logger.info(f"Basis-Verzeichnis: {base_dir}")

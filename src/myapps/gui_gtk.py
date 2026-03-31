@@ -17,7 +17,7 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, Gio, GLib, GdkPixbuf, GObject
 
 # MyApps Modules (bleiben gleich!)
-from .package_manager import Package, PackageManagerFactory
+from .package_manager import Package, PackageManagerFactory, DesktopFileManager
 from .filters import FilterManager
 from .export import Exporter
 from .distro_detect import get_distro_info
@@ -218,6 +218,10 @@ class PackageItem(GObject.Object):
     def install_date(self) -> str:
         return self.package.install_date or ""
 
+    @property
+    def icon_name(self) -> Optional[str]:
+        return self.package.icon_name
+
 
 class MyAppsGUI(Adw.Application):
     """GTK4 Hauptanwendung mit Libadwaita"""
@@ -238,6 +242,10 @@ class MyAppsGUI(Adw.Application):
         self.packages: List[Package] = []
         self.filtered_packages: List[Package] = []
         self.search_filtered_packages: List[Package] = []  # Nach Suche gefiltert
+
+        # Desktop-Apps (v0.3.1, Issue #4)
+        self.desktop_packages: List[Package] = []
+        self.desktop_filtered_packages: List[Package] = []
 
         # Pagination (gleiche Logik wie tkinter)
         self.current_page = 0
@@ -297,6 +305,9 @@ class MyAppsGUI(Adw.Application):
             # Filtern (UNVERÄNDERT!)
             self.filtered_packages = self.filter_manager.filter_packages(self.packages)
             logger.info(f"{len(self.filtered_packages)} Apps nach Filterung")
+
+            # Desktop-Apps laden (v0.3.1, Issue #4)
+            self.desktop_packages = DesktopFileManager().get_installed_packages()
 
             # Update GUI im Main Thread
             GLib.idle_add(self.win._on_packages_loaded, self.filtered_packages)
@@ -383,6 +394,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Table View
         self.table_view_container = self._create_table_view()
         self.stack.add_titled(self.table_view_container, "table", _("Tabelle"))
+
+        # Desktop View (v0.3.1, Issue #4)
+        self.desktop_view_container = self._create_desktop_view()
+        self.stack.add_titled(self.desktop_view_container, "desktop", _("Desktop"))
 
         # View-Switch Handler: Repopulate bei Ansichtswechsel
         self.stack.connect("notify::visible-child", lambda *_: self._populate_current_view())
@@ -742,6 +757,99 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         column_view.append_column(column)
 
+    def _create_desktop_view(self):
+        """Erstellt die Desktop-Apps View (v0.3.1, Issue #4)"""
+        self.desktop_store = Gio.ListStore.new(PackageItem)
+        selection = Gtk.NoSelection.new(self.desktop_store)
+
+        factory = Gtk.SignalListItemFactory()
+        factory.connect("setup", self._on_desktop_setup)
+        factory.connect("bind", self._on_desktop_bind)
+
+        list_view = Gtk.ListView.new(selection, factory)
+        list_view.set_single_click_activate(False)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_child(list_view)
+        scrolled.set_vexpand(True)
+        scrolled.set_hexpand(True)
+
+        return scrolled
+
+    def _on_desktop_setup(self, factory, list_item):
+        """Setup: Erstellt Widget-Template für Desktop-App Items"""
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        box.set_margin_start(12)
+        box.set_margin_end(12)
+        box.set_margin_top(8)
+        box.set_margin_bottom(8)
+
+        # Größeres Icon für Desktop-Apps (48px statt 32px)
+        icon = Gtk.Image()
+        icon.set_pixel_size(48)
+        box.append(icon)
+
+        # Text-Bereich
+        text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        text_box.set_hexpand(True)
+
+        name_label = Gtk.Label()
+        name_label.set_halign(Gtk.Align.START)
+        name_label.add_css_class("title-4")
+        name_label.set_ellipsize(3)
+        text_box.append(name_label)
+
+        desc_label = Gtk.Label()
+        desc_label.set_halign(Gtk.Align.START)
+        desc_label.add_css_class("dim-label")
+        desc_label.add_css_class("caption")
+        desc_label.set_ellipsize(3)
+        text_box.append(desc_label)
+
+        box.append(text_box)
+
+        # Typ-Badge (flatpak/snap) rechts
+        type_label = Gtk.Label()
+        type_label.set_halign(Gtk.Align.END)
+        type_label.set_valign(Gtk.Align.CENTER)
+        type_label.add_css_class("dim-label")
+        type_label.add_css_class("caption")
+        box.append(type_label)
+
+        box.icon = icon
+        box.name_label = name_label
+        box.desc_label = desc_label
+        box.type_label = type_label
+
+        list_item.set_child(box)
+
+    def _on_desktop_bind(self, factory, list_item):
+        """Bind: Verknüpft Desktop-App-Daten mit Widget"""
+        pkg = list_item.get_item()
+        box = list_item.get_child()
+
+        # Icon: icon_name aus .desktop bevorzugen, Fallback auf pkg.name
+        icon_lookup = pkg.icon_name or pkg.name
+        cache_key = f"desktop_{icon_lookup}"
+        if cache_key not in self.icon_cache:
+            self.icon_cache[cache_key] = self.gui.icon_manager.get_icon(
+                icon_lookup, pkg.package_type
+            )
+        box.icon.set_from_pixbuf(self.icon_cache[cache_key])
+
+        box.name_label.set_text(pkg.name)
+        box.desc_label.set_text(pkg.description or "")
+
+        # Typ nur anzeigen wenn nicht "desktop" (flatpak/snap sind interessant)
+        pkg_type = pkg.package_type
+        box.type_label.set_text(pkg_type.upper() if pkg_type != "desktop" else "")
+
+        if pkg.description:
+            box.set_has_tooltip(True)
+            box.set_tooltip_text(pkg.description)
+        else:
+            box.set_has_tooltip(False)
+
     def _show_context_menu(self, widget, pkg, x, y):
         """Zeigt Kontextmenü für Package"""
         menu = Gio.Menu()
@@ -784,7 +892,11 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._update_pagination_controls()
         self._populate_current_view()
         # Zeige Gesamtzahl (User-Apps), Vollinfo im Tooltip/Scope
-        self._set_status(f"{len(packages)} " + _("User-Apps geladen") + f"  •  {len(self.gui.packages)} " + _("Pakete gesamt"))
+        self._set_status(
+            f"{len(packages)} " + _("User-Apps geladen") +
+            f"  •  {len(self.gui.packages)} " + _("Pakete gesamt") +
+            f"  •  {len(self.gui.desktop_packages)} " + _("Desktop-Apps")
+        )
         return GLib.SOURCE_REMOVE
 
     def _on_search_changed(self, search_entry):
@@ -876,6 +988,26 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         self.gui.search_filtered_packages = sorted(packages, key=key_fn, reverse=reverse)
 
+        # Desktop-Apps filtern (v0.3.1) — Scope gilt hier nicht
+        if not query or len(query) < 5:
+            desktop_base = self.gui.desktop_packages
+        else:
+            desktop_base = [
+                pkg for pkg in self.gui.desktop_packages
+                if query in pkg.name.lower() or
+                   (pkg.description and query in pkg.description.lower())
+            ]
+
+        # Desktop: nur Name-Sortierung sinnvoll (keine Größe/Datum)
+        if sk in ("name_desc",):
+            self.gui.desktop_filtered_packages = sorted(
+                desktop_base, key=lambda p: p.name.lower(), reverse=True
+            )
+        else:
+            self.gui.desktop_filtered_packages = sorted(
+                desktop_base, key=lambda p: p.name.lower()
+            )
+
     def _on_loading_error(self, error_msg):
         """Callback bei Lade-Fehler"""
         self._set_status(f"Fehler: {error_msg}")
@@ -887,6 +1019,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         if current_view == "list":
             self._populate_list_view()
+        elif current_view == "desktop":
+            self._populate_desktop_view()
         else:
             self._populate_table_view()
 
@@ -1010,6 +1144,15 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         threading.Thread(target=_load_in_background, daemon=True).start()
 
+    def _populate_desktop_view(self):
+        """
+        Füllt Desktop-Apps View mit allen gefilterten Desktop-Apps (v0.3.1, Issue #4).
+        Kein Paging — Virtual Scrolling reicht für typisch 50–300 Apps.
+        """
+        self.desktop_store.remove_all()
+        for pkg in self.gui.desktop_filtered_packages:
+            self.desktop_store.append(PackageItem(pkg))
+
     def _get_localized_description(self, package_name: str) -> Optional[str]:
         """Holt lokalisierte Beschreibung via apt-cache (nur für List View)"""
         import subprocess
@@ -1031,17 +1174,28 @@ class MyAppsWindow(Adw.ApplicationWindow):
         return None
 
     def _update_pagination_controls(self):
-        """Aktualisiert Pagination Controls (verwendet search_filtered_packages!)"""
+        """Aktualisiert Pagination Controls"""
+        current_view = self.stack.get_visible_child_name()
+
+        # Desktop-View: kein Paging, nur Anzahl anzeigen
+        if current_view == "desktop":
+            count = len(self.gui.desktop_filtered_packages)
+            self.page_label.set_text(f"{count} " + _("Desktop-Apps"))
+            self.prev_btn.set_sensitive(False)
+            self.next_btn.set_sensitive(False)
+            return
+
+        # Normale Pagination für List + Table View
         if self.gui.search_filtered_packages:
             self.gui.total_pages = (len(self.gui.search_filtered_packages) + self.gui.items_per_page - 1) // self.gui.items_per_page
         else:
             self.gui.total_pages = 0
 
-        # Adjust current page
+        # Aktuelle Seite anpassen
         if self.gui.current_page >= self.gui.total_pages:
             self.gui.current_page = max(0, self.gui.total_pages - 1)
 
-        # Update Label
+        # Label aktualisieren
         if self.gui.total_pages > 0:
             start_idx = self.gui.current_page * self.gui.items_per_page + 1
             end_idx = min((self.gui.current_page + 1) * self.gui.items_per_page, len(self.gui.search_filtered_packages))
@@ -1052,7 +1206,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         else:
             self.page_label.set_text(_("Keine Apps"))
 
-        # Update Buttons
+        # Buttons
         self.prev_btn.set_sensitive(self.gui.current_page > 0)
         self.next_btn.set_sensitive(self.gui.current_page < self.gui.total_pages - 1)
 

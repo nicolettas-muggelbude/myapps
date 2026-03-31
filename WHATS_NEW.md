@@ -2,6 +2,14 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.3.1
+- Feature: Desktop-Apps-Ansicht — zeigt installierte .desktop-Anwendungen (Issue #4)
+- Neue Registerkarte "Desktop" neben Liste und Tabelle
+- Erkennt Apps aus /usr/share/applications, ~/.local/share/applications, Flatpak, Snap
+- Lokalisierte App-Namen und Beschreibungen (Name[de], Comment[de])
+- Icons aus .desktop Icon=-Feld, 48px Darstellung
+- Suche und Sortierung funktionieren auch in der Desktop-Ansicht
+
 ## v0.3.0
 - Feature: Sortierfunktion — Name, Größe, Installationsdatum (Issue #11)
 - Feature: Scope-Dropdown "Nur User-Apps" / "Alle Pakete" (Issue #16)

@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.3.0
+Version:        0.3.1
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -118,6 +118,13 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Tue Mar 31 2026 MyApps Contributors <noreply@github.com> - 0.3.1-1
+- Feature: Desktop-Apps-Ansicht (Issue #4) — zeigt .desktop-Anwendungen
+- Neue Registerkarte "Desktop" neben Liste und Tabelle
+- Erkennt Apps aus /usr/share/applications, ~/.local/share/applications, Flatpak, Snap
+- Lokalisierte Namen und Beschreibungen (Name[de], Comment[de])
+- Schließt Issue #4
+
 * Sun Mar 08 2026 MyApps Contributors <noreply@github.com> - 0.3.0-1
 - Feature: Sortierfunktion nach Name, Größe, Installationsdatum (Issue #11)
 - Feature: Scope-Dropdown "Nur User-Apps" / "Alle Pakete" (Issue #16)

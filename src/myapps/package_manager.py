@@ -3,7 +3,9 @@ Paketmanager-Abstraktionsmodul für MyApps
 Unterstützt verschiedene Paketmanager auf unterschiedlichen Linux-Distributionen
 """
 
+import configparser
 import gzip
+import locale
 import subprocess
 import logging
 from datetime import datetime
@@ -20,10 +22,11 @@ class Package:
     """Repräsentiert ein installiertes Paket"""
     name: str
     version: str
-    package_type: str  # z.B. "deb", "rpm", "snap", "flatpak"
+    package_type: str  # z.B. "deb", "rpm", "snap", "flatpak", "desktop"
     description: Optional[str] = None
     size: Optional[int] = None         # Installierte Größe in Bytes (Issue #5)
     install_date: Optional[str] = None  # Installationsdatum "YYYY-MM-DD" (Issue #10)
+    icon_name: Optional[str] = None    # Icon-Name aus .desktop-Datei (v0.3.1)
 
 
 class PackageManagerBase(ABC):
@@ -599,3 +602,119 @@ class PackageManagerFactory:
 
         logger.info(f"Insgesamt {len(all_packages)} Pakete von {len(package_managers)} Paketmanagern gefunden")
         return all_packages
+
+
+class DesktopFileManager(PackageManagerBase):
+    """
+    Liest .desktop-Dateien und gibt grafische Anwendungen zurück (v0.3.1, Issue #4).
+    Unabhängig vom Paketmanager — zeigt was der Desktop-Launcher kennt.
+    """
+
+    # Suchpfade in Prioritätsreihenfolge (system vor user)
+    _SYSTEM_PATHS = [
+        Path("/usr/share/applications"),
+        Path("/usr/local/share/applications"),
+        Path("/var/lib/flatpak/exports/share/applications"),
+        Path("/var/lib/snapd/desktop/applications"),
+    ]
+
+    def __init__(self):
+        super().__init__("desktop")
+
+    def get_installed_packages(self) -> List[Package]:
+        """Liest alle .desktop-Dateien und gibt sortierte App-Liste zurück"""
+        apps: List[Package] = []
+        # Duplikate via Namen vermeiden (erster Treffer gewinnt)
+        seen_names: set = set()
+
+        # User-Pfade dynamisch ergänzen
+        home = Path.home()
+        search_paths = list(self._SYSTEM_PATHS) + [
+            home / ".local/share/applications",
+            home / ".local/share/flatpak/exports/share/applications",
+        ]
+
+        for path in search_paths:
+            if not path.exists():
+                continue
+            for desktop_file in sorted(path.glob("*.desktop")):
+                try:
+                    pkg = self._parse_desktop_file(desktop_file)
+                    if pkg and pkg.name not in seen_names:
+                        seen_names.add(pkg.name)
+                        apps.append(pkg)
+                except Exception as e:
+                    logger.debug(f"Fehler beim Parsen von {desktop_file}: {e}")
+
+        logger.info(f"{len(apps)} Desktop-Apps aus .desktop-Dateien geladen")
+        return sorted(apps, key=lambda p: p.name.lower())
+
+    def _parse_desktop_file(self, path: Path) -> Optional[Package]:
+        """Parst eine einzelne .desktop-Datei und gibt Package zurück"""
+        config = configparser.RawConfigParser(interpolation=None)
+        try:
+            config.read(str(path), encoding="utf-8")
+        except Exception:
+            return None
+
+        if "Desktop Entry" not in config:
+            return None
+
+        entry = config["Desktop Entry"]
+
+        # Nur Typ Application (kein Link, Directory usw.)
+        if entry.get("Type", "") != "Application":
+            return None
+
+        # Ausgeblendete Apps überspringen
+        if entry.get("NoDisplay", "false").lower() == "true":
+            return None
+        if entry.get("Hidden", "false").lower() == "true":
+            return None
+
+        # Sprachcode für lokalisierte Felder (z.B. "de")
+        lang_code = (locale.getlocale()[0] or "").split("_")[0].lower()
+
+        # Lokalisierter Name — Fallback: Dateiname ohne Endung
+        name = (
+            entry.get(f"Name[{lang_code}]") or
+            entry.get("Name") or
+            path.stem
+        )
+        if not name:
+            return None
+
+        # Lokalisierter Kommentar
+        comment = (
+            entry.get(f"Comment[{lang_code}]") or
+            entry.get("Comment") or
+            ""
+        )
+
+        # Kategorien als Fallback für Beschreibung
+        categories_raw = entry.get("Categories", "")
+        categories = categories_raw.rstrip(";").replace(";", ", ") if categories_raw else ""
+
+        # Icon-Name aus .desktop (oft != Paketname)
+        icon_name = entry.get("Icon", "") or None
+
+        # Paket-Typ aus Pfad ableiten
+        path_str = str(path)
+        if "flatpak" in path_str:
+            pkg_type = "flatpak"
+        elif "snap" in path_str or "snapd" in path_str:
+            pkg_type = "snap"
+        else:
+            pkg_type = "desktop"
+
+        description = comment if comment else categories
+
+        return Package(
+            name=name,
+            version="",
+            package_type=pkg_type,
+            description=description or None,
+            size=None,
+            install_date=None,
+            icon_name=icon_name,
+        )

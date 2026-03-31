@@ -3,8 +3,10 @@ GTK4 + Libadwaita GUI für MyApps
 Native Linux Desktop Integration mit Virtual Scrolling
 """
 
+import locale
 import logging
 import threading
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
@@ -15,7 +17,7 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, Gio, GLib, GdkPixbuf, GObject
 
 # MyApps Modules (bleiben gleich!)
-from .package_manager import Package, PackageManagerFactory
+from .package_manager import Package, PackageManagerFactory, DesktopFileManager
 from .filters import FilterManager
 from .export import Exporter
 from .distro_detect import get_distro_info
@@ -24,8 +26,161 @@ from .icons import IconManagerGTK
 
 logger = logging.getLogger(__name__)
 
-# Version
-VERSION = "0.2.0"
+
+def get_version_from_pyproject() -> str:
+    """
+    Liest die Version aus pyproject.toml.
+    Sucht zuerst in /usr/share/myapps/ (System-Installation),
+    dann im Projekt-Root (Development).
+    Fallback auf "0.0.0" wenn Datei nicht gefunden oder parsing fehlschlägt.
+    """
+    try:
+        # Suchpfade in Prioritätsreihenfolge
+        search_paths = [
+            Path("/usr/share/myapps/pyproject.toml"),  # System-Installation (OBS/DEB)
+            Path(__file__).parent.parent.parent / "pyproject.toml",  # Development
+        ]
+
+        pyproject_path = None
+        for path in search_paths:
+            if path.exists():
+                pyproject_path = path
+                break
+
+        if not pyproject_path:
+            logger.warning(f"pyproject.toml nicht gefunden in: {[str(p) for p in search_paths]}")
+            return "0.0.0"
+
+        # Parse pyproject.toml (einfaches String-Parsing)
+        with open(pyproject_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip().startswith('version ='):
+                    # Extrahiere Version: version = "0.2.1" -> 0.2.1
+                    version = line.split('=')[1].strip().strip('"').strip("'")
+                    logger.info(f"Version aus {pyproject_path} gelesen: {version}")
+                    return version
+
+        logger.warning(f"Keine version = Zeile in {pyproject_path} gefunden")
+        return "0.0.0"
+
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Version: {e}")
+        return "0.0.0"
+
+
+# Version automatisch aus pyproject.toml lesen
+VERSION = get_version_from_pyproject()
+
+
+def format_size(size_bytes: Optional[int]) -> str:
+    """
+    Formatiert Bytes in lesbare Größenangabe (Issue #5)
+
+    Args:
+        size_bytes: Größe in Bytes oder None
+
+    Returns:
+        Lesbarer String z.B. "12.3 MB", "456 KB", "" wenn None
+    """
+    if size_bytes is None or size_bytes <= 0:
+        return ""
+    if size_bytes >= 1024 ** 3:
+        return f"{size_bytes / 1024**3:.1f} GB"
+    elif size_bytes >= 1024 ** 2:
+        return f"{size_bytes / 1024**2:.1f} MB"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.0f} KB"
+    else:
+        return f"{size_bytes} B"
+
+
+def get_whats_new(version: str) -> List[str]:
+    """
+    Liest die What's New Features für eine Version aus WHATS_NEW.md.
+    Sucht zuerst in /usr/share/myapps/ (System-Installation),
+    dann im Projekt-Root (Development).
+
+    Args:
+        version: Version im Format "X.Y.Z"
+
+    Returns:
+        Liste von Feature-Strings, leer wenn Version nicht gefunden
+    """
+    try:
+        # Suchpfade in Prioritätsreihenfolge
+        search_paths = [
+            Path("/usr/share/myapps/WHATS_NEW.md"),  # System-Installation (OBS/DEB)
+            Path(__file__).parent.parent.parent / "WHATS_NEW.md",  # Development
+        ]
+
+        whats_new_path = None
+        for path in search_paths:
+            if path.exists():
+                whats_new_path = path
+                break
+
+        if not whats_new_path:
+            logger.warning(f"WHATS_NEW.md nicht gefunden in: {[str(p) for p in search_paths]}")
+            return []
+
+        # Parse WHATS_NEW.md
+        features = []
+        in_version_section = False
+        version_header = f"## v{version}"
+
+        with open(whats_new_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.rstrip()
+
+                # Start der gesuchten Version
+                if line.startswith(version_header):
+                    in_version_section = True
+                    continue
+
+                # Ende der Sektion (nächste Version oder Ende)
+                if in_version_section and line.startswith("## v"):
+                    break
+
+                # Features sammeln (Zeilen die mit "- " beginnen)
+                if in_version_section and line.startswith("- "):
+                    features.append(line[2:])  # Entferne "- " Präfix
+
+        if features:
+            logger.info(f"Gefundene Features für v{version}: {len(features)}")
+        else:
+            logger.warning(f"Keine Features für v{version} in WHATS_NEW.md gefunden")
+
+        return features
+
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen von WHATS_NEW.md: {e}")
+        return []
+
+
+def format_date(date_str: Optional[str]) -> str:
+    """
+    Formatiert ein ISO-Datum (YYYY-MM-DD) in ein lokalisiertes, lesbares Format.
+    Erkennt die System-Sprache und gibt das Datum entsprechend aus:
+      Deutsch:  "26. Dez. 2024"
+      Englisch: "Dec 26, 2024"
+
+    Args:
+        date_str: Datum im Format "YYYY-MM-DD" oder None
+
+    Returns:
+        Lokalisierter Datumsstring oder "" wenn None
+    """
+    if not date_str:
+        return ""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+        lang = (locale.getlocale()[0] or "").split("_")[0].lower()
+        if lang == "de":
+            return d.strftime("%-d. %b %Y")   # "26. Dez. 2024"
+        else:
+            return d.strftime("%b %-d, %Y")    # "Dec 26, 2024"
+    except (ValueError, AttributeError):
+        return date_str
 
 
 class PackageItem(GObject.Object):
@@ -51,6 +206,22 @@ class PackageItem(GObject.Object):
     def description(self) -> str:
         return self.package.description or ""
 
+    @property
+    def size(self) -> Optional[int]:
+        return self.package.size
+
+    @property
+    def size_formatted(self) -> str:
+        return format_size(self.package.size)
+
+    @property
+    def install_date(self) -> str:
+        return self.package.install_date or ""
+
+    @property
+    def icon_name(self) -> Optional[str]:
+        return self.package.icon_name
+
 
 class MyAppsGUI(Adw.Application):
     """GTK4 Hauptanwendung mit Libadwaita"""
@@ -72,6 +243,10 @@ class MyAppsGUI(Adw.Application):
         self.filtered_packages: List[Package] = []
         self.search_filtered_packages: List[Package] = []  # Nach Suche gefiltert
 
+        # Desktop-Apps (v0.3.1, Issue #4)
+        self.desktop_packages: List[Package] = []
+        self.desktop_filtered_packages: List[Package] = []
+
         # Pagination (gleiche Logik wie tkinter)
         self.current_page = 0
         self.items_per_page = 100
@@ -79,6 +254,14 @@ class MyAppsGUI(Adw.Application):
 
         # Suche
         self.search_query = ""
+
+        # Scope für Suche (v0.3.0): "user" = User-Apps, "all" = alle Pakete
+        self.search_scope = "user"
+
+        # Sortierung (v0.3.0 Issue #11): Schlüssel für aktuelle Sortierung
+        # Mögliche Werte: "default", "name_asc", "name_desc",
+        #                 "size_asc", "size_desc", "date_asc", "date_desc"
+        self.sort_key = "default"
 
         # Manager initialisieren (UNVERÄNDERT!)
         self.distro_info = get_distro_info()
@@ -123,6 +306,9 @@ class MyAppsGUI(Adw.Application):
             self.filtered_packages = self.filter_manager.filter_packages(self.packages)
             logger.info(f"{len(self.filtered_packages)} Apps nach Filterung")
 
+            # Desktop-Apps laden (v0.3.1, Issue #4)
+            self.desktop_packages = DesktopFileManager().get_installed_packages()
+
             # Update GUI im Main Thread
             GLib.idle_add(self.win._on_packages_loaded, self.filtered_packages)
 
@@ -138,6 +324,15 @@ class MyAppsWindow(Adw.ApplicationWindow):
         super().__init__(application=application)
 
         self.gui = gui  # Referenz zur App
+
+        # Icon-Cache für Performance-Optimierung (v0.2.4)
+        # Key: "pkg_name_pkg_type", Value: GdkPixbuf
+        self.icon_cache = {}
+
+        # Lokalisierte Beschreibungs-Cache (v0.3.0 Performance)
+        # Key: pkg_name, Value: lokalisierte Beschreibung
+        # Verhindert wiederholte apt-cache Aufrufe beim View-Wechsel
+        self.localized_desc_cache: dict = {}
 
         # Fenster-Einstellungen
         self.set_title(f"MyApps v{VERSION}")
@@ -200,6 +395,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self.table_view_container = self._create_table_view()
         self.stack.add_titled(self.table_view_container, "table", _("Tabelle"))
 
+        # Desktop View (v0.3.1, Issue #4)
+        self.desktop_view_container = self._create_desktop_view()
+        self.stack.add_titled(self.desktop_view_container, "desktop", _("Desktop"))
+
         # View-Switch Handler: Repopulate bei Ansichtswechsel
         self.stack.connect("notify::visible-child", lambda *_: self._populate_current_view())
 
@@ -240,12 +439,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
         export_btn.connect("clicked", self._on_export_clicked)
         header.pack_start(export_btn)
 
-        # Search Entry (zentral im Title-Bereich)
-        self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text(_("Apps durchsuchen..."))
-        self.search_entry.set_size_request(300, -1)
+        # Title Widget: Scope-Dropdown + SearchEntry (v0.3.0)
+        title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        title_box.set_halign(Gtk.Align.CENTER)
+
+        # Scope Dropdown (Nur User-Apps / Alle Pakete)
+        scope_model = Gtk.StringList.new([_("Nur User-Apps"), _("Alle Pakete")])
+        self.scope_dropdown = Gtk.DropDown.new(scope_model, None)
+        self.scope_dropdown.set_selected(0)  # Standard: Nur User-Apps
+        self.scope_dropdown.connect("notify::selected", self._on_scope_changed)
+        title_box.append(self.scope_dropdown)
+
+        # Search Entry
+        self.search_entry = Gtk.SearchEntry(placeholder_text=_("Suchen (mind. 5 Zeichen)..."))
+        self.search_entry.set_size_request(280, -1)
         self.search_entry.connect("search-changed", self._on_search_changed)
-        header.set_title_widget(self.search_entry)
+        title_box.append(self.search_entry)
+
+        header.set_title_widget(title_box)
 
         # Menu Button (rechts)
         menu_btn = Gtk.MenuButton()
@@ -276,6 +487,17 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         return menu
 
+    # Sortieroptionen: (sort_key, Anzeigename)
+    _SORT_OPTIONS = [
+        ("default",   "Standard (Typ, Name)"),
+        ("name_asc",  "Name A → Z"),
+        ("name_desc", "Name Z → A"),
+        ("size_asc",  "Größe ↑ (klein → groß)"),
+        ("size_desc", "Größe ↓ (groß → klein)"),
+        ("date_asc",  "Datum ↑ (älteste)"),
+        ("date_desc", "Datum ↓ (neueste)"),
+    ]
+
     def _create_pagination_bar(self):
         """Erstellt die Pagination Navigation"""
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
@@ -289,6 +511,20 @@ class MyAppsWindow(Adw.ApplicationWindow):
         info_label.add_css_class("dim-label")
         info_label.set_halign(Gtk.Align.START)
         box.append(info_label)
+
+        # Sort-Dropdown (mitte-links) (v0.3.0 Issue #11)
+        sort_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        sort_label = Gtk.Label(label=_("Sortieren:"))
+        sort_label.add_css_class("dim-label")
+        sort_box.append(sort_label)
+
+        sort_labels = [label for _, label in self._SORT_OPTIONS]
+        sort_model = Gtk.StringList.new(sort_labels)
+        self.sort_dropdown = Gtk.DropDown.new(sort_model, None)
+        self.sort_dropdown.set_selected(0)
+        self.sort_dropdown.connect("notify::selected", self._on_sort_changed)
+        sort_box.append(self.sort_dropdown)
+        box.append(sort_box)
 
         # Spacer
         spacer = Gtk.Box()
@@ -366,27 +602,53 @@ class MyAppsWindow(Adw.ApplicationWindow):
         name_label = Gtk.Label()
         name_label.set_halign(Gtk.Align.START)
         name_label.add_css_class("title-4")
+        name_label.set_ellipsize(3)  # ELLIPSIZE_END – verhindert Überlauf
         text_box.append(name_label)
 
-        # Info Label (Version + Typ)
+        # Info Row: Version+Typ links, Größe+Datum rechts
+        info_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        info_row.set_hexpand(True)  # MUSS expandieren damit Spacer wirkt!
+
+        # Links: Version + Typ
         info_label = Gtk.Label()
         info_label.set_halign(Gtk.Align.START)
         info_label.add_css_class("dim-label")
         info_label.add_css_class("caption")
-        text_box.append(info_label)
+        info_row.append(info_label)
 
+        # Spacer
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        info_row.append(spacer)
+
+        # Rechts: Größe + Datum
+        meta_label = Gtk.Label()
+        meta_label.set_halign(Gtk.Align.END)
+        meta_label.add_css_class("dim-label")
+        meta_label.add_css_class("caption")
+        info_row.append(meta_label)
+
+        text_box.append(info_row)
         box.append(text_box)
 
-        # Context Menu Setup
+        # Context Menu Setup (einmalig!) - v0.2.4 Memory Leak Fix
         gesture = Gtk.GestureClick.new()
         gesture.set_button(3)  # Rechtsklick
+
+        def on_right_click(gesture, n_press, x, y):
+            # Hole aktuelles Package zur Laufzeit (nicht bei Setup!)
+            pkg = list_item.get_item()
+            if pkg:
+                self._show_context_menu(box, pkg, x, y)
+
+        gesture.connect("pressed", on_right_click)
         box.add_controller(gesture)
 
         # Store widgets für später
         box.icon = icon
         box.name_label = name_label
         box.info_label = info_label
-        box.gesture = gesture
+        box.meta_label = meta_label
 
         list_item.set_child(box)
 
@@ -395,13 +657,28 @@ class MyAppsWindow(Adw.ApplicationWindow):
         pkg = list_item.get_item()  # PackageItem-Objekt
         box = list_item.get_child()
 
-        # Icon laden
-        pixbuf = self.gui.icon_manager.get_icon(pkg.name, pkg.package_type)
+        # Icon-Caching: Nur einmal laden, dann aus Cache (v0.2.4)
+        cache_key = f"{pkg.name}_{pkg.package_type}"
+        if cache_key not in self.icon_cache:
+            self.icon_cache[cache_key] = self.gui.icon_manager.get_icon(
+                pkg.name, pkg.package_type
+            )
+        pixbuf = self.icon_cache[cache_key]
         box.icon.set_from_pixbuf(pixbuf)
 
         # Set Data
         box.name_label.set_text(pkg.name)
+
+        # Links: Version + Typ
         box.info_label.set_text(f"{pkg.version}  •  {pkg.package_type.upper()}")
+
+        # Rechts: Größe + lokalisiertes Datum
+        meta_parts = []
+        if pkg.size_formatted:
+            meta_parts.append(pkg.size_formatted)
+        if pkg.install_date:
+            meta_parts.append(format_date(pkg.install_date))
+        box.meta_label.set_text("  •  ".join(meta_parts))
 
         # Tooltip: Zeigt Paketbeschreibung (Funktion des Pakets)
         if pkg.description:
@@ -414,11 +691,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
-        # Context Menu Handler
-        def on_right_click(gesture, n_press, x, y):
-            self._show_context_menu(box, pkg, x, y)
-
-        box.gesture.connect("pressed", on_right_click)
+        # Context Menu Handler ist bereits in setup() verbunden (v0.2.4)
+        # Kein Handler-Setup in bind() nötig!
 
     def _create_table_view(self):
         """Erstellt die ColumnView (Table)"""
@@ -433,6 +707,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._add_column(column_view, _("Name"), "name", expand=True)
         self._add_column(column_view, _("Version"), "version")
         self._add_column(column_view, _("Typ"), "package_type")
+        self._add_column(column_view, _("Größe"), "size_formatted")
+        self._add_column(column_view, _("Installiert am"), "install_date")
         self._add_column(column_view, _("Beschreibung"), "description", expand=True)
 
         # ScrolledWindow
@@ -462,6 +738,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
             if attr_name == "package_type":
                 value = value.upper() if value else ""
+            elif attr_name == "install_date":
+                value = format_date(value) if value else ""
 
             label.set_text(str(value or ""))
 
@@ -478,6 +756,99 @@ class MyAppsWindow(Adw.ApplicationWindow):
         column.set_resizable(True)
 
         column_view.append_column(column)
+
+    def _create_desktop_view(self):
+        """Erstellt die Desktop-Apps View (v0.3.1, Issue #4)"""
+        self.desktop_store = Gio.ListStore.new(PackageItem)
+        selection = Gtk.NoSelection.new(self.desktop_store)
+
+        factory = Gtk.SignalListItemFactory()
+        factory.connect("setup", self._on_desktop_setup)
+        factory.connect("bind", self._on_desktop_bind)
+
+        list_view = Gtk.ListView.new(selection, factory)
+        list_view.set_single_click_activate(False)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_child(list_view)
+        scrolled.set_vexpand(True)
+        scrolled.set_hexpand(True)
+
+        return scrolled
+
+    def _on_desktop_setup(self, factory, list_item):
+        """Setup: Erstellt Widget-Template für Desktop-App Items"""
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        box.set_margin_start(12)
+        box.set_margin_end(12)
+        box.set_margin_top(8)
+        box.set_margin_bottom(8)
+
+        # Größeres Icon für Desktop-Apps (48px statt 32px)
+        icon = Gtk.Image()
+        icon.set_pixel_size(48)
+        box.append(icon)
+
+        # Text-Bereich
+        text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        text_box.set_hexpand(True)
+
+        name_label = Gtk.Label()
+        name_label.set_halign(Gtk.Align.START)
+        name_label.add_css_class("title-4")
+        name_label.set_ellipsize(3)
+        text_box.append(name_label)
+
+        desc_label = Gtk.Label()
+        desc_label.set_halign(Gtk.Align.START)
+        desc_label.add_css_class("dim-label")
+        desc_label.add_css_class("caption")
+        desc_label.set_ellipsize(3)
+        text_box.append(desc_label)
+
+        box.append(text_box)
+
+        # Typ-Badge (flatpak/snap) rechts
+        type_label = Gtk.Label()
+        type_label.set_halign(Gtk.Align.END)
+        type_label.set_valign(Gtk.Align.CENTER)
+        type_label.add_css_class("dim-label")
+        type_label.add_css_class("caption")
+        box.append(type_label)
+
+        box.icon = icon
+        box.name_label = name_label
+        box.desc_label = desc_label
+        box.type_label = type_label
+
+        list_item.set_child(box)
+
+    def _on_desktop_bind(self, factory, list_item):
+        """Bind: Verknüpft Desktop-App-Daten mit Widget"""
+        pkg = list_item.get_item()
+        box = list_item.get_child()
+
+        # Icon: icon_name aus .desktop bevorzugen, Fallback auf pkg.name
+        icon_lookup = pkg.icon_name or pkg.name
+        cache_key = f"desktop_{icon_lookup}"
+        if cache_key not in self.icon_cache:
+            self.icon_cache[cache_key] = self.gui.icon_manager.get_icon(
+                icon_lookup, pkg.package_type
+            )
+        box.icon.set_from_pixbuf(self.icon_cache[cache_key])
+
+        box.name_label.set_text(pkg.name)
+        box.desc_label.set_text(pkg.description or "")
+
+        # Typ nur anzeigen wenn nicht "desktop" (flatpak/snap sind interessant)
+        pkg_type = pkg.package_type
+        box.type_label.set_text(pkg_type.upper() if pkg_type != "desktop" else "")
+
+        if pkg.description:
+            box.set_has_tooltip(True)
+            box.set_tooltip_text(pkg.description)
+        else:
+            box.set_has_tooltip(False)
 
     def _show_context_menu(self, widget, pkg, x, y):
         """Zeigt Kontextmenü für Package"""
@@ -520,46 +891,122 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._apply_search_filter()
         self._update_pagination_controls()
         self._populate_current_view()
-        self._set_status(f"{len(packages)} Apps " + _("geladen"))
+        # Zeige Gesamtzahl (User-Apps), Vollinfo im Tooltip/Scope
+        self._set_status(
+            f"{len(packages)} " + _("User-Apps geladen") +
+            f"  •  {len(self.gui.packages)} " + _("Pakete gesamt") +
+            f"  •  {len(self.gui.desktop_packages)} " + _("Desktop-Apps")
+        )
         return GLib.SOURCE_REMOVE
 
     def _on_search_changed(self, search_entry):
         """Callback wenn Suchtext geändert wird"""
-        self.gui.search_query = search_entry.get_text().lower().strip()
+        query = search_entry.get_text().lower().strip()
+        self.gui.search_query = query
         self.gui.current_page = 0  # Zurück zu Seite 1
         self._apply_search_filter()
         self._update_pagination_controls()
         self._populate_current_view()
 
-        # Status Update
-        if self.gui.search_query:
-            self._set_status(f"{len(self.gui.search_filtered_packages)} Apps " + _("gefunden"))
+        # Status Update mit Mindest-Zeichen-Feedback (v0.3.0)
+        if query and len(query) < 5:
+            self._set_status(f"{_('Mindestens 5 Zeichen für Suche')} ({len(query)}/5)")
+        elif query:
+            self._set_status(f"{len(self.gui.search_filtered_packages)} " + _("Apps gefunden"))
         else:
-            self._set_status(f"{len(self.gui.filtered_packages)} Apps " + _("geladen"))
+            base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
+            self._set_status(f"{len(base)} " + _("Apps geladen"))
+
+    def _on_sort_changed(self, dropdown, _pspec):
+        """Callback wenn Sort-Dropdown geändert wird (v0.3.0 Issue #11)"""
+        idx = dropdown.get_selected()
+        self.gui.sort_key = self._SORT_OPTIONS[idx][0]
+        self.gui.current_page = 0
+        self._apply_search_filter()
+        self._update_pagination_controls()
+        self._populate_current_view()
+
+    def _on_scope_changed(self, dropdown, _pspec):
+        """Callback wenn Scope-Dropdown geändert wird (v0.3.0)"""
+        self.gui.search_scope = "all" if dropdown.get_selected() == 1 else "user"
+        self.gui.current_page = 0
+        self._apply_search_filter()
+        self._update_pagination_controls()
+        self._populate_current_view()
+
+        # Status Update
+        base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
+        label = _("Alle Pakete") if self.gui.search_scope == "all" else _("User-Apps")
+        self._set_status(f"{len(base)} {label} " + _("geladen"))
 
     def _apply_search_filter(self):
-        """Wendet Suchfilter auf filtered_packages an"""
-        if not self.gui.search_query:
-            # Keine Suche: Zeige alle gefilterten Pakete
-            self.gui.search_filtered_packages = self.gui.filtered_packages
-            return
+        """Wendet Scope + Suchfilter an (v0.3.0: Scope-Dropdown + mind. 5 Zeichen)"""
+        # Basis-Liste je nach Scope (v0.3.0)
+        if self.gui.search_scope == "all":
+            base_packages = self.gui.packages
+        else:
+            base_packages = self.gui.filtered_packages
 
-        # Suche in Name und Beschreibung
         query = self.gui.search_query
-        matching = []
 
-        for pkg in self.gui.filtered_packages:
-            # Suche in Name (case-insensitive)
-            if query in pkg.name.lower():
-                matching.append(pkg)
-                continue
+        # Suche: mindestens 5 Zeichen erforderlich (v0.3.0)
+        if not query or len(query) < 5:
+            # Kein Suchbegriff oder zu kurz: zeige Basis-Liste
+            packages = base_packages
+        else:
+            # Suche in Name und Beschreibung
+            matching = []
+            for pkg in base_packages:
+                if query in pkg.name.lower():
+                    matching.append(pkg)
+                    continue
+                if pkg.description and query in pkg.description.lower():
+                    matching.append(pkg)
+                    continue
+            packages = matching
 
-            # Suche in Beschreibung (falls vorhanden)
-            if pkg.description and query in pkg.description.lower():
-                matching.append(pkg)
-                continue
+        # Sortierung je nach gewähltem Sort-Key (v0.3.0 Issue #11)
+        sk = self.gui.sort_key
+        if sk == "name_asc":
+            key_fn, reverse = lambda p: p.name.lower(), False
+        elif sk == "name_desc":
+            key_fn, reverse = lambda p: p.name.lower(), True
+        elif sk == "size_asc":
+            # None-Größe ans Ende (inf ist größer als alle echten Werte)
+            key_fn, reverse = lambda p: (p.size if p.size is not None else float('inf')), False
+        elif sk == "size_desc":
+            # None-Größe ans Ende (bei desc: -1 ist kleiner als alle echten Werte)
+            key_fn, reverse = lambda p: (p.size if p.size is not None else -1), True
+        elif sk == "date_asc":
+            # None-Datum ans Ende ("9999" > alle echten YYYY-MM-DD Strings)
+            key_fn, reverse = lambda p: (p.install_date or "9999-99-99"), False
+        elif sk == "date_desc":
+            # None-Datum ans Ende (bei desc: "" < alle echten Datumstrings)
+            key_fn, reverse = lambda p: (p.install_date or ""), True
+        else:  # "default": Typ, dann alphabetisch
+            key_fn, reverse = lambda p: (p.package_type, p.name.lower()), False
 
-        self.gui.search_filtered_packages = matching
+        self.gui.search_filtered_packages = sorted(packages, key=key_fn, reverse=reverse)
+
+        # Desktop-Apps filtern (v0.3.1) — Scope gilt hier nicht
+        if not query or len(query) < 5:
+            desktop_base = self.gui.desktop_packages
+        else:
+            desktop_base = [
+                pkg for pkg in self.gui.desktop_packages
+                if query in pkg.name.lower() or
+                   (pkg.description and query in pkg.description.lower())
+            ]
+
+        # Desktop: nur Name-Sortierung sinnvoll (keine Größe/Datum)
+        if sk in ("name_desc",):
+            self.gui.desktop_filtered_packages = sorted(
+                desktop_base, key=lambda p: p.name.lower(), reverse=True
+            )
+        else:
+            self.gui.desktop_filtered_packages = sorted(
+                desktop_base, key=lambda p: p.name.lower()
+            )
 
     def _on_loading_error(self, error_msg):
         """Callback bei Lade-Fehler"""
@@ -572,75 +1019,139 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         if current_view == "list":
             self._populate_list_view()
+        elif current_view == "desktop":
+            self._populate_desktop_view()
         else:
             self._populate_table_view()
 
     def _populate_list_view(self):
-        """Füllt ListView (paginiert) mit lokalisierten Beschreibungen"""
-        # Clear
+        """
+        Füllt ListView sofort mit vorhandenen Daten, lädt lokalisierte
+        Beschreibungen asynchron nach (v0.3.0 Performance-Fix).
+        """
         self.list_store.remove_all()
 
-        # Pagination Range (verwendet search_filtered_packages!)
         start_idx = self.gui.current_page * self.gui.items_per_page
         end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
+        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
+        page_number = self.gui.current_page
 
-        # Sortieren
-        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
-        page_packages = sorted_packages[start_idx:end_idx]
+        # SOFORT rendern: gecachte Beschreibung oder englischer Fallback
+        from .package_manager import Package
+        for pkg in page_packages:
+            cached_desc = self.localized_desc_cache.get(pkg.name)
+            if cached_desc:
+                pkg = Package(
+                    name=pkg.name, version=pkg.version,
+                    package_type=pkg.package_type, description=cached_desc,
+                    size=pkg.size, install_date=pkg.install_date
+                )
+            self.list_store.append(PackageItem(pkg))
 
-        # Hole lokalisierte Beschreibungen PARALLEL für dpkg-Pakete
-        deb_packages = [pkg for pkg in page_packages if pkg.package_type == "deb"]
-        localized_descriptions = {}
+        # Nur fehlende deb-Beschreibungen asynchron nachladen
+        missing = [
+            pkg for pkg in page_packages
+            if pkg.package_type == "deb" and pkg.name not in self.localized_desc_cache
+        ]
+        if not missing:
+            return  # Alles gecacht → fertig
 
-        if deb_packages:
+        def _load_in_background():
             from concurrent.futures import ThreadPoolExecutor, as_completed
+            results = {}
             with ThreadPoolExecutor(max_workers=10) as executor:
-                # Starte parallele apt-cache Aufrufe
-                future_to_pkg = {
+                future_to_name = {
                     executor.submit(self._get_localized_description, pkg.name): pkg.name
-                    for pkg in deb_packages
+                    for pkg in missing
                 }
-
-                # Sammle Ergebnisse
-                for future in as_completed(future_to_pkg):
-                    pkg_name = future_to_pkg[future]
+                for future in as_completed(future_to_name):
+                    pkg_name = future_to_name[future]
                     try:
                         desc = future.result()
                         if desc:
-                            localized_descriptions[pkg_name] = desc
+                            results[pkg_name] = desc
                     except Exception:
-                        pass  # Fallback auf englische Beschreibung
+                        pass
+            GLib.idle_add(self._apply_localized_descriptions, results, page_number)
 
-        # Add to Model (wrapped in PackageItem) mit lokalisierten Beschreibungen
-        from .package_manager import Package
-        for pkg in page_packages:
-            # Nutze lokalisierte Beschreibung falls vorhanden
-            if pkg.name in localized_descriptions:
-                pkg = Package(
-                    name=pkg.name,
-                    version=pkg.version,
-                    package_type=pkg.package_type,
-                    description=localized_descriptions[pkg.name]
-                )
+        threading.Thread(target=_load_in_background, daemon=True).start()
 
-            self.list_store.append(PackageItem(pkg))
+    def _apply_localized_descriptions(self, new_descriptions: dict, page_number: int):
+        """
+        Callback nach asynchronem Laden: Cache füllen und ListView aktualisieren
+        falls noch die gleiche Seite angezeigt wird.
+        """
+        self.localized_desc_cache.update(new_descriptions)
+
+        # Nur neu rendern wenn noch dieselbe Seite + aktive View
+        if self.gui.current_page != page_number or not new_descriptions:
+            return GLib.SOURCE_REMOVE
+
+        current_view = self.stack.get_visible_child_name()
+        if current_view == "list":
+            self._populate_list_view()
+        elif current_view == "table":
+            self._populate_table_view()
+
+        return GLib.SOURCE_REMOVE
 
     def _populate_table_view(self):
-        """Füllt Table View (paginiert)"""
-        # Clear
+        """Füllt Table View (paginiert) — mit gecachten Beschreibungen + async Nachladen"""
         self.table_store.remove_all()
 
-        # Pagination Range (verwendet search_filtered_packages!)
         start_idx = self.gui.current_page * self.gui.items_per_page
         end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
+        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
+        page_number = self.gui.current_page
 
-        # Sortieren
-        sorted_packages = sorted(self.gui.search_filtered_packages, key=lambda p: (p.package_type, p.name))
-        page_packages = sorted_packages[start_idx:end_idx]
-
-        # Add to Model (wrapped in PackageItem)
+        # Gecachte Beschreibungen sofort anwenden
+        from .package_manager import Package
         for pkg in page_packages:
+            cached_desc = self.localized_desc_cache.get(pkg.name)
+            if cached_desc:
+                pkg = Package(
+                    name=pkg.name, version=pkg.version,
+                    package_type=pkg.package_type, description=cached_desc,
+                    size=pkg.size, install_date=pkg.install_date
+                )
             self.table_store.append(PackageItem(pkg))
+
+        # Fehlende deb-Beschreibungen asynchron nachladen
+        missing = [
+            pkg for pkg in page_packages
+            if pkg.package_type == "deb" and pkg.name not in self.localized_desc_cache
+        ]
+        if not missing:
+            return
+
+        def _load_in_background():
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            results = {}
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                future_to_name = {
+                    executor.submit(self._get_localized_description, pkg.name): pkg.name
+                    for pkg in missing
+                }
+                for future in as_completed(future_to_name):
+                    pkg_name = future_to_name[future]
+                    try:
+                        desc = future.result()
+                        if desc:
+                            results[pkg_name] = desc
+                    except Exception:
+                        pass
+            GLib.idle_add(self._apply_localized_descriptions, results, page_number)
+
+        threading.Thread(target=_load_in_background, daemon=True).start()
+
+    def _populate_desktop_view(self):
+        """
+        Füllt Desktop-Apps View mit allen gefilterten Desktop-Apps (v0.3.1, Issue #4).
+        Kein Paging — Virtual Scrolling reicht für typisch 50–300 Apps.
+        """
+        self.desktop_store.remove_all()
+        for pkg in self.gui.desktop_filtered_packages:
+            self.desktop_store.append(PackageItem(pkg))
 
     def _get_localized_description(self, package_name: str) -> Optional[str]:
         """Holt lokalisierte Beschreibung via apt-cache (nur für List View)"""
@@ -663,17 +1174,28 @@ class MyAppsWindow(Adw.ApplicationWindow):
         return None
 
     def _update_pagination_controls(self):
-        """Aktualisiert Pagination Controls (verwendet search_filtered_packages!)"""
+        """Aktualisiert Pagination Controls"""
+        current_view = self.stack.get_visible_child_name()
+
+        # Desktop-View: kein Paging, nur Anzahl anzeigen
+        if current_view == "desktop":
+            count = len(self.gui.desktop_filtered_packages)
+            self.page_label.set_text(f"{count} " + _("Desktop-Apps"))
+            self.prev_btn.set_sensitive(False)
+            self.next_btn.set_sensitive(False)
+            return
+
+        # Normale Pagination für List + Table View
         if self.gui.search_filtered_packages:
             self.gui.total_pages = (len(self.gui.search_filtered_packages) + self.gui.items_per_page - 1) // self.gui.items_per_page
         else:
             self.gui.total_pages = 0
 
-        # Adjust current page
+        # Aktuelle Seite anpassen
         if self.gui.current_page >= self.gui.total_pages:
             self.gui.current_page = max(0, self.gui.total_pages - 1)
 
-        # Update Label
+        # Label aktualisieren
         if self.gui.total_pages > 0:
             start_idx = self.gui.current_page * self.gui.items_per_page + 1
             end_idx = min((self.gui.current_page + 1) * self.gui.items_per_page, len(self.gui.search_filtered_packages))
@@ -684,7 +1206,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         else:
             self.page_label.set_text(_("Keine Apps"))
 
-        # Update Buttons
+        # Buttons
         self.prev_btn.set_sensitive(self.gui.current_page > 0)
         self.next_btn.set_sensitive(self.gui.current_page < self.gui.total_pages - 1)
 
@@ -704,6 +1226,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_refresh_clicked(self, button):
         """Refresh Button Handler"""
+        # Caches leeren bei Refresh (v0.2.4 + v0.3.0)
+        self.icon_cache.clear()
+        self.localized_desc_cache.clear()
+
         self.gui.current_page = 0
         self._set_status(_("Aktualisiere") + "...")
         GLib.idle_add(self.gui._start_loading_packages)
@@ -718,17 +1244,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
             dialog.present()
             return
 
-        # File Chooser Dialog
+        # GTK4 FileChooserDialog (ohne parent in Constructor)
         dialog = Gtk.FileChooserDialog(
             title=_("Paketliste exportieren"),
-            parent=self,
             action=Gtk.FileChooserAction.SAVE
         )
+        dialog.set_transient_for(self)  # Setze parent NACH Erstellung
+        dialog.set_modal(True)
+
         dialog.add_buttons(
             _("Abbrechen"), Gtk.ResponseType.CANCEL,
             _("Exportieren"), Gtk.ResponseType.ACCEPT
         )
-        dialog.set_current_name("myapps-export.txt")
+        dialog.set_current_name("myapps-export")
+
+        # Setze Default-Ordner auf HOME
+        import os
+        home_folder = Gio.File.new_for_path(os.path.expanduser("~"))
+        dialog.set_current_folder(home_folder)
 
         # Format Filter
         filter_txt = Gtk.FileFilter()
@@ -756,22 +1289,59 @@ class MyAppsWindow(Adw.ApplicationWindow):
             if file:
                 file_path = file.get_path()
 
-                # Format aus Dateiendung ermitteln
-                fmt = "txt"
-                if file_path.endswith(".csv"):
+                # Ermittle Format aus aktuellem Filter
+                current_filter = dialog.get_filter()
+                filter_name = current_filter.get_name() if current_filter else "Text (.txt)"
+
+                # Bestimme Format und Dateiendung basierend auf Filter
+                if "CSV" in filter_name:
                     fmt = "csv"
-                elif file_path.endswith(".json"):
+                    extension = ".csv"
+                elif "JSON" in filter_name:
                     fmt = "json"
-
-                # Export durchführen (verwendet search_filtered_packages!)
-                success = Exporter.export(self.gui.search_filtered_packages, file_path, fmt)
-
-                if success:
-                    self._set_status(f"{_('Exportiert')}: {file_path}")
+                    extension = ".json"
                 else:
-                    self._set_status(_("Export fehlgeschlagen"))
+                    fmt = "txt"
+                    extension = ".txt"
+
+                # Füge Dateiendung hinzu falls sie fehlt
+                if not file_path.endswith(extension):
+                    # Entferne evtl. falsche Endung (.txt vom Default)
+                    if file_path.endswith(".txt") or file_path.endswith(".csv") or file_path.endswith(".json"):
+                        file_path = file_path.rsplit(".", 1)[0]
+                    file_path = file_path + extension
+
+                # Prüfe ob Datei existiert und frage nach
+                from pathlib import Path
+                if Path(file_path).exists():
+                    overwrite_dialog = Adw.MessageDialog.new(self)
+                    overwrite_dialog.set_heading(_("Datei überschreiben?"))
+                    overwrite_dialog.set_body(f"{_('Die Datei existiert bereits')}: {Path(file_path).name}")
+                    overwrite_dialog.add_response("cancel", _("Abbrechen"))
+                    overwrite_dialog.add_response("overwrite", _("Überschreiben"))
+                    overwrite_dialog.set_response_appearance("overwrite", Adw.ResponseAppearance.DESTRUCTIVE)
+                    overwrite_dialog.connect("response", self._on_overwrite_response, file_path, fmt)
+                    overwrite_dialog.present()
+                else:
+                    # Datei existiert nicht, direkt exportieren
+                    self._do_export(file_path, fmt)
 
         dialog.destroy()
+
+    def _on_overwrite_response(self, dialog, response, file_path, fmt):
+        """Überschreiben-Dialog Response"""
+        if response == "overwrite":
+            self._do_export(file_path, fmt)
+        dialog.destroy()
+
+    def _do_export(self, file_path, fmt):
+        """Führt Export durch"""
+        success = Exporter.export(self.gui.search_filtered_packages, file_path, fmt)
+
+        if success:
+            self._set_status(f"{_('Exportiert')}: {file_path}")
+        else:
+            self._set_status(_("Export fehlgeschlagen"))
 
     def _on_about(self, action, param):
         """About Dialog - Alles auf einer Seite wie vorher!"""
@@ -921,28 +1491,34 @@ class MyAppsWindow(Adw.ApplicationWindow):
         sep4.set_margin_top(15)
         main_box.append(sep4)
 
-        # === NEU IN 0.2.0 ===
-        whats_new_label = Gtk.Label(label="✨ Neu in Version 0.2.0:")
+        # === NEU IN AKTUELLER VERSION ===
+        whats_new_label = Gtk.Label(label=f"✨ Neu in Version {VERSION}:")
         whats_new_label.add_css_class("title-4")
         whats_new_label.set_halign(Gtk.Align.START)
         whats_new_label.set_margin_top(15)
         whats_new_label.set_margin_bottom(5)
         main_box.append(whats_new_label)
 
-        new_features = [
-            "• Moderne GTK4 + Libadwaita Oberfläche",
-            "• Virtual Scrolling für bessere Performance",
-            "• Deutsche Beschreibungen in Listenansicht",
-            "• Schnellere Tabellenansicht",
-            "• Verbesserte Tooltips"
-        ]
+        # Lade Features aus WHATS_NEW.md
+        new_features = get_whats_new(VERSION)
 
-        for feature in new_features:
-            feature_label = Gtk.Label(label=feature)
-            feature_label.set_halign(Gtk.Align.START)
-            feature_label.set_margin_start(20)
-            feature_label.set_margin_top(2)
-            main_box.append(feature_label)
+        # Zeige Features (oder Fallback-Nachricht)
+        if new_features:
+            for feature in new_features:
+                feature_label = Gtk.Label(label=f"• {feature}")
+                feature_label.set_halign(Gtk.Align.START)
+                feature_label.set_wrap(True)
+                feature_label.set_max_width_chars(48)
+                feature_label.set_margin_start(20)
+                feature_label.set_margin_top(2)
+                main_box.append(feature_label)
+        else:
+            # Fallback wenn keine Features gefunden
+            no_info_label = Gtk.Label(label="Keine Changelog-Informationen verfügbar.")
+            no_info_label.add_css_class("dim-label")
+            no_info_label.set_halign(Gtk.Align.START)
+            no_info_label.set_margin_start(20)
+            main_box.append(no_info_label)
 
         # Danke-Text
         thanks_label = Gtk.Label(label="Danke fürs Testen! 🎉")
