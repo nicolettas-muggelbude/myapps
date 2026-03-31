@@ -865,6 +865,15 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Status: ✅ Seitenwechsel deutlich schneller, stabiler Memory-Verbrauch
     - Commits: b0ff7e4, 76edd05, 873747c, d95b3b5
 
+### ✅ v0.3.1 - Desktop Apps Ansicht (31.03.2026) — RELEASED
+- **Desktop-Apps-Ansicht** (Issue #4) — dritter Tab neben Liste und Tabelle
+- DesktopFileManager parst .desktop-Dateien (System, User, Flatpak, Snap)
+- Lokalisierte Namen/Beschreibungen, 48px Icons, Suche + Sortierung
+- Pillow 12.0.0 → 12.1.1
+- **GitHub Release:** ✅ https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.3.1
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
 ### ✅ v0.3.0 - Scope, Größe, Datum & Sortierung (08.03.2026) — RELEASED
 - **Scope-Dropdown** "Nur User-Apps" / "Alle Pakete" (Issue #16) ✅
 - **Installierte Größe** in Liste und Tabelle (Issue #5) ✅
