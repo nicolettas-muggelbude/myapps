@@ -1025,8 +1025,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
     def _show_update_banner(self, latest_version: str):
         """Zeigt Update-Banner wenn neue Version verfügbar (v0.4.0)"""
         self.update_banner.set_title(
-            f"v{latest_version} " +
-            _("verfügbar — via apt upgrade / pacman -Syu / zypper up installierbar")
+            f"MyApps v{latest_version} " + _("ist verfügbar")
         )
         self.update_banner.set_revealed(True)
         return GLib.SOURCE_REMOVE
