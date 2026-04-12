@@ -95,6 +95,50 @@ install -Dm644 WHATS_NEW.md %{buildroot}%{_datadir}/myapps/WHATS_NEW.md
 %{_datadir}/myapps/
 
 %post
+# OBS-Repo automatisch eintragen (nur beim ersten Install)
+OBS_BASE="https://download.opensuse.org/repositories/home:/nicoletta:/myapps"
+REPO_FILE=""
+
+if command -v dnf >/dev/null 2>&1; then
+    # Fedora
+    REPO_FILE="/etc/yum.repos.d/myapps-obs.repo"
+    if [ ! -f "$REPO_FILE" ]; then
+        . /etc/os-release
+        case "$VERSION_ID" in
+            41) DIST="Fedora_41" ;;
+            42) DIST="Fedora_42" ;;
+            43) DIST="Fedora_43" ;;
+            *)  DIST="Fedora_42" ;;
+        esac
+        cat > "$REPO_FILE" << EOF
+[home_nicoletta_myapps]
+name=MyApps (OBS)
+baseurl=${OBS_BASE}/${DIST}/
+enabled=1
+gpgcheck=1
+gpgkey=${OBS_BASE}/${DIST}/repodata/repomd.xml.key
+EOF
+    fi
+elif command -v zypper >/dev/null 2>&1; then
+    # openSUSE
+    REPO_FILE="/etc/zypp/repos.d/myapps-obs.repo"
+    if [ ! -f "$REPO_FILE" ]; then
+        . /etc/os-release
+        case "$VERSION_CODENAME" in
+            Tumbleweed) DIST="openSUSE_Tumbleweed" ;;
+            Slowroll)   DIST="openSUSE_Slowroll" ;;
+            *)
+                case "$VERSION_ID" in
+                    16*) DIST="openSUSE_Leap_16" ;;
+                    *)   DIST="openSUSE_Tumbleweed" ;;
+                esac
+                ;;
+        esac
+        zypper addrepo --gpgcheck --refresh \
+            "${OBS_BASE}/${DIST}/" myapps-obs &>/dev/null || :
+    fi
+fi
+
 # Update icon cache
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
     gtk-update-icon-cache -f -t %{_datadir}/icons/hicolor &>/dev/null || :
@@ -106,12 +150,16 @@ if command -v update-desktop-database >/dev/null 2>&1; then
 fi
 
 %postun
-# Update icon cache after removal
+# OBS-Repo beim vollständigen Deinstallieren entfernen
 if [ $1 -eq 0 ]; then
+    rm -f /etc/yum.repos.d/myapps-obs.repo
+    if command -v zypper >/dev/null 2>&1; then
+        zypper removerepo myapps-obs &>/dev/null || :
+    fi
+
     if command -v gtk-update-icon-cache >/dev/null 2>&1; then
         gtk-update-icon-cache -f -t %{_datadir}/icons/hicolor &>/dev/null || :
     fi
-
     if command -v update-desktop-database >/dev/null 2>&1; then
         update-desktop-database -q %{_datadir}/applications &>/dev/null || :
     fi
