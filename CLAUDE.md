@@ -325,9 +325,9 @@ from pathlib import Path
 - Kein Sandbox (voller /var/lib Zugriff für Paketmanager-DBs)
 - Alternative zu Flathub (nach Ablehnung)
 
-**Unterstützte Distributionen (11):**
+**Unterstützte Distributionen (12):**
 - **Debian:** 12 (Bookworm), 13 (Trixie)
-- **Ubuntu:** 22.04 LTS, 24.04 LTS, 25.10
+- **Ubuntu:** 22.04 LTS, 24.04 LTS, 25.10, 26.04 LTS
 - **Fedora:** 41, 42, 43
 - **openSUSE:** Leap 16, Slowroll, Tumbleweed
 
@@ -808,7 +808,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
     - Fedora 41, 42, 43
     - openSUSE Leap 16, Slowroll, Tumbleweed
     - Debian 12 (Bookworm), 13 (Trixie)
-    - Ubuntu 22.04 LTS, 24.04 LTS, 25.10
+    - Ubuntu 22.04 LTS, 24.04 LTS, 25.10, 26.04 LTS
   - **Download-Portal:** https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps
   - **Behobene Probleme:**
     - Menu-Integration mit %post/%postun Scripts (RPM) und postinst/postrm (DEB)

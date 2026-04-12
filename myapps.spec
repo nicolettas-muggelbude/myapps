@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.3.1
+Version:        0.4.0
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -118,6 +118,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sun Apr 12 2026 MyApps Contributors <noreply@github.com> - 0.4.0-1
+- Performance: Virtual Scrolling — keine Pagination mehr, alle Apps in einer Liste
+- GTK4 rendert nur sichtbare Elemente, performant bei 2000+ Paketen
+- Feature: Update-Benachrichtigung via Adw.Banner wenn neue Version verfügbar
+- Sort-Bar ersetzt Pagination-Bar
+
 * Tue Mar 31 2026 MyApps Contributors <noreply@github.com> - 0.3.1-1
 - Feature: Desktop-Apps-Ansicht (Issue #4) — zeigt .desktop-Anwendungen
 - Neue Registerkarte "Desktop" neben Liste und Tabelle
