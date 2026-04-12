@@ -2,6 +2,12 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.4.0
+- Performance: Virtual Scrolling — keine Pagination mehr, alle Apps in einer Liste
+- GTK4 rendert nur sichtbare Elemente (schnell auch bei 2000+ Paketen)
+- Feature: Update-Benachrichtigung — neues Banner wenn neue Version verfügbar
+- Fix: Sort-Bar ersetzt Pagination-Bar (übersichtlicher)
+
 ## v0.3.1
 - Feature: Desktop-Apps-Ansicht — zeigt installierte .desktop-Anwendungen (Issue #4)
 - Neue Registerkarte "Desktop" neben Liste und Tabelle

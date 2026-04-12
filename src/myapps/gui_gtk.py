@@ -247,11 +247,6 @@ class MyAppsGUI(Adw.Application):
         self.desktop_packages: List[Package] = []
         self.desktop_filtered_packages: List[Package] = []
 
-        # Pagination (gleiche Logik wie tkinter)
-        self.current_page = 0
-        self.items_per_page = 100
-        self.total_pages = 0
-
         # Suche
         self.search_query = ""
 
@@ -376,9 +371,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
         header = self._create_header_bar()
         main_box.append(header)
 
-        # Pagination Bar
-        self.pagination_bar = self._create_pagination_bar()
-        main_box.append(self.pagination_bar)
+        # Update-Banner (v0.4.0) — initial versteckt
+        self.update_banner = Adw.Banner()
+        self.update_banner.set_button_label(_("Changelog"))
+        self.update_banner.connect("button-clicked", self._on_update_banner_clicked)
+        self.update_banner.set_revealed(False)
+        main_box.append(self.update_banner)
+
+        # Sort-Bar (v0.4.0: ersetzt Pagination-Bar)
+        self.sort_bar = self._create_sort_bar()
+        main_box.append(self.sort_bar)
 
         # Content Area (Stack für Views)
         self.stack = Gtk.Stack()
@@ -498,21 +500,26 @@ class MyAppsWindow(Adw.ApplicationWindow):
         ("date_desc", "Datum ↓ (neueste)"),
     ]
 
-    def _create_pagination_bar(self):
-        """Erstellt die Pagination Navigation"""
+    def _create_sort_bar(self):
+        """Erstellt die Sort-Bar (v0.4.0: Virtual Scrolling, kein Pagination mehr)"""
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         box.set_margin_start(12)
         box.set_margin_end(12)
         box.set_margin_top(6)
         box.set_margin_bottom(6)
 
-        # Info Label (links)
-        info_label = Gtk.Label(label="ℹ️  " + _("Zeigt 100 Apps pro Seite"))
-        info_label.add_css_class("dim-label")
-        info_label.set_halign(Gtk.Align.START)
-        box.append(info_label)
+        # App-Anzahl Label (links)
+        self.count_label = Gtk.Label(label="")
+        self.count_label.add_css_class("dim-label")
+        self.count_label.set_halign(Gtk.Align.START)
+        box.append(self.count_label)
 
-        # Sort-Dropdown (mitte-links) (v0.3.0 Issue #11)
+        # Spacer
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        box.append(spacer)
+
+        # Sort-Dropdown (rechts) (v0.3.0 Issue #11)
         sort_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         sort_label = Gtk.Label(label=_("Sortieren:"))
         sort_label.add_css_class("dim-label")
@@ -525,33 +532,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self.sort_dropdown.connect("notify::selected", self._on_sort_changed)
         sort_box.append(self.sort_dropdown)
         box.append(sort_box)
-
-        # Spacer
-        spacer = Gtk.Box()
-        spacer.set_hexpand(True)
-        box.append(spacer)
-
-        # Navigation (rechts)
-        nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        nav_box.set_halign(Gtk.Align.END)
-
-        self.prev_btn = Gtk.Button(label="◀ " + _("Zurück"))
-        self.prev_btn.set_sensitive(False)
-        self.prev_btn.connect("clicked", lambda *_: self._prev_page())
-        nav_box.append(self.prev_btn)
-
-        self.page_label = Gtk.Label(label=_("Seite 0 von 0"))
-        self.page_label.add_css_class("title-4")
-        self.page_label.set_margin_start(12)
-        self.page_label.set_margin_end(12)
-        nav_box.append(self.page_label)
-
-        self.next_btn = Gtk.Button(label=_("Weiter") + " ▶")
-        self.next_btn.set_sensitive(False)
-        self.next_btn.connect("clicked", lambda *_: self._next_page())
-        nav_box.append(self.next_btn)
-
-        box.append(nav_box)
 
         return box
 
@@ -889,7 +869,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
     def _on_packages_loaded(self, packages):
         """Callback wenn Pakete geladen sind"""
         self._apply_search_filter()
-        self._update_pagination_controls()
+        self._update_count_label()
         self._populate_current_view()
         # Zeige Gesamtzahl (User-Apps), Vollinfo im Tooltip/Scope
         self._set_status(
@@ -897,15 +877,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
             f"  •  {len(self.gui.packages)} " + _("Pakete gesamt") +
             f"  •  {len(self.gui.desktop_packages)} " + _("Desktop-Apps")
         )
+        # Update-Check im Hintergrund (v0.4.0)
+        self._check_for_updates()
         return GLib.SOURCE_REMOVE
 
     def _on_search_changed(self, search_entry):
         """Callback wenn Suchtext geändert wird"""
         query = search_entry.get_text().lower().strip()
         self.gui.search_query = query
-        self.gui.current_page = 0  # Zurück zu Seite 1
         self._apply_search_filter()
-        self._update_pagination_controls()
+        self._update_count_label()
         self._populate_current_view()
 
         # Status Update mit Mindest-Zeichen-Feedback (v0.3.0)
@@ -921,17 +902,15 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Callback wenn Sort-Dropdown geändert wird (v0.3.0 Issue #11)"""
         idx = dropdown.get_selected()
         self.gui.sort_key = self._SORT_OPTIONS[idx][0]
-        self.gui.current_page = 0
         self._apply_search_filter()
-        self._update_pagination_controls()
+        self._update_count_label()
         self._populate_current_view()
 
     def _on_scope_changed(self, dropdown, _pspec):
         """Callback wenn Scope-Dropdown geändert wird (v0.3.0)"""
         self.gui.search_scope = "all" if dropdown.get_selected() == 1 else "user"
-        self.gui.current_page = 0
         self._apply_search_filter()
-        self._update_pagination_controls()
+        self._update_count_label()
         self._populate_current_view()
 
         # Status Update
@@ -1013,8 +992,52 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._set_status(f"Fehler: {error_msg}")
         return GLib.SOURCE_REMOVE
 
+    def _check_for_updates(self):
+        """Startet Update-Check im Hintergrund-Thread (v0.4.0)"""
+        thread = threading.Thread(target=self._check_updates_worker, daemon=True)
+        thread.start()
+
+    def _check_updates_worker(self):
+        """Prüft GitHub Releases API auf neue Version (v0.4.0)"""
+        import urllib.request
+        import json
+        try:
+            url = "https://api.github.com/repos/nicolettas-muggelbude/myapps/releases/latest"
+            req = urllib.request.Request(
+                url, headers={"User-Agent": f"MyApps/{VERSION}"}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read())
+            latest_tag = data.get("tag_name", "").lstrip("v")
+            if not latest_tag or latest_tag == VERSION:
+                return
+            # Semantische Versionsvergleich (tuple-Vergleich reicht für X.Y.Z)
+            def parse_ver(v: str):
+                try:
+                    return tuple(int(x) for x in v.split("."))
+                except ValueError:
+                    return (0, 0, 0)
+            if parse_ver(latest_tag) > parse_ver(VERSION):
+                GLib.idle_add(self._show_update_banner, latest_tag)
+        except Exception as e:
+            logger.debug(f"Update-Check fehlgeschlagen: {e}")
+
+    def _show_update_banner(self, latest_version: str):
+        """Zeigt Update-Banner wenn neue Version verfügbar (v0.4.0)"""
+        self.update_banner.set_title(
+            f"v{latest_version} " +
+            _("verfügbar — via apt upgrade / pacman -Syu / zypper up installierbar")
+        )
+        self.update_banner.set_revealed(True)
+        return GLib.SOURCE_REMOVE
+
+    def _on_update_banner_clicked(self, banner):
+        """Öffnet GitHub Releases bei Klick auf Banner-Button (v0.4.0)"""
+        import webbrowser
+        webbrowser.open("https://github.com/nicolettas-muggelbude/myapps/releases/latest")
+
     def _populate_current_view(self):
-        """Füllt die aktuelle View mit Daten (paginiert)"""
+        """Füllt die aktuelle View mit allen Daten (Virtual Scrolling, v0.4.0)"""
         current_view = self.stack.get_visible_child_name()
 
         if current_view == "list":
@@ -1026,19 +1049,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _populate_list_view(self):
         """
-        Füllt ListView sofort mit vorhandenen Daten, lädt lokalisierte
-        Beschreibungen asynchron nach (v0.3.0 Performance-Fix).
+        Füllt ListView mit allen gefilterten Apps — Virtual Scrolling (v0.4.0).
+        GTK4 rendert nur sichtbare Elemente. Lokalisierte Beschreibungen
+        werden asynchron nachgeladen.
         """
         self.list_store.remove_all()
-
-        start_idx = self.gui.current_page * self.gui.items_per_page
-        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
-        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
-        page_number = self.gui.current_page
+        packages = self.gui.search_filtered_packages
 
         # SOFORT rendern: gecachte Beschreibung oder englischer Fallback
         from .package_manager import Package
-        for pkg in page_packages:
+        for pkg in packages:
             cached_desc = self.localized_desc_cache.get(pkg.name)
             if cached_desc:
                 pkg = Package(
@@ -1050,7 +1070,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         # Nur fehlende deb-Beschreibungen asynchron nachladen
         missing = [
-            pkg for pkg in page_packages
+            pkg for pkg in packages
             if pkg.package_type == "deb" and pkg.name not in self.localized_desc_cache
         ]
         if not missing:
@@ -1072,19 +1092,17 @@ class MyAppsWindow(Adw.ApplicationWindow):
                             results[pkg_name] = desc
                     except Exception:
                         pass
-            GLib.idle_add(self._apply_localized_descriptions, results, page_number)
+            GLib.idle_add(self._apply_localized_descriptions, results)
 
         threading.Thread(target=_load_in_background, daemon=True).start()
 
-    def _apply_localized_descriptions(self, new_descriptions: dict, page_number: int):
+    def _apply_localized_descriptions(self, new_descriptions: dict):
         """
-        Callback nach asynchronem Laden: Cache füllen und ListView aktualisieren
-        falls noch die gleiche Seite angezeigt wird.
+        Callback nach asynchronem Laden: Cache füllen und aktive View aktualisieren.
+        Beim erneuten Rendern sind alle Descriptions gecacht → kein weiterer Thread.
         """
         self.localized_desc_cache.update(new_descriptions)
-
-        # Nur neu rendern wenn noch dieselbe Seite + aktive View
-        if self.gui.current_page != page_number or not new_descriptions:
+        if not new_descriptions:
             return GLib.SOURCE_REMOVE
 
         current_view = self.stack.get_visible_child_name()
@@ -1096,17 +1114,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
         return GLib.SOURCE_REMOVE
 
     def _populate_table_view(self):
-        """Füllt Table View (paginiert) — mit gecachten Beschreibungen + async Nachladen"""
+        """
+        Füllt Table View mit allen gefilterten Apps — Virtual Scrolling (v0.4.0).
+        Gecachte Beschreibungen sofort, fehlende werden asynchron nachgeladen.
+        """
         self.table_store.remove_all()
-
-        start_idx = self.gui.current_page * self.gui.items_per_page
-        end_idx = min(start_idx + self.gui.items_per_page, len(self.gui.search_filtered_packages))
-        page_packages = self.gui.search_filtered_packages[start_idx:end_idx]
-        page_number = self.gui.current_page
+        packages = self.gui.search_filtered_packages
 
         # Gecachte Beschreibungen sofort anwenden
         from .package_manager import Package
-        for pkg in page_packages:
+        for pkg in packages:
             cached_desc = self.localized_desc_cache.get(pkg.name)
             if cached_desc:
                 pkg = Package(
@@ -1118,7 +1135,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         # Fehlende deb-Beschreibungen asynchron nachladen
         missing = [
-            pkg for pkg in page_packages
+            pkg for pkg in packages
             if pkg.package_type == "deb" and pkg.name not in self.localized_desc_cache
         ]
         if not missing:
@@ -1140,7 +1157,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
                             results[pkg_name] = desc
                     except Exception:
                         pass
-            GLib.idle_add(self._apply_localized_descriptions, results, page_number)
+            GLib.idle_add(self._apply_localized_descriptions, results)
 
         threading.Thread(target=_load_in_background, daemon=True).start()
 
@@ -1173,56 +1190,15 @@ class MyAppsWindow(Adw.ApplicationWindow):
             pass  # Bei Fehler: Nutze englische Beschreibung als Fallback
         return None
 
-    def _update_pagination_controls(self):
-        """Aktualisiert Pagination Controls"""
+    def _update_count_label(self):
+        """Aktualisiert die App-Anzahl in der Sort-Bar (v0.4.0)"""
         current_view = self.stack.get_visible_child_name()
-
-        # Desktop-View: kein Paging, nur Anzahl anzeigen
         if current_view == "desktop":
             count = len(self.gui.desktop_filtered_packages)
-            self.page_label.set_text(f"{count} " + _("Desktop-Apps"))
-            self.prev_btn.set_sensitive(False)
-            self.next_btn.set_sensitive(False)
-            return
-
-        # Normale Pagination für List + Table View
-        if self.gui.search_filtered_packages:
-            self.gui.total_pages = (len(self.gui.search_filtered_packages) + self.gui.items_per_page - 1) // self.gui.items_per_page
+            self.count_label.set_text(f"{count} " + _("Desktop-Apps"))
         else:
-            self.gui.total_pages = 0
-
-        # Aktuelle Seite anpassen
-        if self.gui.current_page >= self.gui.total_pages:
-            self.gui.current_page = max(0, self.gui.total_pages - 1)
-
-        # Label aktualisieren
-        if self.gui.total_pages > 0:
-            start_idx = self.gui.current_page * self.gui.items_per_page + 1
-            end_idx = min((self.gui.current_page + 1) * self.gui.items_per_page, len(self.gui.search_filtered_packages))
-            self.page_label.set_text(
-                f"{_('Seite')} {self.gui.current_page + 1} {_('von')} {self.gui.total_pages}  •  "
-                f"Apps {start_idx}-{end_idx} {_('von')} {len(self.gui.search_filtered_packages)}"
-            )
-        else:
-            self.page_label.set_text(_("Keine Apps"))
-
-        # Buttons
-        self.prev_btn.set_sensitive(self.gui.current_page > 0)
-        self.next_btn.set_sensitive(self.gui.current_page < self.gui.total_pages - 1)
-
-    def _prev_page(self):
-        """Vorherige Seite"""
-        if self.gui.current_page > 0:
-            self.gui.current_page -= 1
-            self._update_pagination_controls()
-            self._populate_current_view()
-
-    def _next_page(self):
-        """Nächste Seite"""
-        if self.gui.current_page < self.gui.total_pages - 1:
-            self.gui.current_page += 1
-            self._update_pagination_controls()
-            self._populate_current_view()
+            count = len(self.gui.search_filtered_packages)
+            self.count_label.set_text(f"{count} " + _("Apps"))
 
     def _on_refresh_clicked(self, button):
         """Refresh Button Handler"""
@@ -1230,7 +1206,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self.icon_cache.clear()
         self.localized_desc_cache.clear()
 
-        self.gui.current_page = 0
         self._set_status(_("Aktualisiere") + "...")
         GLib.idle_add(self.gui._start_loading_packages)
 

@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v0.3.0 (Beta - Scope-Suche)
+- **Version**: v0.4.0 (Beta - Virtual Scrolling + Update-Benachrichtigung)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
@@ -749,7 +749,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 10. **💝 Spendenbutton** mit Rechtlichem
 11. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (08.03.2026)
+## Aktueller Projekt-Stand (12.04.2026)
 
 ### ✅ Abgeschlossen
 
@@ -894,30 +894,22 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **AUR:** ✅ https://aur.archlinux.org/packages/myapps
 - **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
+### ✅ v0.4.0 - Virtual Scrolling + Update-Benachrichtigung (12.04.2026) — IN ENTWICKLUNG
+- **Virtual Scrolling** — Pagination komplett entfernt (Issue #4 Voraussetzung)
+  - Alle Apps in einer Liste, kein Seitenumbruch
+  - GTK4 `Gtk.ListView` rendert nur sichtbare Elemente (performant bei 2000+ Paketen)
+  - Sort-Bar ersetzt Pagination-Bar (schlanker)
+  - `current_page`/`items_per_page`/`total_pages` entfernt
+- **Update-Benachrichtigung** via GitHub Releases API
+  - `Adw.Banner` wenn neue Version verfügbar
+  - Hintergrund-Thread mit 5s Timeout
+  - Klick auf "Changelog" öffnet GitHub Releases
+- **pyproject.toml:** version = "0.4.0"
+
 ### 🔄 Aktuell laufend
-- **Community Testing v0.3.0** — OBS-Builds laufen durch, Feedback sammeln
+- **Community Testing v0.4.0** — Virtual Scrolling testen
 
 ### 📋 Roadmap
-
-#### **v0.3.1 - Desktop Apps View**
-**Issue #4** - .desktop-only View
-
-**Features:**
-1. **Neue Ansicht:** Desktop Apps (neben Liste & Tabelle)
-2. **Desktop-App-Erkennung:**
-   - Parse `/usr/share/applications/`
-   - Parse `~/.local/share/applications/`
-   - Flatpak/Snap-spezifische Pfade
-
----
-
-#### **v0.4.0 - Weitere Features**
-- Virtual Scrolling (echtes ListView-Scrolling, weg von Pagination)
-- Icon-Anzeige in ListView/ColumnView (aktuell nur Platzhalter)
-- **Update-Benachrichtigung**: Beim App-Start prüfen ob neue Version auf GitHub verfügbar
-  - Dezenter Hinweis (Statusbar oder Banner): "v0.3.2 verfügbar — via apt upgrade installierbar"
-  - Kein Auto-Updater — Updates kommen über den Paketmanager (OBS/AUR)
-  - Prüfung gegen GitHub Releases API (neueste Tag-Version)
 
 #### **v1.0.0 - Stable Release**
 - Nach umfangreichem Community-Testing
@@ -926,3 +918,4 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 
 #### **v2.0.0 - Major Features**
 - Deinstallations-Funktion
+- Icon-Anzeige in ListView/ColumnView (aktuell Platzhalter)
