@@ -894,8 +894,8 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **AUR:** ✅ https://aur.archlinux.org/packages/myapps
 - **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
-### ✅ v0.4.0 - Virtual Scrolling + Update-Benachrichtigung (12.04.2026) — IN ENTWICKLUNG
-- **Virtual Scrolling** — Pagination komplett entfernt (Issue #4 Voraussetzung)
+### ✅ v0.4.0 - Virtual Scrolling + Update-Benachrichtigung (12.04.2026) — RELEASED
+- **Virtual Scrolling** — Pagination komplett entfernt
   - Alle Apps in einer Liste, kein Seitenumbruch
   - GTK4 `Gtk.ListView` rendert nur sichtbare Elemente (performant bei 2000+ Paketen)
   - Sort-Bar ersetzt Pagination-Bar (schlanker)
@@ -905,9 +905,13 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - Hintergrund-Thread mit 5s Timeout
   - Klick auf "Changelog" öffnet GitHub Releases
 - **pyproject.toml:** version = "0.4.0"
+- **GitHub Release:** ✅ https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.4.0
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+- **OBS Distributionen (12):** Debian 12/13, Ubuntu 22.04/24.04/25.10/26.04 LTS, Fedora 41/42/43, openSUSE Leap 16/Slowroll/Tumbleweed
 
 ### 🔄 Aktuell laufend
-- **Community Testing v0.4.0** — Virtual Scrolling testen
+- **Community Testing v0.4.0** — Virtual Scrolling + Update-Banner testen
 
 ### 📋 Roadmap
 
