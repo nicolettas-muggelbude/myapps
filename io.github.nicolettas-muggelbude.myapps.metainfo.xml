@@ -17,14 +17,14 @@
       MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten
       Anwendungen übersichtlich darstellt - ohne System-Clutter.
     </p>
-    <p>Features:</p>
     <ul>
       <li>Multi-distribution support (Debian, Ubuntu, Mint, Arch, Fedora, etc.)</li>
       <li>Modern GTK4 + Libadwaita GUI with native dark mode</li>
-      <li>Virtual scrolling for 10,000+ packages without performance issues</li>
+      <li>Virtual scrolling — all apps in one list, no pagination</li>
+      <li>Desktop Apps view — shows only apps with .desktop entries</li>
       <li>Intelligent filtering of system apps</li>
-      <li>Icons with system integration</li>
       <li>Search function (name + description)</li>
+      <li>Sort by name, size or install date</li>
       <li>Export functions (TXT, CSV, JSON)</li>
       <li>Multilingual (German, English)</li>
     </ul>
@@ -60,25 +60,69 @@
   <url type="donation">https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL</url>
   <url type="vcs-browser">https://github.com/nicolettas-muggelbude/myapps</url>
 
-  <developer_name>Linux Guides DE Community</developer_name>
-  <developer_name xml:lang="de">Linux Guides DE Community</developer_name>
+  <!-- AppStream 1.0: developer mit id statt deprecated developer_name -->
+  <developer id="io.github.nicolettas-muggelbude">
+    <name>Linux Guides DE Community</name>
+    <name xml:lang="de">Linux Guides DE Community</name>
+  </developer>
 
   <provides>
     <binary>myapps</binary>
   </provides>
 
   <releases>
+    <release version="0.4.0" date="2026-04-12">
+      <description>
+        <p>Performance release: Virtual Scrolling and Update Notifications</p>
+        <ul>
+          <li>Virtual Scrolling — no more pagination, all apps in one list</li>
+          <li>GTK4 renders only visible items, fast even with 2000+ packages</li>
+          <li>Update notification banner when new MyApps version is available</li>
+          <li>Sort bar replaces pagination bar</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.1" date="2026-03-31">
+      <description>
+        <p>Desktop Apps view added</p>
+        <ul>
+          <li>New "Desktop" tab showing only apps with .desktop entries</li>
+          <li>Detects apps from system, user, Flatpak and Snap paths</li>
+          <li>Localized app names and descriptions</li>
+          <li>48px icons in Desktop view</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.0" date="2026-03-08">
+      <description>
+        <p>Scope, size, date and sorting features</p>
+        <ul>
+          <li>Scope dropdown: User Apps / All Packages</li>
+          <li>Installed size column (dpkg, rpm, pacman, flatpak, snap)</li>
+          <li>Install date column with localized display</li>
+          <li>Sort by name, size or install date (7 options)</li>
+          <li>Minimum 5 characters for search</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.2.4" date="2026-01-27">
+      <description>
+        <p>Performance improvements</p>
+        <ul>
+          <li>Icon caching — icons loaded only once</li>
+          <li>Sorting optimized — only once after filtering</li>
+          <li>Memory leak fixed in list view</li>
+          <li>Export format bug fixed (CSV/JSON now work correctly)</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2024-12-26">
       <description>
         <p>Major update: GTK4 + Libadwaita migration</p>
         <ul>
           <li>Modern GTK4 + Libadwaita interface with native dark mode</li>
-          <li>Virtual scrolling for better performance with 10,000+ packages</li>
-          <li>German descriptions in list view (localized via apt-cache)</li>
-          <li>Faster table view with English descriptions</li>
-          <li>Improved tooltips</li>
-          <li>Icons with system integration</li>
           <li>Search function (name + description)</li>
+          <li>Improved export dialog</li>
         </ul>
       </description>
     </release>
