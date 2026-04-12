@@ -7,7 +7,7 @@
 
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-  [![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
+  [![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
   [![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
 </div>
 
@@ -96,7 +96,7 @@ sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 type
 
 ### Aus OBS (Empfohlen - Debian/Ubuntu/Fedora/openSUSE)
 
-**📦 Professionelle Pakete für 11 Distributionen über openSUSE Build Service:**
+**📦 Professionelle Pakete für 12 Distributionen über openSUSE Build Service:**
 
 [![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
 
@@ -129,7 +129,7 @@ sudo zypper refresh && sudo zypper install myapps
 
 **Weitere verfügbare Distributionen:**
 - Debian 13 (Trixie)
-- Ubuntu 22.04 LTS, 25.10
+- Ubuntu 22.04 LTS, 25.10, 26.04 LTS
 - Fedora 42, 43
 - openSUSE Leap 16, Slowroll
 
@@ -250,57 +250,83 @@ sudo dpkg -i myapps_0.3.0_all.deb
 
 ## Roadmap
 
-### v0.1.x (Stable - tkinter) ✅
-- [x] Multi-Distro-Support
-- [x] Moderne GUI mit Dark Mode
-- [x] Export-Funktionen
-- [x] Mehrsprachigkeit (DE/EN)
-
 ### v0.2.x (GTK4 Migration) ✅
-- [x] GTK4 + Libadwaita GUI
-- [x] Virtual Scrolling
-- [x] Suchfunktion
-- [x] OBS-Pakete (11 Distributionen)
-- [x] AUR-Paket
-- [x] Performance-Optimierungen (Icon-Cache, Memory Leak Fix)
+- [x] GTK4 + Libadwaita GUI, Suchfunktion, OBS-Pakete (12 Distros), AUR
 
-### v0.3.0 (Aktuell) ✅
-- [x] Scope-Dropdown: User-Apps vs. Alle Pakete
-- [x] Installierte Größe (dpkg, rpm, pacman, flatpak, snap)
-- [x] Installationsdatum (dpkg, rpm, pacman, flatpak, snap)
-- [x] Sortierfunktion (Name, Größe, Datum)
-- [x] Mindest-Zeichen für Suche (5 Zeichen)
+### v0.3.x ✅
+- [x] Scope-Dropdown, Größe, Datum, Sortierung, Desktop-Apps-Ansicht
 
-### v0.3.1 (Geplant)
-- [ ] Desktop Apps View (.desktop-Dateien)
+### v0.4.0 (Aktuell) ✅
+- [x] Virtual Scrolling (keine Pagination mehr)
+- [x] Update-Benachrichtigung (Banner bei neuer Version)
+- [x] OBS-Repo wird beim Install automatisch eingetragen
 
-### v0.4.0 (Geplant)
-- [ ] Update-Status prüfen
-- [ ] Benachrichtigungen für Updates
+### v0.4.1 (Geplant)
+- [ ] Auto-Updater
+- [ ] Update-Status pro Paket
+- [ ] Desktop-Benachrichtigungen
 
-### v1.0.0 (Stable)
-- [ ] Community-Testing abgeschlossen
-- [ ] Stabile Version
-
-### v2.0.0 (Zukunft)
+### v1.0.0 / v2.0.0 (Zukunft)
+- [ ] Stable Release nach Community-Testing
 - [ ] Deinstallations-Funktion
 
 ## Häufige Fragen
 
+### Installation & Updates
+
+**Q: Wie bekomme ich Updates?**
+A: Ab v0.4.0 trägt das Installationspaket das OBS-Repo automatisch ein. Danach reicht ein normales:
+```bash
+sudo apt update && sudo apt upgrade        # Debian/Ubuntu/Mint
+sudo dnf upgrade myapps                    # Fedora
+sudo zypper update myapps                  # openSUSE
+yay -Syu myapps                            # Arch (AUR)
+```
+
+**Q: MyApps zeigt einen Banner "Neue Version verfügbar" — wie installiere ich das Update?**
+A: Nutze deinen normalen Paketmanager (siehe oben). Der Banner informiert nur, installiert aber nicht selbst. Ein Auto-Updater ist für v0.4.1 geplant.
+
+**Q: Ich habe MyApps als .deb installiert und bekomme keine Updates über `apt upgrade`.**
+A: Das OBS-Repo wurde nur bei Installationen ab v0.4.0 automatisch eingetragen. Bei älteren Installationen bitte das Repo manuell einrichten — siehe Abschnitt "Aus OBS" oben.
+
+**Q: Warum gibt es kein Flatpak?**
+A: MyApps benötigt Zugriff auf `/var/lib/` für Paketmanager-Datenbanken. Flathub erlaubt diesen Zugriff aus Sicherheitsgründen nicht und hat die Einreichung abgelehnt. Als Alternative bieten wir native OBS-Pakete für 12 Distributionen an.
+
+---
+
+### Anwendungszentrum (GNOME Software)
+
+**Q: Das Anwendungszentrum zeigt "Möglicherweise unsicher" oder "Lizenz unbekannt".**
+A: GNOME Software zeigt diese Warnung bei Paketen aus Drittquellen (nicht Distro-eigene Repos oder Flathub). Das ist keine Fehlfunktion von MyApps — MyApps ist Open Source (GPLv3) und vollständig sicher. Die Warnung ist eine allgemeine GNOME Software Policy.
+
+**Q: Der "Installieren"-Button im Anwendungszentrum ist ausgegraut.**
+A: GNOME Software kann nur Pakete installieren, die in einer konfigurierten Quelle liegen. Bitte installiere MyApps über die Terminal-Anleitung oben. Nach der Installation und dem nächsten `apt update` wird das OBS-Repo erkannt.
+
+---
+
+### Pakete & Anzeige
+
 **Q: Warum werden manche Apps nicht angezeigt?**
-A: Sie wurden wahrscheinlich als System-Apps gefiltert. Wechsle im Scope-Dropdown zu "Alle Pakete" oder passe eigene Filter in `~/.config/myapps/user-filters.json` an.
+A: Sie wurden als System-Apps gefiltert. Wechsle im Scope-Dropdown zu "Alle Pakete" oder passe eigene Filter in `~/.config/myapps/user-filters.json` an. Einzelne Apps können auch per Rechtsklick → "Als System-App markieren" ausgeblendet werden.
+
+**Q: Die Suche findet nichts obwohl ich etwas eingebe.**
+A: Die Suche erfordert mindestens 5 Zeichen. Die Statusleiste zeigt an wie viele Zeichen noch fehlen.
+
+**Q: Wird meine Distribution unterstützt?**
+A: Debian, Ubuntu, Linux Mint, Arch, Fedora, openSUSE, Solus sowie Flatpak und Snap werden unterstützt. Weitere Distributionen können über Issues vorgeschlagen werden.
+
+**Q: Ist MyApps sicher?**
+A: Ja. MyApps ist Open Source (GPLv3), führt nur lesende Operationen durch und benötigt kein `sudo`. Der Quellcode ist auf GitHub einsehbar.
+
+---
+
+### Entwicklung
 
 **Q: `pip install -e .` schlägt fehl mit pycairo-Fehler?**
 A: GTK-Bindings können nicht via pip kompiliert werden. Installiere `python3-gi` als System-Paket und nutze `pip install -e . --no-deps`. Siehe Abschnitt "Aus Quellcode" oben.
 
 **Q: Ubuntu 24.04: `python3-pil` nicht gefunden?**
 A: In Ubuntu 24.04 wurde das Paket zu `python3-pillow` umbenannt. Nutze `sudo apt install python3-pillow`.
-
-**Q: Wird meine Distribution unterstützt?**
-A: Siehe "Unterstützte Paketmanager" oben. Weitere Distributionen können hinzugefügt werden.
-
-**Q: Ist MyApps sicher?**
-A: MyApps ist Open Source (GPLv3) und führt nur lesende Operationen aus (kein `sudo` nötig).
 
 ## Beitragen
 
