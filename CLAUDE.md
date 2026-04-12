@@ -894,7 +894,7 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **AUR:** ✅ https://aur.archlinux.org/packages/myapps
 - **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
-### ✅ v0.4.0 - Virtual Scrolling + Update-Benachrichtigung (12.04.2026) — RELEASED
+### ✅ v0.4.0 - Virtual Scrolling + Update-Benachrichtigung (12.04.2026) — RELEASED + OBS NACHGEPATCHT
 - **Virtual Scrolling** — Pagination komplett entfernt
   - Alle Apps in einer Liste, kein Seitenumbruch
   - GTK4 `Gtk.ListView` rendert nur sichtbare Elemente (performant bei 2000+ Paketen)
@@ -909,6 +909,10 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **AUR:** ✅ https://aur.archlinux.org/packages/myapps
 - **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 - **OBS Distributionen (12):** Debian 12/13, Ubuntu 22.04/24.04/25.10/26.04 LTS, Fedora 41/42/43, openSUSE Leap 16/Slowroll/Tumbleweed
+- **Packaging-Fix:** OBS-Repo wird beim ersten Install automatisch eingetragen (postinst/RPM %post)
+  - DEB: /etc/apt/sources.list.d/myapps-obs.list + GPG-Key
+  - RPM: dnf (Fedora) / zypper addrepo (openSUSE)
+  - Deinstallation entfernt Repo + Key wieder sauber
 
 ### 🔄 Aktuell laufend
 - **Community Testing v0.4.0** — Virtual Scrolling + Update-Banner testen
