@@ -1,7 +1,7 @@
 # Maintainer: MyApps Contributors <noreply@github.com>
 
 pkgname=myapps
-pkgver=0.4.0
+pkgver=0.4.1
 pkgrel=1
 pkgdesc="Linux package manager overview with GTK4 + Libadwaita"
 arch=('any')
@@ -22,7 +22,7 @@ makedepends=(
     'python-wheel'
 )
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/nicolettas-muggelbude/myapps/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('6aba2c13d937b015168c012f3fde6cf3f001f58fbdf4e253eac08571fd1267af')
+sha256sums=('SKIP')  # Nach git tag v0.4.1 + push mit: sha256sum myapps-0.4.1.tar.gz aktualisieren
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"

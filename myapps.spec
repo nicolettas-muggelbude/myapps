@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.4.0
+Version:        0.4.1
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Wed Apr 29 2026 MyApps Contributors <noreply@github.com> - 0.4.1-1
+- Feature: Update-Status — Icon in Liste/Tabelle für Pakete mit verfügbaren Updates
+- Feature: Desktop-Benachrichtigungen via notify-send (opt-in, Standard: aktiv)
+- Feature: Auto-Updater — MyApps via pkexec aktualisieren (apt/dnf/zypper); AUR-Hinweis für Arch
+- Fix: Benachrichtigungs-Toggle im Menü, persistent in ~/.config/myapps/settings.json
+
 * Sun Apr 12 2026 MyApps Contributors <noreply@github.com> - 0.4.0-1
 - Performance: Virtual Scrolling — keine Pagination mehr, alle Apps in einer Liste
 - GTK4 rendert nur sichtbare Elemente, performant bei 2000+ Paketen

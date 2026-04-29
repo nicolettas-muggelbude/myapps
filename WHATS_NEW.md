@@ -2,6 +2,12 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v0.4.1
+- Feature: Update-Status — Icon zeigt in Liste und Tabelle welche Pakete ein Update haben
+- Feature: Desktop-Benachrichtigungen — notify-send wenn Updates verfügbar (opt-in, Standard: aktiv)
+- Feature: Auto-Updater — MyApps aktualisiert sich selbst via pkexec (apt/dnf/zypper)
+- Fix: Benachrichtigungs-Toggle im Menü, gespeichert in ~/.config/myapps/settings.json
+
 ## v0.4.0
 - Performance: Virtual Scrolling — keine Pagination mehr, alle Apps in einer Liste
 - GTK4 rendert nur sichtbare Elemente (schnell auch bei 2000+ Paketen)

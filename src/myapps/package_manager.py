@@ -24,9 +24,10 @@ class Package:
     version: str
     package_type: str  # z.B. "deb", "rpm", "snap", "flatpak", "desktop"
     description: Optional[str] = None
-    size: Optional[int] = None         # Installierte Größe in Bytes (Issue #5)
+    size: Optional[int] = None          # Installierte Größe in Bytes (Issue #5)
     install_date: Optional[str] = None  # Installationsdatum "YYYY-MM-DD" (Issue #10)
-    icon_name: Optional[str] = None    # Icon-Name aus .desktop-Datei (v0.3.1)
+    icon_name: Optional[str] = None     # Icon-Name aus .desktop-Datei (v0.3.1)
+    update_available: Optional[bool] = None  # Update verfügbar? None = noch nicht geprüft
 
 
 class PackageManagerBase(ABC):
@@ -718,3 +719,132 @@ class DesktopFileManager(PackageManagerBase):
             install_date=None,
             icon_name=icon_name,
         )
+
+
+class UpdateChecker:
+    """Prüft welche installierten Pakete Updates haben (Issue #7)"""
+
+    def get_updatable_packages(self, pm_names: List[str]) -> set:
+        """
+        Gibt Menge der Paketnamen zurück, für die Updates verfügbar sind.
+
+        Args:
+            pm_names: Liste aktiver Paketmanager-Namen aus DistroInfo
+
+        Returns:
+            Menge von Paketnamen mit verfügbaren Updates
+        """
+        updatable: set = set()
+
+        if "dpkg" in pm_names:
+            updatable.update(self._check_apt())
+        if "pacman" in pm_names:
+            updatable.update(self._check_pacman())
+        if "dnf" in pm_names:
+            updatable.update(self._check_dnf())
+        elif "zypper" in pm_names:
+            updatable.update(self._check_zypper())
+        if "snap" in pm_names:
+            updatable.update(self._check_snap())
+        if "flatpak" in pm_names:
+            updatable.update(self._check_flatpak())
+
+        logger.info(f"UpdateChecker: {len(updatable)} Pakete mit Updates gefunden")
+        return updatable
+
+    def _run(self, command: List[str], allow_nonzero: bool = False) -> Optional[str]:
+        """Führt Befehl aus, gibt stdout zurück oder None bei Fehler/Timeout"""
+        try:
+            result = subprocess.run(
+                command, capture_output=True, text=True, timeout=30
+            )
+            if result.returncode == 0 or allow_nonzero:
+                return result.stdout
+            return None
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
+            logger.debug(f"Update-Check '{command[0]}' fehlgeschlagen: {e}")
+            return None
+
+    def _check_apt(self) -> set:
+        """Prüft via 'apt list --upgradable' (Debian/Ubuntu)"""
+        names: set = set()
+        output = self._run(["apt", "list", "--upgradable"])
+        if not output:
+            return names
+        for line in output.splitlines():
+            # Format: "packagename/focal-updates VERSION ARCH [upgradable from: OLD]"
+            if "/" in line and "upgradable" in line:
+                names.add(line.split("/")[0].strip())
+        return names
+
+    def _check_pacman(self) -> set:
+        """Prüft via checkupdates (Arch), Fallback auf pacman -Qu"""
+        names: set = set()
+        # checkupdates bevorzugt — kein root nötig, kein DB-Lock
+        output = self._run(["checkupdates"])
+        if output is None:
+            output = self._run(["pacman", "-Qu"])
+        if not output:
+            return names
+        for line in output.splitlines():
+            # Format: "packagename OLD -> NEW"
+            parts = line.split()
+            if parts:
+                names.add(parts[0])
+        return names
+
+    def _check_dnf(self) -> set:
+        """Prüft via 'dnf check-update' (Fedora/RHEL) — Exit-Code 100 = Updates vorhanden"""
+        names: set = set()
+        output = self._run(["dnf", "check-update", "--quiet"], allow_nonzero=True)
+        if not output:
+            return names
+        for line in output.splitlines():
+            # Format: "packagename.arch VERSION REPO"
+            parts = line.split()
+            if parts and not line.startswith((" ", "Last", "Obsoleting")):
+                pkg_name = parts[0].rsplit(".", 1)[0]  # Architektur-Suffix entfernen
+                if pkg_name:
+                    names.add(pkg_name)
+        return names
+
+    def _check_zypper(self) -> set:
+        """Prüft via 'zypper list-updates' (openSUSE)"""
+        names: set = set()
+        output = self._run(["zypper", "--non-interactive", "list-updates", "--type", "package"])
+        if not output:
+            return names
+        for line in output.splitlines():
+            # Format: "| S | Repository | Name | Current Ver | Available Ver | Arch |"
+            if line.startswith("|") and "Name" not in line and "---" not in line:
+                parts = [p.strip() for p in line.split("|")]
+                # parts: ["", S, Repo, Name, ...]
+                if len(parts) >= 4 and parts[3]:
+                    names.add(parts[3])
+        return names
+
+    def _check_snap(self) -> set:
+        """Prüft via 'snap refresh --list' (Snap)"""
+        names: set = set()
+        output = self._run(["snap", "refresh", "--list"])
+        if not output:
+            return names
+        for line in output.splitlines()[1:]:  # Überspringe Header
+            parts = line.split()
+            if parts:
+                names.add(parts[0])
+        return names
+
+    def _check_flatpak(self) -> set:
+        """Prüft via 'flatpak remote-ls --updates' (Flatpak)"""
+        names: set = set()
+        output = self._run([
+            "flatpak", "remote-ls", "--updates", "--columns=application"
+        ])
+        if not output:
+            return names
+        for line in output.splitlines():
+            line = line.strip()
+            if line:
+                names.add(line)
+        return names

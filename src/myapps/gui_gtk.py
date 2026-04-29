@@ -3,8 +3,10 @@ GTK4 + Libadwaita GUI für MyApps
 Native Linux Desktop Integration mit Virtual Scrolling
 """
 
+import json
 import locale
 import logging
+import subprocess
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -17,7 +19,7 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, Gio, GLib, GdkPixbuf, GObject
 
 # MyApps Modules (bleiben gleich!)
-from .package_manager import Package, PackageManagerFactory, DesktopFileManager
+from .package_manager import Package, PackageManagerFactory, DesktopFileManager, UpdateChecker
 from .filters import FilterManager
 from .export import Exporter
 from .distro_detect import get_distro_info
@@ -183,6 +185,39 @@ def format_date(date_str: Optional[str]) -> str:
         return date_str
 
 
+class SettingsManager:
+    """Verwaltet persistente App-Einstellungen in ~/.config/myapps/settings.json"""
+
+    def __init__(self):
+        self._config_dir = Path.home() / ".config" / "myapps"
+        self._settings_file = self._config_dir / "settings.json"
+        self._data: dict = {}
+        self._load()
+
+    def _load(self):
+        try:
+            if self._settings_file.exists():
+                with open(self._settings_file, encoding="utf-8") as f:
+                    self._data = json.load(f)
+        except Exception as e:
+            logger.debug(f"Einstellungen konnten nicht geladen werden: {e}")
+
+    def get(self, key: str, default=None):
+        return self._data.get(key, default)
+
+    def set(self, key: str, value):
+        self._data[key] = value
+        self._save()
+
+    def _save(self):
+        try:
+            self._config_dir.mkdir(parents=True, exist_ok=True)
+            with open(self._settings_file, "w", encoding="utf-8") as f:
+                json.dump(self._data, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Einstellungen konnten nicht gespeichert werden: {e}")
+
+
 class PackageItem(GObject.Object):
     """GObject-Wrapper für Package-Objekte (für Gio.ListStore)"""
 
@@ -221,6 +256,10 @@ class PackageItem(GObject.Object):
     @property
     def icon_name(self) -> Optional[str]:
         return self.package.icon_name
+
+    @property
+    def update_available(self) -> bool:
+        return self.package.update_available or False
 
 
 class MyAppsGUI(Adw.Application):
@@ -269,6 +308,9 @@ class MyAppsGUI(Adw.Application):
 
         # Icon Manager initialisieren
         self.icon_manager = IconManagerGTK(icon_size=32)
+
+        # Einstellungen laden (Issue #8)
+        self.settings = SettingsManager()
 
         logger.info(f"MyApps GTK4 {VERSION} initialisiert")
 
@@ -328,6 +370,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Key: pkg_name, Value: lokalisierte Beschreibung
         # Verhindert wiederholte apt-cache Aufrufe beim View-Wechsel
         self.localized_desc_cache: dict = {}
+
+        # Auto-Updater (Issue #19)
+        self._update_pm: Optional[str] = None    # erkannter PM ("apt", "dnf", ...)
+        self._update_cmd: Optional[list] = None  # pkexec-Befehl oder None
 
         # Fenster-Einstellungen
         self.set_title(f"MyApps v{VERSION}")
@@ -472,10 +518,13 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Erstellt das Hauptmenü"""
         menu = Gio.Menu()
 
-        # About
-        menu.append(_("Über MyApps"), "app.about")
+        # Einstellungen-Sektion
+        settings_section = Gio.Menu()
+        settings_section.append(_("Benachrichtigungen bei Updates"), "app.notifications")
+        menu.append_section(None, settings_section)
 
-        # Quit
+        # About + Quit
+        menu.append(_("Über MyApps"), "app.about")
         menu.append(_("Beenden"), "app.quit")
 
         # Actions registrieren
@@ -487,7 +536,40 @@ class MyAppsWindow(Adw.ApplicationWindow):
         quit_action.connect("activate", lambda *_: self.gui.quit())
         self.gui.add_action(quit_action)
 
+        # Benachrichtigungs-Toggle (Issue #8)
+        enabled = self.gui.settings.get("notifications_enabled", True)
+        notif_action = Gio.SimpleAction.new_stateful(
+            "notifications", None, GLib.Variant.new_boolean(enabled)
+        )
+        notif_action.connect("activate", self._on_notifications_toggle)
+        self.gui.add_action(notif_action)
+
         return menu
+
+    def _on_notifications_toggle(self, action, _param):
+        """Schaltet Desktop-Benachrichtigungen ein/aus (Issue #8)"""
+        new_state = not action.get_state().get_boolean()
+        action.set_state(GLib.Variant.new_boolean(new_state))
+        self.gui.settings.set("notifications_enabled", new_state)
+        if new_state:
+            self._set_status(_("Benachrichtigungen aktiviert"))
+        else:
+            self._set_status(_("Benachrichtigungen deaktiviert"))
+
+    def _send_update_notification(self, count: int):
+        """Sendet Desktop-Benachrichtigung wenn Updates verfügbar sind (Issue #8)"""
+        try:
+            subprocess.Popen([
+                "notify-send",
+                "--app-name", "MyApps",
+                "--icon", "software-update-available",
+                "--urgency", "normal",
+                "--expire-time", "10000",
+                _("Updates verfügbar"),
+                f"{count} " + _("Pakete können aktualisiert werden"),
+            ])
+        except Exception as e:
+            logger.debug(f"Desktop-Benachrichtigung fehlgeschlagen: {e}")
 
     # Sortieroptionen: (sort_key, Anzeigename)
     _SORT_OPTIONS = [
@@ -611,6 +693,14 @@ class MyAppsWindow(Adw.ApplicationWindow):
         text_box.append(info_row)
         box.append(text_box)
 
+        # Update-Icon rechts (Issue #7, standardmäßig unsichtbar)
+        update_icon = Gtk.Image.new_from_icon_name("software-update-available-symbolic")
+        update_icon.set_pixel_size(16)
+        update_icon.set_valign(Gtk.Align.CENTER)
+        update_icon.set_visible(False)
+        box.append(update_icon)
+        box.update_icon = update_icon
+
         # Context Menu Setup (einmalig!) - v0.2.4 Memory Leak Fix
         gesture = Gtk.GestureClick.new()
         gesture.set_button(3)  # Rechtsklick
@@ -671,6 +761,11 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
+        # Update-Indikator anzeigen/verstecken (Issue #7)
+        box.update_icon.set_visible(pkg.update_available)
+        if pkg.update_available:
+            box.update_icon.set_tooltip_text(_("Update verfügbar"))
+
         # Context Menu Handler ist bereits in setup() verbunden (v0.2.4)
         # Kein Handler-Setup in bind() nötig!
 
@@ -686,6 +781,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Spalten erstellen
         self._add_column(column_view, _("Name"), "name", expand=True)
         self._add_column(column_view, _("Version"), "version")
+        self._add_update_column(column_view)
         self._add_column(column_view, _("Typ"), "package_type")
         self._add_column(column_view, _("Größe"), "size_formatted")
         self._add_column(column_view, _("Installiert am"), "install_date")
@@ -735,6 +831,31 @@ class MyAppsWindow(Adw.ApplicationWindow):
             column.set_expand(True)
         column.set_resizable(True)
 
+        column_view.append_column(column)
+
+    def _add_update_column(self, column_view):
+        """Fügt Update-Status-Spalte mit Icon zur ColumnView hinzu (Issue #7)"""
+        factory = Gtk.SignalListItemFactory()
+
+        def on_setup(factory, list_item):
+            img = Gtk.Image.new_from_icon_name("software-update-available-symbolic")
+            img.set_pixel_size(16)
+            img.set_margin_start(6)
+            img.set_margin_end(6)
+            list_item.set_child(img)
+
+        def on_bind(factory, list_item):
+            pkg = list_item.get_item()
+            img = list_item.get_child()
+            img.set_visible(pkg.update_available)
+            if pkg.update_available:
+                img.set_tooltip_text(_("Update verfügbar"))
+
+        factory.connect("setup", on_setup)
+        factory.connect("bind", on_bind)
+
+        column = Gtk.ColumnViewColumn.new(_("Update"), factory)
+        column.set_resizable(False)
         column_view.append_column(column)
 
     def _create_desktop_view(self):
@@ -877,8 +998,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
             f"  •  {len(self.gui.packages)} " + _("Pakete gesamt") +
             f"  •  {len(self.gui.desktop_packages)} " + _("Desktop-Apps")
         )
-        # Update-Check im Hintergrund (v0.4.0)
+        # GitHub-Versions-Check (v0.4.0)
         self._check_for_updates()
+        # Paket-Update-Check (Issue #7)
+        self._check_package_updates()
         return GLib.SOURCE_REMOVE
 
     def _on_search_changed(self, search_entry):
@@ -1023,17 +1146,140 @@ class MyAppsWindow(Adw.ApplicationWindow):
             logger.debug(f"Update-Check fehlgeschlagen: {e}")
 
     def _show_update_banner(self, latest_version: str):
-        """Zeigt Update-Banner wenn neue Version verfügbar (v0.4.0)"""
+        """Zeigt Update-Banner wenn neue Version verfügbar (v0.4.0 / Issue #19)"""
         self.update_banner.set_title(
             f"MyApps v{latest_version} " + _("ist verfügbar")
         )
+        pm, cmd = self._detect_update_manager()
+        self._update_pm = pm
+        self._update_cmd = cmd
+        if pm in ("apt", "dnf", "zypper"):
+            self.update_banner.set_button_label(_("Aktualisieren"))
+        else:
+            self.update_banner.set_button_label(_("Changelog"))
         self.update_banner.set_revealed(True)
         return GLib.SOURCE_REMOVE
 
+    def _detect_update_manager(self):
+        """Erkennt den passenden Update-Befehl für MyApps (Issue #19)"""
+        pm_names = self.gui.distro_info.package_managers
+        if "dpkg" in pm_names:
+            return "apt", ["pkexec", "apt-get", "install", "--only-upgrade", "-y", "myapps"]
+        if "dnf" in pm_names:
+            return "dnf", ["pkexec", "dnf", "upgrade", "-y", "myapps"]
+        if "zypper" in pm_names:
+            return "zypper", ["pkexec", "zypper", "--non-interactive", "update", "myapps"]
+        if "pacman" in pm_names:
+            return "pacman", None  # AUR: kein automatischer Update möglich
+        return None, None
+
     def _on_update_banner_clicked(self, banner):
-        """Öffnet GitHub Releases bei Klick auf Banner-Button (v0.4.0)"""
-        import webbrowser
-        webbrowser.open("https://github.com/nicolettas-muggelbude/myapps/releases/latest")
+        """Reagiert auf Banner-Klick: Auto-Update oder Changelog (Issue #19)"""
+        if self._update_pm in ("apt", "dnf", "zypper") and self._update_cmd:
+            self._run_auto_update()
+        elif self._update_pm == "pacman":
+            self._show_arch_update_hint()
+        else:
+            import webbrowser
+            webbrowser.open("https://github.com/nicolettas-muggelbude/myapps/releases/latest")
+
+    def _run_auto_update(self):
+        """Startet MyApps-Update im Hintergrund-Thread (Issue #19)"""
+        self.update_banner.set_button_label("…")
+        self._set_status(_("Aktualisierung wird durchgeführt…"))
+        thread = threading.Thread(target=self._auto_update_worker, daemon=True)
+        thread.start()
+
+    def _auto_update_worker(self):
+        """Führt pkexec-Upgrade-Befehl aus (Issue #19)"""
+        try:
+            result = subprocess.run(
+                self._update_cmd,
+                capture_output=True, text=True, timeout=120
+            )
+            success = result.returncode == 0
+            output = (result.stdout + result.stderr).strip()
+            GLib.idle_add(self._on_auto_update_done, success, output)
+        except subprocess.TimeoutExpired:
+            GLib.idle_add(self._on_auto_update_done, False, _("Zeitüberschreitung (>120 s)"))
+        except Exception as e:
+            GLib.idle_add(self._on_auto_update_done, False, str(e))
+
+    def _on_auto_update_done(self, success: bool, output: str):
+        """Zeigt Ergebnis des Auto-Updates (Issue #19)"""
+        if success:
+            self.update_banner.set_revealed(False)
+            self._set_status(_("Aktualisierung erfolgreich – App neu starten"))
+            dialog = Adw.MessageDialog.new(
+                self,
+                _("Aktualisierung erfolgreich"),
+                _("MyApps wurde aktualisiert. Bitte die App neu starten.")
+            )
+        else:
+            self.update_banner.set_button_label(_("Aktualisieren"))
+            self._set_status(_("Aktualisierung fehlgeschlagen"))
+            dialog = Adw.MessageDialog.new(
+                self,
+                _("Aktualisierung fehlgeschlagen"),
+                output[:500] if output else _("Unbekannter Fehler")
+            )
+        dialog.add_response("ok", "OK")
+        dialog.set_default_response("ok")
+        dialog.present()
+        return GLib.SOURCE_REMOVE
+
+    def _show_arch_update_hint(self):
+        """Zeigt Hinweis für Arch-Nutzer: Update über AUR-Helper (Issue #19)"""
+        dialog = Adw.MessageDialog.new(
+            self,
+            _("AUR-Paket aktualisieren"),
+            _("MyApps wird über das AUR verteilt.\nBitte den AUR-Helper verwenden:\n\nyay -S myapps\nparu -S myapps")
+        )
+        dialog.add_response("changelog", _("Changelog öffnen"))
+        dialog.add_response("ok", "OK")
+        dialog.set_default_response("ok")
+        dialog.connect("response", self._on_arch_hint_response)
+        dialog.present()
+
+    def _on_arch_hint_response(self, dialog, response):
+        """Öffnet Changelog wenn gewählt (Issue #19)"""
+        if response == "changelog":
+            import webbrowser
+            webbrowser.open("https://github.com/nicolettas-muggelbude/myapps/releases/latest")
+
+    def _check_package_updates(self):
+        """Startet Paket-Update-Check im Hintergrund-Thread (Issue #7)"""
+        thread = threading.Thread(target=self._check_package_updates_worker, daemon=True)
+        thread.start()
+
+    def _check_package_updates_worker(self):
+        """Prüft via Paketmanager welche Pakete Updates haben (Issue #7)"""
+        try:
+            pm_names = self.gui.distro_info.package_managers
+            updatable = UpdateChecker().get_updatable_packages(pm_names)
+            GLib.idle_add(self._apply_update_status, updatable)
+        except Exception as e:
+            logger.debug(f"Paket-Update-Check fehlgeschlagen: {e}")
+
+    def _apply_update_status(self, updatable: set):
+        """Setzt update_available auf allen Paketen und aktualisiert View (Issue #7)"""
+        if not updatable:
+            return GLib.SOURCE_REMOVE
+
+        count = 0
+        for pkg in self.gui.packages:
+            pkg.update_available = pkg.name in updatable
+            if pkg.update_available:
+                count += 1
+
+        self._populate_current_view()
+
+        if count > 0:
+            self._set_status(f"{count} " + _("Updates verfügbar"))
+            if self.gui.settings.get("notifications_enabled", True):
+                self._send_update_notification(count)
+
+        return GLib.SOURCE_REMOVE
 
     def _populate_current_view(self):
         """Füllt die aktuelle View mit allen Daten (Virtual Scrolling, v0.4.0)"""
