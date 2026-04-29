@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v0.4.0 (Beta - Virtual Scrolling + Update-Benachrichtigung)
+- **Version**: v0.4.1 (Beta - Update-Manager)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
@@ -914,8 +914,23 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
   - RPM: dnf (Fedora) / zypper addrepo (openSUSE)
   - Deinstallation entfernt Repo + Key wieder sauber
 
+### ✅ v0.4.1 - Update-Manager (29.04.2026) — RELEASED
+- **Update-Status** (Issue #7) — Icon in Liste/Tabelle für Pakete mit verfügbaren Updates
+  - `UpdateChecker`-Klasse für apt, pacman, dnf, zypper, snap, flatpak
+  - `update_available` Feld im `Package`-Dataclass
+- **Desktop-Benachrichtigungen** (Issue #8) — notify-send beim Start wenn Updates vorhanden
+  - `SettingsManager`: persistent in `~/.config/myapps/settings.json`
+  - Toggle im Hamburger-Menü (Standard: aktiv)
+- **Auto-Updater** (Issue #19) — MyApps via pkexec aktualisieren
+  - apt/dnf/zypper: direkt aus der App heraus mit Polkit-Dialog
+  - pacman/AUR: Hinweis-Dialog mit yay/paru Befehlen
+  - Banner-Button wechselt zu „Aktualisieren" wenn PM erkannt
+- **GitHub Release:** ✅ https://github.com/nicolettas-muggelbude/myapps/releases/tag/v0.4.1
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
 ### 🔄 Aktuell laufend
-- **Community Testing v0.4.0** — Virtual Scrolling + Update-Banner testen
+- **Community Testing v0.4.1** — Update-Manager testen
 
 ### 📋 Roadmap
 
