@@ -22,7 +22,7 @@ makedepends=(
     'python-wheel'
 )
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/nicolettas-muggelbude/myapps/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('SKIP')  # Nach git tag v0.4.1 + push mit: sha256sum myapps-0.4.1.tar.gz aktualisieren
+sha256sums=('14eecc78e3504acfa2accf8a129e7789021c87e206e16472ced33e81ed2b8806')
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"
