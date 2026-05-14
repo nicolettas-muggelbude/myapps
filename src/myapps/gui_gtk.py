@@ -1177,7 +1177,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Erkennt den passenden Update-Befehl für MyApps (Issue #19)"""
         pm_names = self.gui.distro_info.package_managers
         if "dpkg" in pm_names:
-            return "apt", ["pkexec", "apt-get", "install", "--only-upgrade", "-y", "myapps"]
+            # apt update zuerst, sonst findet apt das neue Paket nicht (Cache veraltet)
+            return "apt", ["pkexec", "sh", "-c", "apt-get update -qq && apt-get install --only-upgrade -y myapps"]
         if "dnf" in pm_names:
             return "dnf", ["pkexec", "dnf", "upgrade", "-y", "myapps"]
         if "zypper" in pm_names:
@@ -1221,14 +1222,18 @@ class MyAppsWindow(Adw.ApplicationWindow):
     def _on_auto_update_done(self, success: bool, output: str):
         """Zeigt Ergebnis des Auto-Updates (Issue #19)"""
         if success:
-            # Prüfen ob apt wirklich etwas aktualisiert hat (Exit 0 auch bei "nichts zu tun")
-            actually_upgraded = "upgraded" in output and not output.strip().startswith("0 upgraded")
-            # Fallback für dnf/zypper: prüfen ob kein "Nothing to do" / "No updates"
-            if self._update_pm in ("dnf", "zypper"):
+            # Prüfen ob wirklich etwas aktualisiert wurde (Exit 0 auch bei "nichts zu tun")
+            import re
+            if self._update_pm == "apt":
+                match = re.search(r'(\d+) upgraded', output)
+                actually_upgraded = bool(match and int(match.group(1)) > 0)
+            elif self._update_pm in ("dnf", "zypper"):
                 actually_upgraded = not any(
                     phrase in output.lower()
                     for phrase in ("nothing to do", "no updates", "already installed", "up-to-date")
                 )
+            else:
+                actually_upgraded = True
             if actually_upgraded:
                 self.update_banner.set_revealed(False)
                 self._set_status(_("Aktualisierung erfolgreich – App neu starten"))
