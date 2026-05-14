@@ -766,11 +766,7 @@ class UpdateChecker:
             return None
 
     def _check_apt(self) -> set:
-        """Prüft via 'apt list --upgradable' (Debian/Ubuntu) — aktualisiert Cache zuerst via pkexec"""
-        # Cache aktualisieren damit die Liste dem tatsächlichen Stand entspricht.
-        # Polkit-Dialog erscheint; bei Abbruch oder Fehler wird mit altem Cache weitergemacht.
-        self._run(["pkexec", "apt-get", "update", "-qq"], allow_nonzero=True, timeout=120)
-
+        """Prüft via 'apt list --upgradable' (Debian/Ubuntu)"""
         names: set = set()
         output = self._run(["apt", "list", "--upgradable"])
         if not output:

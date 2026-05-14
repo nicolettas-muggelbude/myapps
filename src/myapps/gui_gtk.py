@@ -1291,8 +1291,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Prüft via Paketmanager welche Pakete Updates haben (Issue #7)"""
         try:
             pm_names = self.gui.distro_info.package_managers
-            if "dpkg" in pm_names:
-                GLib.idle_add(self._set_status, _("Paketliste wird aktualisiert…"))
             updatable = UpdateChecker().get_updatable_packages(pm_names)
             GLib.idle_add(self._apply_update_status, updatable)
         except Exception as e:
