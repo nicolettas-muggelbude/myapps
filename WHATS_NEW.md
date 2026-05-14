@@ -2,6 +2,9 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.7
+- Fix: Desktop-Abgleich via Teilstring ("firefox" findet "Firefox-Webbrowser" usw.)
+
 ## v1.0.6
 - Fix: Desktop-Ansicht zeigt alle Apps mit Updates an (desktop_id-Abgleich via .desktop-Dateiname)
 

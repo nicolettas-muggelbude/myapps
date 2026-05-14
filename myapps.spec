@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        1.0.6
+Version:        1.0.7
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.7-1
+- Fix: Desktop Update-Abgleich via Teilstring (firefox findet Firefox-Webbrowser usw.)
+
 * Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.6-1
 - Fix: Desktop-Ansicht zeigt alle Apps mit Updates an (desktop_id via .desktop-Dateiname)
 
