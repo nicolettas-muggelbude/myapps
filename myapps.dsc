@@ -10,8 +10,8 @@ Build-Depends: debhelper (>= 10), dh-python, python3-all, python3-setuptools
 Package-List:
  myapps deb utils optional arch=all
 Checksums-Sha256:
- 7106dff6dc6ada69a630c2c181b30fe77cc93a76ec7ef9141232731a8f2e12d3 5934270 myapps-1.0.2.tar.gz
- 82fb1da27f7a4a0ec5233a7562f03b80376e96fe2df0e736dbaebc9e1881edc7 2400 debian.tar.gz
+ daea042152a9d2faa329e8852d99ecd20fe7c6bf9561eecbc08d5871ac39ab85 5934358 myapps-1.0.3.tar.gz
+ 326eae45c397dd2ff17ae821a3093d487ebd2fc58b65caf412ce5db50f21d97f 2454 debian.tar.gz
 Files:
- 4502a15dc1e86bdf02c74260b822099c 5934270 myapps-1.0.2.tar.gz
- 1c1f7d9c8f38ab272b5a6168947d278b 2400 debian.tar.gz
+ fda81544ce477c78794fe9d62ea1a3d2 5934358 myapps-1.0.3.tar.gz
+ 898eb16517fb2bf0a224178cdbd6e369 2454 debian.tar.gz
