@@ -22,7 +22,7 @@ makedepends=(
     'python-wheel'
 )
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/nicolettas-muggelbude/myapps/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('ae682769db457c48dc529582fabaeb92d5fa1b353d7930f69bec3d36bd63eea6')
+sha256sums=('36979b3b36fdc28c70ef331ffcfc86cd72fb071225643b17134ab6891df3644c')
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"
