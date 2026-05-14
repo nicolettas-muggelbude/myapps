@@ -1331,6 +1331,10 @@ class MyAppsWindow(Adw.ApplicationWindow):
             if pkg.update_available:
                 count += 1
 
+        # Desktop-Pakete ebenfalls aktualisieren (Namens-Abgleich)
+        for pkg in self.gui.desktop_packages:
+            pkg.update_available = pkg.name in updatable
+
         self._populate_current_view()
 
         if count > 0:
@@ -1368,7 +1372,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
                 pkg = Package(
                     name=pkg.name, version=pkg.version,
                     package_type=pkg.package_type, description=cached_desc,
-                    size=pkg.size, install_date=pkg.install_date
+                    size=pkg.size, install_date=pkg.install_date,
+                    update_available=pkg.update_available
                 )
             self.list_store.append(PackageItem(pkg))
 
@@ -1433,7 +1438,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
                 pkg = Package(
                     name=pkg.name, version=pkg.version,
                     package_type=pkg.package_type, description=cached_desc,
-                    size=pkg.size, install_date=pkg.install_date
+                    size=pkg.size, install_date=pkg.install_date,
+                    update_available=pkg.update_available
                 )
             self.table_store.append(PackageItem(pkg))
 
