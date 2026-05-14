@@ -2,7 +2,7 @@ Format: 3.0 (quilt)
 Source: myapps
 Binary: myapps
 Architecture: all
-Version: 1.0.3-1
+Version: 1.0.4-1
 Maintainer: MyApps Contributors <noreply@github.com>
 Homepage: https://github.com/nicolettas-muggelbude/myapps
 Standards-Version: 4.5.0
@@ -10,8 +10,8 @@ Build-Depends: debhelper (>= 10), dh-python, python3-all, python3-setuptools
 Package-List:
  myapps deb utils optional arch=all
 Checksums-Sha256:
- daea042152a9d2faa329e8852d99ecd20fe7c6bf9561eecbc08d5871ac39ab85 5934358 myapps-1.0.3.tar.gz
- 326eae45c397dd2ff17ae821a3093d487ebd2fc58b65caf412ce5db50f21d97f 2454 debian.tar.gz
+ d29650562bfb884d17b887639c74b79e625a8a252ac36b96cf0ef439eda5ecd7 11845873 myapps-1.0.4.tar.gz
+ c43b36975b1221c3a8c1ae08fa102f20e9f023bd9c2b96d8ebae24424c6b8e66 2434 debian.tar.gz
 Files:
- fda81544ce477c78794fe9d62ea1a3d2 5934358 myapps-1.0.3.tar.gz
- 898eb16517fb2bf0a224178cdbd6e369 2454 debian.tar.gz
+ 20ede792a5a199052b8d4c16a6e63763 11845873 myapps-1.0.4.tar.gz
+ 88fbd38fe9f10b7195cbe0b217875c05 2434 debian.tar.gz
