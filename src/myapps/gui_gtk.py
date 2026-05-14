@@ -907,11 +907,20 @@ class MyAppsWindow(Adw.ApplicationWindow):
         text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         text_box.set_hexpand(True)
 
+        # Name-Zeile mit UPDATE-Badge
+        name_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         name_label = Gtk.Label()
         name_label.set_halign(Gtk.Align.START)
         name_label.add_css_class("title-4")
         name_label.set_ellipsize(3)
-        text_box.append(name_label)
+        name_row.append(name_label)
+
+        update_badge = Gtk.Label(label=_("UPDATE"))
+        update_badge.add_css_class("update-badge")
+        update_badge.set_valign(Gtk.Align.CENTER)
+        update_badge.set_visible(False)
+        name_row.append(update_badge)
+        text_box.append(name_row)
 
         desc_label = Gtk.Label()
         desc_label.set_halign(Gtk.Align.START)
@@ -932,6 +941,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         box.icon = icon
         box.name_label = name_label
+        box.update_badge = update_badge
         box.desc_label = desc_label
         box.type_label = type_label
 
@@ -952,6 +962,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.icon.set_from_pixbuf(self.icon_cache[cache_key])
 
         box.name_label.set_text(pkg.name)
+        box.update_badge.set_visible(pkg.update_available or False)
         box.desc_label.set_text(pkg.description or "")
 
         # Typ nur anzeigen wenn nicht "desktop" (flatpak/snap sind interessant)
