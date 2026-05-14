@@ -1202,7 +1202,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         pm_names = self.gui.distro_info.package_managers
         if "dpkg" in pm_names:
             # apt update zuerst, sonst findet apt das neue Paket nicht (Cache veraltet)
-            return "apt", ["pkexec", "sh", "-c", "apt-get update -qq && apt-get install --only-upgrade -y myapps"]
+            return "apt", ["pkexec", "sh", "-c", "LANG=C apt-get update -qq && LANG=C apt-get install --only-upgrade -y myapps"]
         if "dnf" in pm_names:
             return "dnf", ["pkexec", "dnf", "upgrade", "-y", "myapps"]
         if "zypper" in pm_names:
