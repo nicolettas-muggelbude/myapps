@@ -397,6 +397,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
         .pagination-info {
             opacity: 0.7;
         }
+
+        /* Update-Badge neben App-Namen */
+        .update-badge {
+            background-color: @accent_bg_color;
+            color: @accent_fg_color;
+            border-radius: 99px;
+            padding: 0px 7px;
+            font-size: smaller;
+            font-weight: bold;
+        }
         """
         css_provider.load_from_data(css.encode())
 
@@ -565,8 +575,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
                 "--icon", "software-update-available",
                 "--urgency", "normal",
                 "--expire-time", "10000",
-                _("Updates verfügbar"),
-                f"{count} " + _("Pakete können aktualisiert werden"),
+                _("Paket-Updates verfügbar"),
+                f"{count} " + _("installierte Apps können aktualisiert werden"),
             ])
         except Exception as e:
             logger.debug(f"Desktop-Benachrichtigung fehlgeschlagen: {e}")
@@ -660,12 +670,24 @@ class MyAppsWindow(Adw.ApplicationWindow):
         text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         text_box.set_hexpand(True)
 
-        # Name Label
+        # Name-Zeile: Name + Update-Badge
+        name_row_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        name_row_box.set_valign(Gtk.Align.CENTER)
+
         name_label = Gtk.Label()
         name_label.set_halign(Gtk.Align.START)
         name_label.add_css_class("title-4")
         name_label.set_ellipsize(3)  # ELLIPSIZE_END – verhindert Überlauf
-        text_box.append(name_label)
+        name_row_box.append(name_label)
+
+        update_badge = Gtk.Label(label=_("UPDATE"))
+        update_badge.add_css_class("update-badge")
+        update_badge.set_valign(Gtk.Align.CENTER)
+        update_badge.set_visible(False)
+        name_row_box.append(update_badge)
+        name_row_box.update_badge = update_badge
+
+        text_box.append(name_row_box)
 
         # Info Row: Version+Typ links, Größe+Datum rechts
         info_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -693,14 +715,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         text_box.append(info_row)
         box.append(text_box)
 
-        # Update-Icon rechts (Issue #7, standardmäßig unsichtbar)
-        update_icon = Gtk.Image.new_from_icon_name("software-update-available-symbolic")
-        update_icon.set_pixel_size(16)
-        update_icon.set_valign(Gtk.Align.CENTER)
-        update_icon.set_visible(False)
-        box.append(update_icon)
-        box.update_icon = update_icon
-
         # Context Menu Setup (einmalig!) - v0.2.4 Memory Leak Fix
         gesture = Gtk.GestureClick.new()
         gesture.set_button(3)  # Rechtsklick
@@ -717,6 +731,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         # Store widgets für später
         box.icon = icon
         box.name_label = name_label
+        box.name_row_box = name_row_box
         box.info_label = info_label
         box.meta_label = meta_label
 
@@ -761,10 +776,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         box.set_has_tooltip(True)
         box.set_tooltip_text(tooltip)
 
-        # Update-Indikator anzeigen/verstecken (Issue #7)
-        box.update_icon.set_visible(pkg.update_available)
-        if pkg.update_available:
-            box.update_icon.set_tooltip_text(_("Update verfügbar"))
+        # Update-Badge anzeigen/verstecken (Issue #7)
+        box.name_row_box.update_badge.set_visible(pkg.update_available)
 
         # Context Menu Handler ist bereits in setup() verbunden (v0.2.4)
         # Kein Handler-Setup in bind() nötig!
@@ -834,27 +847,27 @@ class MyAppsWindow(Adw.ApplicationWindow):
         column_view.append_column(column)
 
     def _add_update_column(self, column_view):
-        """Fügt Update-Status-Spalte mit Icon zur ColumnView hinzu (Issue #7)"""
+        """Fügt Update-Status-Spalte mit Badge zur ColumnView hinzu (Issue #7)"""
         factory = Gtk.SignalListItemFactory()
 
         def on_setup(factory, list_item):
-            img = Gtk.Image.new_from_icon_name("software-update-available-symbolic")
-            img.set_pixel_size(16)
-            img.set_margin_start(6)
-            img.set_margin_end(6)
-            list_item.set_child(img)
+            badge = Gtk.Label(label=_("UPDATE"))
+            badge.add_css_class("update-badge")
+            badge.set_margin_start(6)
+            badge.set_margin_end(6)
+            badge.set_valign(Gtk.Align.CENTER)
+            badge.set_visible(False)
+            list_item.set_child(badge)
 
         def on_bind(factory, list_item):
             pkg = list_item.get_item()
-            img = list_item.get_child()
-            img.set_visible(pkg.update_available)
-            if pkg.update_available:
-                img.set_tooltip_text(_("Update verfügbar"))
+            badge = list_item.get_child()
+            badge.set_visible(pkg.update_available)
 
         factory.connect("setup", on_setup)
         factory.connect("bind", on_bind)
 
-        column = Gtk.ColumnViewColumn.new(_("Update"), factory)
+        column = Gtk.ColumnViewColumn.new("", factory)
         column.set_resizable(False)
         column_view.append_column(column)
 
@@ -1256,6 +1269,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         """Prüft via Paketmanager welche Pakete Updates haben (Issue #7)"""
         try:
             pm_names = self.gui.distro_info.package_managers
+            if "dpkg" in pm_names:
+                GLib.idle_add(self._set_status, _("Paketliste wird aktualisiert…"))
             updatable = UpdateChecker().get_updatable_packages(pm_names)
             GLib.idle_add(self._apply_update_status, updatable)
         except Exception as e:
@@ -1275,7 +1290,7 @@ class MyAppsWindow(Adw.ApplicationWindow):
         self._populate_current_view()
 
         if count > 0:
-            self._set_status(f"{count} " + _("Updates verfügbar"))
+            self._set_status(f"{count} " + _("installierte Apps haben Updates"))
             if self.gui.settings.get("notifications_enabled", True):
                 self._send_update_notification(count)
 

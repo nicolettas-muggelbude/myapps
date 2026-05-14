@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        0.4.1
+Version:        1.0.0
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.0-1
+- Stable Release nach Community-Testing
+- Feature: UPDATE-Badge neben App-Namen in Liste und Tabelle
+- Feature: apt-get update via pkexec vor dem Paket-Update-Check
+- Fix: Update-Meldungen klarer formuliert
+
 * Wed Apr 29 2026 MyApps Contributors <noreply@github.com> - 0.4.1-1
 - Feature: Update-Status — Icon in Liste/Tabelle für Pakete mit verfügbaren Updates
 - Feature: Desktop-Benachrichtigungen via notify-send (opt-in, Standard: aktiv)

@@ -2,6 +2,12 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.0
+- Stable Release nach Community-Testing
+- Feature: UPDATE-Badge neben App-Namen in Liste und Tabelle
+- Feature: apt-get update via pkexec vor dem Paket-Update-Check (immer aktueller Cache)
+- Fix: Update-Meldungen klarer formuliert ("Paket-Updates verfügbar")
+
 ## v0.4.1
 - Feature: Update-Status — Icon zeigt in Liste und Tabelle welche Pakete ein Update haben
 - Feature: Desktop-Benachrichtigungen — notify-send wenn Updates verfügbar (opt-in, Standard: aktiv)

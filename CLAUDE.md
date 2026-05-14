@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v0.4.1 (Beta - Update-Manager)
+- **Version**: v1.0.0 (Stable)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
@@ -929,15 +929,17 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **AUR:** ✅ https://aur.archlinux.org/packages/myapps
 - **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
 
+### ✅ v1.0.0 - Stable Release (14.05.2026) — RELEASED
+- **UPDATE-Badge** neben App-Namen in Liste und Tabelle
+- **apt-get update via pkexec** vor dem Paket-Update-Check (immer aktueller Cache)
+- **Klarere Update-Meldungen** ("Paket-Updates verfügbar" statt "Updates verfügbar")
+- **Status**: Stable (kein Beta mehr)
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.0
+
 ### 🔄 Aktuell laufend
-- **Community Testing v0.4.1** — Update-Manager testen
+- Kein aktives Release in Arbeit — nächstes Ziel: v2.0.0 (Deinstallations-Funktion)
 
 ### 📋 Roadmap
-
-#### **v1.0.0 - Stable Release**
-- Nach umfangreichem Community-Testing
-- Alle kritischen Bugs behoben
-- Performance optimiert
 
 #### **v2.0.0 - Major Features**
 - Deinstallations-Funktion

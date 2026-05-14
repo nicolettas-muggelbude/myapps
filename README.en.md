@@ -7,8 +7,8 @@
 
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-  [![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
-  [![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
+  [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
+  [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://github.com/nicolettas-muggelbude/myapps)
 </div>
 
 **English** | [Deutsch](README.md)
@@ -31,7 +31,7 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 - Native GTK4 + Libadwaita integration
 - Dark Mode (follows system theme)
 - Virtual scrolling (10,000+ packages no problem)
-- Table view & List view
+- Table view, List view & Desktop Apps view
 
 🔍 **Search & Filter**
 - Scope dropdown: "User Apps only" or "All Packages"
@@ -40,10 +40,21 @@ MyApps is a user-friendly tool for Linux that displays all installed application
 - Distribution-specific filters
 - Add custom filters (right-click)
 
+🖥️ **Desktop Apps View**
+- Third tab alongside List and Table
+- Shows installed .desktop applications (System, User, Flatpak, Snap)
+- Localized names and descriptions, 48px icons
+
 📊 **Package Information**
 - Installed size (dpkg, rpm, pacman, flatpak, snap)
 - Installation date (dpkg, rpm, pacman, flatpak, snap)
 - Sort function: Name, Size, Date (ascending and descending)
+
+🔔 **Update Manager** *(new in v0.4.1)*
+- Update status icon in List and Table for packages with available updates
+- Desktop notification on startup when updates are available (opt-in)
+- Auto-updater: MyApps updates itself via pkexec (apt/dnf/zypper)
+- Hint dialog for Arch/AUR with yay/paru commands
 
 📤 **Export Functions**
 - Text (TXT)
@@ -96,7 +107,7 @@ sudo zypper install python3-gobject python3-gobject-Gdk typelib-1_0-Gtk-4_0 type
 
 ### From OBS (Recommended - Debian/Ubuntu/Fedora/openSUSE)
 
-**📦 Professional packages for 11 distributions via openSUSE Build Service:**
+**📦 Professional packages for 12 distributions via openSUSE Build Service:**
 
 [![OBS](https://img.shields.io/badge/OBS-MyApps-73BA25?style=for-the-badge&logo=opensuse&logoColor=white)](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
 
@@ -137,9 +148,9 @@ sudo zypper refresh && sudo zypper install myapps
 
 **Additional supported distributions:**
 - Debian 13 (Trixie)
-- Ubuntu 22.04 LTS, 25.10
+- Ubuntu 22.04 LTS, 25.10, 26.04 LTS
 - Fedora 43
-- openSUSE Slowroll
+- openSUSE Slowroll, Leap 16
 
 [View all OBS packages →](https://software.opensuse.org//download.html?project=home%3Anicoletta%3Amyapps&package=myapps)
 
@@ -170,7 +181,7 @@ makepkg -si
 
 ```bash
 # Install after download
-sudo dpkg -i myapps_0.3.0_all.deb
+sudo dpkg -i myapps_1.0.0_all.deb
 
 # If dependencies are missing
 sudo apt-get install -f
@@ -227,10 +238,10 @@ python3 -m myapps.main
 ./build-deb.sh
 
 # Optional: Specify version
-./build-deb.sh 0.3.0
+./build-deb.sh 1.0.0
 
 # Install
-sudo dpkg -i myapps_0.3.0_all.deb
+sudo dpkg -i myapps_1.0.0_all.deb
 ```
 
 ## Usage
@@ -240,75 +251,104 @@ sudo dpkg -i myapps_0.3.0_all.deb
 3. **Change scope**: Dropdown next to search → "User Apps only" or "All Packages"
 4. **Search**: Enter at least 5 characters for live search
 5. **Sort**: Dropdown in the navigation bar → by Name, Size or Date
-6. **Switch view**: Buttons at top → List or Table
+6. **Switch view**: Buttons at top → List, Table or Desktop
 7. **Export**: Click "Export" and choose format (TXT/CSV/JSON)
 8. **Filter**: Right-click on a package → "Mark as System App"
+9. **Updates**: Packages with available updates show an icon — use the banner to update
 
 ## Supported Package Managers
 
-| Package Manager | Distributions | Size | Date |
-|-----------------|---------------|------|------|
-| dpkg | Debian, Ubuntu, Mint | ✅ | ✅ |
-| pacman | Arch, Manjaro | ✅ | ✅ |
-| rpm/dnf | Fedora, RHEL, CentOS | ✅ | ✅ |
-| rpm/zypper | openSUSE | ✅ | ✅ |
-| flatpak | All | ✅ | ✅ |
-| snap | All | ✅ | ✅ |
-| eopkg | Solus | — | — |
+| Package Manager | Distributions | Size | Date | Updates |
+|-----------------|---------------|------|------|---------|
+| dpkg | Debian, Ubuntu, Mint | ✅ | ✅ | ✅ |
+| pacman | Arch, Manjaro | ✅ | ✅ | ✅ |
+| rpm/dnf | Fedora, RHEL, CentOS | ✅ | ✅ | ✅ |
+| rpm/zypper | openSUSE | ✅ | ✅ | ✅ |
+| flatpak | All | ✅ | ✅ | ✅ |
+| snap | All | ✅ | ✅ | ✅ |
+| eopkg | Solus | — | — | — |
 
 ## Roadmap
 
-### v0.1.x (Stable - tkinter) ✅
-- [x] Multi-distribution support
-- [x] Modern GUI with Dark Mode
-- [x] Export functions
-- [x] Multilingual (DE/EN)
-
 ### v0.2.x (GTK4 Migration) ✅
-- [x] GTK4 + Libadwaita GUI
-- [x] Virtual scrolling
-- [x] Search function
-- [x] OBS packages (11 distributions)
-- [x] AUR package
-- [x] Performance optimizations
+- [x] GTK4 + Libadwaita GUI, search, OBS packages (12 distros), AUR
 
-### v0.3.0 (Current) ✅
-- [x] Scope dropdown: User Apps vs. All Packages
-- [x] Installed size (dpkg, rpm, pacman, flatpak, snap)
-- [x] Installation date (dpkg, rpm, pacman, flatpak, snap)
-- [x] Sort function (Name, Size, Date)
-- [x] Minimum characters for search (5 characters)
+### v0.3.x ✅
+- [x] Scope dropdown, installed size, installation date, sort function
+- [x] Desktop Apps view (.desktop files)
 
-### v0.3.1 (Planned)
-- [ ] Desktop Apps view (.desktop files)
+### v0.4.0 ✅
+- [x] Virtual scrolling (no more pagination)
+- [x] Update notification banner (new version available)
+- [x] OBS repo auto-registered on install
 
-### v0.4.0 (Planned)
-- [ ] Check update status
-- [ ] Update notifications
+### v0.4.1 ✅
+- [x] Update status icon per package in List and Table
+- [x] Desktop notifications via notify-send (opt-in)
+- [x] Auto-updater via pkexec (apt/dnf/zypper), hint dialog for Arch/AUR
 
-### v1.0.0 (Stable)
-- [ ] Community testing complete
-- [ ] Stable release
+### v1.0.0 (Current) ✅
+- [x] Stable release after community testing
+- [x] UPDATE badge next to app name in List and Table
+- [x] apt-get update via pkexec before package update check
 
 ### v2.0.0 (Future)
 - [ ] Uninstall function
 
 ## FAQ
 
+### Installation & Updates
+
+**Q: How do I get updates?**
+A: Since v0.4.0, the install package automatically adds the OBS repo. After that, a normal upgrade is enough:
+```bash
+sudo apt update && sudo apt upgrade        # Debian/Ubuntu/Mint
+sudo dnf upgrade myapps                    # Fedora
+sudo zypper update myapps                  # openSUSE
+yay -Syu myapps                            # Arch (AUR)
+```
+
+**Q: MyApps shows a banner "New version available" — how do I install the update?**
+A: Since v0.4.1, click "Update" directly in the banner (apt/dnf/zypper). For Arch/AUR, a hint dialog appears with the appropriate yay/paru command.
+
+**Q: I installed MyApps as .deb and don't get updates via `apt upgrade`.**
+A: The OBS repo was only added automatically for installations since v0.4.0. For older installations, please add the repo manually — see "From OBS" section above.
+
+**Q: Why is there no Flatpak?**
+A: MyApps requires access to `/var/lib/` for package manager databases. Flathub does not allow this for security reasons. As an alternative, we offer native OBS packages for 12 distributions.
+
+---
+
+### Application Center (GNOME Software)
+
+**Q: GNOME Software shows "Potentially unsafe" or "License unknown".**
+A: GNOME Software shows this warning for packages from third-party sources (not distro-own repos or Flathub). This is not a malfunction — MyApps is Open Source (GPLv3) and fully safe. The warning is a general GNOME Software policy.
+
+---
+
+### Packages & Display
+
 **Q: Why aren't some apps shown?**
-A: They were probably filtered as system apps. Switch the scope dropdown to "All Packages" or customize filters in `~/.config/myapps/user-filters.json`.
+A: They were filtered as system apps. Switch the scope dropdown to "All Packages" or customize filters in `~/.config/myapps/user-filters.json`. Individual apps can also be hidden via right-click → "Mark as System App".
+
+**Q: The search finds nothing even though I'm typing something.**
+A: The search requires at least 5 characters. The status bar shows how many characters are still needed.
+
+**Q: Is my distribution supported?**
+A: Debian, Ubuntu, Linux Mint, Arch, Fedora, openSUSE, Solus as well as Flatpak and Snap are supported. More distributions can be suggested via issues.
+
+**Q: Is MyApps safe?**
+A: Yes. MyApps is Open Source (GPLv3), performs only read operations and does not require `sudo`.
+
+---
+
+### Development
 
 **Q: `pip install -e .` fails with a pycairo error?**
 A: GTK bindings cannot be compiled via pip. Install `python3-gi` as a system package and use `pip install -e . --no-deps`. See "From Source" section above.
 
 **Q: Ubuntu 24.04: `python3-pil` not found?**
 A: In Ubuntu 24.04 the package was renamed to `python3-pillow`. Use `sudo apt install python3-pillow`.
-
-**Q: Is my distribution supported?**
-A: See "Supported Package Managers" above. More distributions can be added.
-
-**Q: Is MyApps safe?**
-A: MyApps is Open Source (GPLv3) and only performs read operations (no `sudo` needed).
 
 ## Contributing
 

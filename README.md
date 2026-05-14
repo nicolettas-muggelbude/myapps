@@ -7,8 +7,8 @@
 
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-  [![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
-  [![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/nicolettas-muggelbude/myapps)
+  [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
+  [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://github.com/nicolettas-muggelbude/myapps)
 </div>
 
 [English](README.en.md) | **Deutsch**
@@ -40,10 +40,21 @@ MyApps ist ein benutzerfreundliches Tool für Linux, das alle installierten Anwe
 - Distro-spezifische Filter
 - Eigene Filter hinzufügen (Rechtsklick)
 
+🖥️ **Desktop-Apps-Ansicht**
+- Dritter Tab neben Liste und Tabelle
+- Zeigt installierte .desktop-Anwendungen (System, User, Flatpak, Snap)
+- Lokalisierte Namen und Beschreibungen, 48px Icons
+
 📊 **Paket-Informationen**
 - Installierte Größe (dpkg, rpm, pacman, flatpak, snap)
 - Installationsdatum (dpkg, rpm, pacman, flatpak, snap)
 - Sortierfunktion: Name, Größe, Datum (auf- und absteigend)
+
+🔔 **Update-Manager** *(neu in v0.4.1)*
+- Update-Status-Icon in Liste und Tabelle für Pakete mit verfügbaren Updates
+- Desktop-Benachrichtigung beim Start wenn Updates vorhanden (opt-in)
+- Auto-Updater: MyApps aktualisiert sich selbst via pkexec (apt/dnf/zypper)
+- Hinweis-Dialog für Arch/AUR mit yay/paru Befehlen
 
 📤 **Export-Funktionen**
 - Text (TXT)
@@ -162,7 +173,7 @@ makepkg -si
 
 ```bash
 # Nach dem Download installieren
-sudo dpkg -i myapps_0.3.0_all.deb
+sudo dpkg -i myapps_1.0.0_all.deb
 
 # Falls Dependencies fehlen
 sudo apt-get install -f
@@ -219,10 +230,10 @@ python3 -m myapps.main
 ./build-deb.sh
 
 # Optional: Spezifische Version
-./build-deb.sh 0.3.0
+./build-deb.sh 1.0.0
 
 # Installieren
-sudo dpkg -i myapps_0.3.0_all.deb
+sudo dpkg -i myapps_1.0.0_all.deb
 ```
 
 ## Verwendung
@@ -232,21 +243,22 @@ sudo dpkg -i myapps_0.3.0_all.deb
 3. **Scope wechseln**: Dropdown neben der Suche → "Nur User-Apps" oder "Alle Pakete"
 4. **Suchen**: Mindestens 5 Zeichen eingeben für Live-Suche
 5. **Sortieren**: Dropdown in der Navigationsleiste → nach Name, Größe oder Datum
-6. **Ansicht wechseln**: Buttons oben → Liste oder Tabelle
+6. **Ansicht wechseln**: Buttons oben → Liste, Tabelle oder Desktop
 7. **Exportieren**: Klicke auf "Exportieren" und wähle das Format (TXT/CSV/JSON)
 8. **Filtern**: Rechtsklick auf ein Paket → "Als System-App markieren"
+9. **Updates**: Pakete mit verfügbarem Update zeigen ein Icon — Banner oben zum Aktualisieren
 
 ## Unterstützte Paketmanager
 
-| Paketmanager | Distributionen | Größe | Datum |
-|--------------|----------------|-------|-------|
-| dpkg | Debian, Ubuntu, Mint | ✅ | ✅ |
-| pacman | Arch, Manjaro | ✅ | ✅ |
-| rpm/dnf | Fedora, RHEL, CentOS | ✅ | ✅ |
-| rpm/zypper | openSUSE | ✅ | ✅ |
-| flatpak | Alle | ✅ | ✅ |
-| snap | Alle | ✅ | ✅ |
-| eopkg | Solus | — | — |
+| Paketmanager | Distributionen | Größe | Datum | Updates |
+|--------------|----------------|-------|-------|---------|
+| dpkg | Debian, Ubuntu, Mint | ✅ | ✅ | ✅ |
+| pacman | Arch, Manjaro | ✅ | ✅ | ✅ |
+| rpm/dnf | Fedora, RHEL, CentOS | ✅ | ✅ | ✅ |
+| rpm/zypper | openSUSE | ✅ | ✅ | ✅ |
+| flatpak | Alle | ✅ | ✅ | ✅ |
+| snap | Alle | ✅ | ✅ | ✅ |
+| eopkg | Solus | — | — | — |
 
 ## Roadmap
 
@@ -256,18 +268,22 @@ sudo dpkg -i myapps_0.3.0_all.deb
 ### v0.3.x ✅
 - [x] Scope-Dropdown, Größe, Datum, Sortierung, Desktop-Apps-Ansicht
 
-### v0.4.0 (Aktuell) ✅
+### v0.4.0 ✅
 - [x] Virtual Scrolling (keine Pagination mehr)
 - [x] Update-Benachrichtigung (Banner bei neuer Version)
 - [x] OBS-Repo wird beim Install automatisch eingetragen
 
-### v0.4.1 (Geplant)
-- [ ] Auto-Updater
-- [ ] Update-Status pro Paket
-- [ ] Desktop-Benachrichtigungen
+### v0.4.1 ✅
+- [x] Update-Status-Icon pro Paket in Liste und Tabelle
+- [x] Desktop-Benachrichtigungen via notify-send (opt-in)
+- [x] Auto-Updater via pkexec (apt/dnf/zypper), Hinweis für Arch/AUR
 
-### v1.0.0 / v2.0.0 (Zukunft)
-- [ ] Stable Release nach Community-Testing
+### v1.0.0 (Aktuell) ✅
+- [x] Stable Release nach Community-Testing
+- [x] UPDATE-Badge neben App-Namen in Liste und Tabelle
+- [x] apt-get update via pkexec vor dem Paket-Update-Check
+
+### v2.0.0 (Zukunft)
 - [ ] Deinstallations-Funktion
 
 ## Häufige Fragen
@@ -284,7 +300,7 @@ yay -Syu myapps                            # Arch (AUR)
 ```
 
 **Q: MyApps zeigt einen Banner "Neue Version verfügbar" — wie installiere ich das Update?**
-A: Nutze deinen normalen Paketmanager (siehe oben). Der Banner informiert nur, installiert aber nicht selbst. Ein Auto-Updater ist für v0.4.1 geplant.
+A: Ab v0.4.1 kannst du direkt im Banner auf "Aktualisieren" klicken (apt/dnf/zypper). Für Arch/AUR erscheint ein Hinweis-Dialog mit dem passenden yay/paru Befehl.
 
 **Q: Ich habe MyApps als .deb installiert und bekomme keine Updates über `apt upgrade`.**
 A: Das OBS-Repo wurde nur bei Installationen ab v0.4.0 automatisch eingetragen. Bei älteren Installationen bitte das Repo manuell einrichten — siehe Abschnitt "Aus OBS" oben.

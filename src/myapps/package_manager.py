@@ -752,11 +752,11 @@ class UpdateChecker:
         logger.info(f"UpdateChecker: {len(updatable)} Pakete mit Updates gefunden")
         return updatable
 
-    def _run(self, command: List[str], allow_nonzero: bool = False) -> Optional[str]:
+    def _run(self, command: List[str], allow_nonzero: bool = False, timeout: int = 30) -> Optional[str]:
         """Führt Befehl aus, gibt stdout zurück oder None bei Fehler/Timeout"""
         try:
             result = subprocess.run(
-                command, capture_output=True, text=True, timeout=30
+                command, capture_output=True, text=True, timeout=timeout
             )
             if result.returncode == 0 or allow_nonzero:
                 return result.stdout
@@ -766,7 +766,11 @@ class UpdateChecker:
             return None
 
     def _check_apt(self) -> set:
-        """Prüft via 'apt list --upgradable' (Debian/Ubuntu)"""
+        """Prüft via 'apt list --upgradable' (Debian/Ubuntu) — aktualisiert Cache zuerst via pkexec"""
+        # Cache aktualisieren damit die Liste dem tatsächlichen Stand entspricht.
+        # Polkit-Dialog erscheint; bei Abbruch oder Fehler wird mit altem Cache weitergemacht.
+        self._run(["pkexec", "apt-get", "update", "-qq"], allow_nonzero=True, timeout=120)
+
         names: set = set()
         output = self._run(["apt", "list", "--upgradable"])
         if not output:
