@@ -1221,13 +1221,30 @@ class MyAppsWindow(Adw.ApplicationWindow):
     def _on_auto_update_done(self, success: bool, output: str):
         """Zeigt Ergebnis des Auto-Updates (Issue #19)"""
         if success:
-            self.update_banner.set_revealed(False)
-            self._set_status(_("Aktualisierung erfolgreich – App neu starten"))
-            dialog = Adw.MessageDialog.new(
-                self,
-                _("Aktualisierung erfolgreich"),
-                _("MyApps wurde aktualisiert. Bitte die App neu starten.")
-            )
+            # Prüfen ob apt wirklich etwas aktualisiert hat (Exit 0 auch bei "nichts zu tun")
+            actually_upgraded = "upgraded" in output and not output.strip().startswith("0 upgraded")
+            # Fallback für dnf/zypper: prüfen ob kein "Nothing to do" / "No updates"
+            if self._update_pm in ("dnf", "zypper"):
+                actually_upgraded = not any(
+                    phrase in output.lower()
+                    for phrase in ("nothing to do", "no updates", "already installed", "up-to-date")
+                )
+            if actually_upgraded:
+                self.update_banner.set_revealed(False)
+                self._set_status(_("Aktualisierung erfolgreich – App neu starten"))
+                dialog = Adw.MessageDialog.new(
+                    self,
+                    _("Aktualisierung erfolgreich"),
+                    _("MyApps wurde aktualisiert. Bitte die App neu starten.")
+                )
+            else:
+                self.update_banner.set_button_label(_("Aktualisieren"))
+                self._set_status(_("Update noch nicht in Paketquellen verfügbar"))
+                dialog = Adw.MessageDialog.new(
+                    self,
+                    _("Update noch nicht verfügbar"),
+                    _("Das Update ist auf GitHub verfügbar, wurde aber noch nicht in den Paketquellen (OBS/AUR) veröffentlicht. Bitte später erneut versuchen.")
+                )
         else:
             self.update_banner.set_button_label(_("Aktualisieren"))
             self._set_status(_("Aktualisierung fehlgeschlagen"))
