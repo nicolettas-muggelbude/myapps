@@ -2,6 +2,10 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.1
+- Fix: Auto-Updater führt apt update vor Install aus (verhindert Endlosschleife)
+- Fix: Korrekte Erkennung ob apt wirklich aktualisiert hat
+
 ## v1.0.0
 - Stable Release nach Community-Testing
 - Feature: UPDATE-Badge neben App-Namen in Liste und Tabelle

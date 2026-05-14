@@ -7,7 +7,7 @@
 
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-  [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
+  [![Version](https://img.shields.io/badge/version-1.0.1-green.svg)](https://github.com/nicolettas-muggelbude/myapps/releases)
   [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://github.com/nicolettas-muggelbude/myapps)
 </div>
 
@@ -278,7 +278,10 @@ sudo dpkg -i myapps_1.0.0_all.deb
 - [x] Desktop-Benachrichtigungen via notify-send (opt-in)
 - [x] Auto-Updater via pkexec (apt/dnf/zypper), Hinweis für Arch/AUR
 
-### v1.0.0 (Aktuell) ✅
+### v1.0.1 (Aktuell) ✅
+- [x] Fix: Auto-Updater führt apt update vor Install aus (Endlosschleife behoben)
+
+### v1.0.0 ✅
 - [x] Stable Release nach Community-Testing
 - [x] UPDATE-Badge neben App-Namen in Liste und Tabelle
 - [x] apt-get update via pkexec vor dem Paket-Update-Check

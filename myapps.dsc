@@ -2,7 +2,7 @@ Format: 3.0 (quilt)
 Source: myapps
 Binary: myapps
 Architecture: all
-Version: 1.0.0-1
+Version: 1.0.1-1
 Maintainer: MyApps Contributors <noreply@github.com>
 Homepage: https://github.com/nicolettas-muggelbude/myapps
 Standards-Version: 4.5.0

@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v1.0.0 (Stable)
+- **Version**: v1.0.1 (Stable)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
