@@ -2,6 +2,9 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.6
+- Fix: Desktop-Ansicht zeigt alle Apps mit Updates an (desktop_id-Abgleich via .desktop-Dateiname)
+
 ## v1.0.5
 - Fix: UPDATE-Badge in Desktop-Ansicht ergänzt
 
