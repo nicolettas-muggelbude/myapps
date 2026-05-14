@@ -1342,14 +1342,14 @@ class MyAppsWindow(Adw.ApplicationWindow):
             if pkg.update_available:
                 count += 1
 
-        # Desktop-Pakete aktualisieren — 3 Abgleich-Strategien:
-        # 1. Anzeigename (selten gleich), 2. icon_name (oft = Paketname),
-        # 3. desktop_id (.desktop-Dateiname ohne Endung, meist = Paketname)
+        # Desktop-Pakete aktualisieren — Teilstring-Abgleich:
+        # "firefox" matcht "Firefox", "firefox-webbrowser", "Firefox ESR" usw.
         for pkg in self.gui.desktop_packages:
-            pkg.update_available = (
-                pkg.name.lower() in updatable or
-                (pkg.icon_name and pkg.icon_name.lower() in updatable) or
-                (pkg.desktop_id and pkg.desktop_id.lower() in updatable)
+            name_lower = pkg.name.lower()
+            icon_lower = pkg.icon_name.lower() if pkg.icon_name else ""
+            pkg.update_available = any(
+                u in name_lower or u in icon_lower
+                for u in updatable
             )
 
         self._populate_current_view()
