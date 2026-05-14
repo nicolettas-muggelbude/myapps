@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        1.0.1
+Version:        1.0.2
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Wed May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.2-1
+- Feature: Filter "Updates verfügbar" im Scope-Dropdown
+
 * Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.1-1
 - Fix: Auto-Updater führt apt update vor Install aus (verhindert Endlosschleife)
 - Fix: Korrekte Erkennung ob apt wirklich etwas aktualisiert hat

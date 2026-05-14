@@ -501,8 +501,8 @@ class MyAppsWindow(Adw.ApplicationWindow):
         title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         title_box.set_halign(Gtk.Align.CENTER)
 
-        # Scope Dropdown (Nur User-Apps / Alle Pakete)
-        scope_model = Gtk.StringList.new([_("Nur User-Apps"), _("Alle Pakete")])
+        # Scope Dropdown (Nur User-Apps / Alle Pakete / Updates verfügbar)
+        scope_model = Gtk.StringList.new([_("Nur User-Apps"), _("Alle Pakete"), _("Updates verfügbar")])
         self.scope_dropdown = Gtk.DropDown.new(scope_model, None)
         self.scope_dropdown.set_selected(0)  # Standard: Nur User-Apps
         self.scope_dropdown.connect("notify::selected", self._on_scope_changed)
@@ -1031,7 +1031,12 @@ class MyAppsWindow(Adw.ApplicationWindow):
         elif query:
             self._set_status(f"{len(self.gui.search_filtered_packages)} " + _("Apps gefunden"))
         else:
-            base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
+            if self.gui.search_scope == "all":
+                base = self.gui.packages
+            elif self.gui.search_scope == "updates":
+                base = [p for p in self.gui.packages if p.update_available]
+            else:
+                base = self.gui.filtered_packages
             self._set_status(f"{len(base)} " + _("Apps geladen"))
 
     def _on_sort_changed(self, dropdown, _pspec):
@@ -1044,21 +1049,36 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
     def _on_scope_changed(self, dropdown, _pspec):
         """Callback wenn Scope-Dropdown geändert wird (v0.3.0)"""
-        self.gui.search_scope = "all" if dropdown.get_selected() == 1 else "user"
+        idx = dropdown.get_selected()
+        if idx == 1:
+            self.gui.search_scope = "all"
+        elif idx == 2:
+            self.gui.search_scope = "updates"
+        else:
+            self.gui.search_scope = "user"
         self._apply_search_filter()
         self._update_count_label()
         self._populate_current_view()
 
         # Status Update
-        base = self.gui.packages if self.gui.search_scope == "all" else self.gui.filtered_packages
-        label = _("Alle Pakete") if self.gui.search_scope == "all" else _("User-Apps")
+        if self.gui.search_scope == "all":
+            base = self.gui.packages
+            label = _("Alle Pakete")
+        elif self.gui.search_scope == "updates":
+            base = [p for p in self.gui.packages if p.update_available]
+            label = _("Updates verfügbar")
+        else:
+            base = self.gui.filtered_packages
+            label = _("User-Apps")
         self._set_status(f"{len(base)} {label} " + _("geladen"))
 
     def _apply_search_filter(self):
         """Wendet Scope + Suchfilter an (v0.3.0: Scope-Dropdown + mind. 5 Zeichen)"""
-        # Basis-Liste je nach Scope (v0.3.0)
+        # Basis-Liste je nach Scope (v0.3.0 + v1.0.2: "updates")
         if self.gui.search_scope == "all":
             base_packages = self.gui.packages
+        elif self.gui.search_scope == "updates":
+            base_packages = [p for p in self.gui.packages if p.update_available]
         else:
             base_packages = self.gui.filtered_packages
 
@@ -1103,12 +1123,16 @@ class MyAppsWindow(Adw.ApplicationWindow):
 
         self.gui.search_filtered_packages = sorted(packages, key=key_fn, reverse=reverse)
 
-        # Desktop-Apps filtern (v0.3.1) — Scope gilt hier nicht
+        # Desktop-Apps filtern (v0.3.1 + v1.0.2: Scope "updates")
+        all_desktop = self.gui.desktop_packages
+        if self.gui.search_scope == "updates":
+            all_desktop = [p for p in all_desktop if p.update_available]
+
         if not query or len(query) < 5:
-            desktop_base = self.gui.desktop_packages
+            desktop_base = all_desktop
         else:
             desktop_base = [
-                pkg for pkg in self.gui.desktop_packages
+                pkg for pkg in all_desktop
                 if query in pkg.name.lower() or
                    (pkg.description and query in pkg.description.lower())
             ]

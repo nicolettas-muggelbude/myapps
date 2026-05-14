@@ -2,6 +2,9 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.2
+- Feature: Filter "Updates verfügbar" im Scope-Dropdown (Liste, Tabelle und Desktop-Ansicht)
+
 ## v1.0.1
 - Fix: Auto-Updater führt apt update vor Install aus (verhindert Endlosschleife)
 - Fix: Korrekte Erkennung ob apt wirklich aktualisiert hat
