@@ -27,6 +27,7 @@ class Package:
     size: Optional[int] = None          # Installierte Größe in Bytes (Issue #5)
     install_date: Optional[str] = None  # Installationsdatum "YYYY-MM-DD" (Issue #10)
     icon_name: Optional[str] = None     # Icon-Name aus .desktop-Datei (v0.3.1)
+    desktop_id: Optional[str] = None    # .desktop-Dateiname ohne Endung (z.B. "chromium")
     update_available: Optional[bool] = None  # Update verfügbar? None = noch nicht geprüft
 
 
@@ -718,6 +719,7 @@ class DesktopFileManager(PackageManagerBase):
             size=None,
             install_date=None,
             icon_name=icon_name,
+            desktop_id=path.stem,
         )
 
 
