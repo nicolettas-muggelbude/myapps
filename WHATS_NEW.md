@@ -2,6 +2,10 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.3
+- Fix: UPDATE-Badge in Filter "Updates verfügbar" für alle Pakete sichtbar (nicht nur snap)
+- Fix: Desktop-Ansicht zeigt korrekt Pakete mit Updates an
+
 ## v1.0.2
 - Feature: Filter "Updates verfügbar" im Scope-Dropdown (Liste, Tabelle und Desktop-Ansicht)
 
