@@ -2,6 +2,9 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.5
+- Fix: UPDATE-Badge in Desktop-Ansicht ergänzt
+
 ## v1.0.4
 - Fix: Auto-Updater meldet jetzt korrekt Erfolg auf deutschen Systemen (LANG=C für apt)
 - Fix: Filter "Updates verfügbar" zeigt in Desktop-Ansicht korrekte Apps (icon_name-Abgleich)
