@@ -16,6 +16,6 @@ pkgbase = myapps
 	depends = python-pillow
 	depends = hicolor-icon-theme
 	source = myapps-1.0.7.tar.gz::https://github.com/nicolettas-muggelbude/myapps/archive/refs/tags/v1.0.7.tar.gz
-	sha256sums = d1764466f18205979fb0eb5b4276a646ebf23eb481dae5e5aa23489ae24e1964
+	sha256sums = ecf51f93bdeb56483f0ea348a7bd2888f9bcb9399864e18c8a1d2103ae6be34b
 
 pkgname = myapps
