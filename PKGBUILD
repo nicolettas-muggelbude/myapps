@@ -1,7 +1,7 @@
 # Maintainer: MyApps Contributors <noreply@github.com>
 
 pkgname=myapps
-pkgver=1.0.3
+pkgver=1.0.4
 pkgrel=1
 pkgdesc="Linux package manager overview with GTK4 + Libadwaita"
 arch=('any')

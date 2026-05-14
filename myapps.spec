@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        1.0.3
+Version:        1.0.4
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.4-1
+- Fix: LANG=C für apt-get damit Auto-Updater auf deutschen Systemen Erfolg korrekt meldet
+- Fix: Filter Updates verfügbar zeigt in Desktop-Ansicht korrekte Apps (icon_name-Abgleich)
+
 * Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.3-1
 - Fix: UPDATE-Badge in Filter Updates verfügbar für alle Pakete sichtbar
 - Fix: Desktop-Ansicht zeigt korrekt Pakete mit Updates an

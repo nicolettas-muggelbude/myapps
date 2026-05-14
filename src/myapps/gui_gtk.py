@@ -1331,9 +1331,12 @@ class MyAppsWindow(Adw.ApplicationWindow):
             if pkg.update_available:
                 count += 1
 
-        # Desktop-Pakete ebenfalls aktualisieren (Namens-Abgleich)
+        # Desktop-Pakete aktualisieren — Name ist lokalisiert, icon_name oft = Paketname
         for pkg in self.gui.desktop_packages:
-            pkg.update_available = pkg.name in updatable
+            pkg.update_available = (
+                pkg.name.lower() in updatable or
+                (pkg.icon_name and pkg.icon_name.lower() in updatable)
+            )
 
         self._populate_current_view()
 

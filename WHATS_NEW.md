@@ -2,6 +2,10 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.4
+- Fix: Auto-Updater meldet jetzt korrekt Erfolg auf deutschen Systemen (LANG=C für apt)
+- Fix: Filter "Updates verfügbar" zeigt in Desktop-Ansicht korrekte Apps (icon_name-Abgleich)
+
 ## v1.0.3
 - Fix: UPDATE-Badge in Filter "Updates verfügbar" für alle Pakete sichtbar (nicht nur snap)
 - Fix: Desktop-Ansicht zeigt korrekt Pakete mit Updates an
