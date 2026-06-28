@@ -361,21 +361,6 @@ MyApps ist unter der [GNU General Public License v3.0](LICENSE) lizenziert.
 - Icons aus System-Themes
 - UI basiert auf [GTK4](https://www.gtk.org/) und [Libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/)
 
-## 💝 Unterstütze dieses Projekt
-
-Wenn dir MyApps hilft, kannst du die Entwicklung unterstützen:
-
-[![Spenden via PayPal](https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL)
-
-**Spenden gehen an:** PC-Wittfoot UG (Spendenverwalter)
-**Verwendung:** Serverkosten, Hardware, Entwicklerzeit für MyApps
-
-**Hinweis:** Die Entwicklung erfolgt durch die Linux Guides DE Community (Open Source).
-PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
-
-**Rechtliches:**
-[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Datenschutz](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
-
 ## Support
 
 - 🐛 [Bug melden](https://github.com/nicolettas-muggelbude/myapps/issues)

@@ -2,6 +2,9 @@
 
 Dieses Dokument enthält die Changelog-Informationen für den About-Dialog.
 
+## v1.0.8
+- Spenden-Option entfernt
+
 ## v1.0.7
 - Fix: Desktop-Abgleich via Teilstring ("firefox" findet "Firefox-Webbrowser" usw.)
 

@@ -273,7 +273,7 @@ class MyAppsGUI(Adw.Application):
             base_dir: Basis-Verzeichnis der Anwendung
         """
         super().__init__(
-            application_id='de.pc-wittfoot.myapps',
+            application_id='io.github.nicolettas-muggelbude.myapps',
             flags=Gio.ApplicationFlags.FLAGS_NONE
         )
 
@@ -1732,35 +1732,6 @@ class MyAppsWindow(Adw.ApplicationWindow):
         support_label.set_margin_top(15)
         support_label.set_margin_bottom(5)
         main_box.append(support_label)
-
-        support_text = Gtk.Label(
-            label="Wenn dir MyApps hilft, freue ich mich über eine kleine Spende!"
-        )
-        support_text.set_wrap(True)
-        support_text.set_max_width_chars(50)
-        support_text.set_halign(Gtk.Align.START)
-        support_text.set_margin_start(20)
-        support_text.set_margin_bottom(10)
-        main_box.append(support_text)
-
-        # Spenden-Button
-        donate_btn = Gtk.Button(label="💰 Über PayPal spenden")
-        donate_btn.add_css_class("suggested-action")
-        donate_btn.connect("clicked", lambda b: webbrowser.open("https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"))
-        donate_btn.set_margin_start(20)
-        donate_btn.set_margin_end(20)
-        donate_btn.set_margin_bottom(5)
-        main_box.append(donate_btn)
-
-        # Spenden-Hinweis
-        donate_hint = Gtk.Label(
-            label="Spenden werden von der PC-Wittfoot UG verwaltet."
-        )
-        donate_hint.add_css_class("caption")
-        donate_hint.add_css_class("dim-label")
-        donate_hint.set_halign(Gtk.Align.START)
-        donate_hint.set_margin_start(20)
-        main_box.append(donate_hint)
 
         # Separator
         sep3 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)

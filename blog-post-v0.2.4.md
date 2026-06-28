@@ -88,14 +88,6 @@ Wie immer freuen wir uns über euer Feedback:
 
 Probiert v0.2.4 aus und lasst uns wissen, wie es läuft! Wir sind gespannt auf eure Rückmeldungen.
 
-## MyApps unterstützen 💝
-
-MyApps ist und bleibt Open Source und kostenlos! Wenn euch das Projekt gefällt und ihr uns unterstützen möchtet, freuen wir uns über eine kleine Spende:
-
-👉 [PayPal-Spende](https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL)
-
-Die Spenden werden für Serverkosten, Hardware und Entwicklerzeit verwendet.
-
 ---
 
 **Happy updating!** 🎉

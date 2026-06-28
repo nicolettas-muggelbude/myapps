@@ -93,21 +93,6 @@ yay -S myapps
 
 ---
 
-## 💝 MyApps unterstützen
-
-Dieses Projekt ist **Open Source** (GPLv3) und wird von der Community entwickelt!
-
-<a href="https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"><img src="https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Spenden via PayPal"></a>
-
-**Spenden gehen an:** PC-Wittfoot UG (Spendenverwalter)
-**Verwendung:** Serverkosten, Hardware, Entwicklerzeit für MyApps
-
-**Hinweis:** Die Entwicklung erfolgt durch die Linux Guides DE Community (Open Source).
-PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
-
-**Rechtliches:**
-[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Datenschutz](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
-
 ---
 
 **Changelog:** https://github.com/nicolettas-muggelbude/myapps/compare/v0.2.4...v0.3.0

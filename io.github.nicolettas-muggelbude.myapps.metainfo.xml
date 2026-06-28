@@ -57,8 +57,7 @@
 
   <url type="homepage">https://github.com/nicolettas-muggelbude/myapps</url>
   <url type="bugtracker">https://github.com/nicolettas-muggelbude/myapps/issues</url>
-  <url type="donation">https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL</url>
-  <url type="vcs-browser">https://github.com/nicolettas-muggelbude/myapps</url>
+<url type="vcs-browser">https://github.com/nicolettas-muggelbude/myapps</url>
 
   <!-- AppStream 1.0: developer mit id statt deprecated developer_name -->
   <developer id="io.github.nicolettas-muggelbude">

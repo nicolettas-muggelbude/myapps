@@ -8,7 +8,7 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Grundinformationen
 - **Projektname**: MyApps
-- **Version**: v1.0.1 (Stable)
+- **Version**: v1.0.7 (Stable)
 - **Lizenz**: GPLv3.0
 - **Repository**: GitHub
 - **Zielgruppe**: Endanwender (Linux Desktop)
@@ -17,20 +17,9 @@ Ziel ist es, Endanwendern eine übersichtliche Darstellung ihrer installierten U
 
 ### Projekt-Organisation
 
-**WICHTIG: Rollenverteilung**
-
 - **Entwicklung**: Linux Guides DE Community (Open Source, GPLv3)
   - Hauptentwickler: nicolettas-muggelbude
   - Community Contributors willkommen
-  - Entwicklung ist NICHT durch PC-Wittfoot UG
-
-- **Spendenverwaltung**: PC-Wittfoot UG
-  - Verwaltet PayPal-Spenden für das Projekt
-  - Verwendet Spenden für Serverkosten, Hardware, Entwicklerzeit
-  - **Hat NICHTS mit der Entwicklung zu tun**
-  - Siehe Impressum/Datenschutz auf GitHub Pages
-
-**Zusammenfassung**: PC-Wittfoot UG ist NUR Spendenverwalter, NICHT Entwickler!
 
 ### Technologie-Stack
 - **Sprache**: Python 3.8+
@@ -152,8 +141,7 @@ app_lister/
 ### Kern-Komponenten
 
 #### MyAppsGUI (Adw.Application)
-- **Application ID**: `io.github.nicolettas-muggelbude.myapps` (GitHub-basiert, neutral)
-  - **WICHTIG**: Nicht de.pc-wittfoot.myapps! PC-Wittfoot UG ist nur Spendenverwalter, kein Entwickler
+- **Application ID**: `io.github.nicolettas-muggelbude.myapps` (GitHub-basiert)
 - **Rolle**: Verwaltet Package-Loading, Filtering, Pagination, Suche
 - **Threading**: GLib.idle_add für GUI-Updates aus Worker-Threads
 - **Lifecycle**: `do_activate()` → erstellt Window → lädt Pakete async
@@ -712,30 +700,6 @@ sudo zypper install myapps
 ---
 ```
 
-#### Spendenbutton (IMMER am Ende):
-**WICHTIG:** HTML verwenden (nicht Markdown), da GitHub Markdown-Syntax escaped!
-
-```html
-## 💝 MyApps unterstützen
-
-Dieses Projekt ist **Open Source** (GPLv3) und wird von der Community entwickelt!
-
-<a href="https://www.paypal.com/ncp/payment/UYJ73YNEZ3KHL"><img src="https://img.shields.io/badge/PayPal-Spenden-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Spenden via PayPal"></a>
-
-**Spenden gehen an:** PC-Wittfoot UG (Spendenverwalter)
-**Verwendung:** Serverkosten, Hardware, Entwicklerzeit für MyApps
-
-**Hinweis:** Die Entwicklung erfolgt durch die Linux Guides DE Community (Open Source).
-PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
-
-**Rechtliches:**
-[Impressum](https://nicolettas-muggelbude.github.io/myapps/impressum) | [Datenschutz](https://nicolettas-muggelbude.github.io/myapps/datenschutz)
-
----
-
-**Changelog:** https://github.com/nicolettas-muggelbude/myapps/compare/vX.X.X...vY.Y.Y
-```
-
 #### Vollständige Struktur:
 1. **Titel** mit Emoji (z.B. "# MyApps v0.2.1 - Bugfix Release")
 2. **Kurzbeschreibung** in Bold
@@ -745,11 +709,9 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 6. **📦 Installation** (OBS + AUR Buttons)
 7. **Separator** (`---`)
 8. **🙏 Danke** (optional, bei Community-Beiträgen)
-9. **Separator** (`---`)
-10. **💝 Spendenbutton** mit Rechtlichem
-11. **Changelog-Link** am Ende
+9. **Changelog-Link** am Ende
 
-## Aktueller Projekt-Stand (12.04.2026)
+## Aktueller Projekt-Stand (14.05.2026)
 
 ### ✅ Abgeschlossen
 
@@ -936,8 +898,84 @@ PC-Wittfoot UG verwaltet nur die Spenden, ist aber NICHT der Entwickler.
 - **Status**: Stable (kein Beta mehr)
 - **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.0
 
+### ✅ v1.0.1 - Auto-Updater Fix (14.05.2026) — RELEASED
+- **Fix:** Auto-Updater führt `apt update` vor Install aus (verhindert Endlosschleife)
+- **Fix:** Korrekte Erkennung ob apt wirklich etwas aktualisiert hat
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.1
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ✅ v1.0.2 - Filter "Updates verfügbar" (14.05.2026) — RELEASED
+- **Feature:** Filter "Updates verfügbar" im Scope-Dropdown als dritte Option
+  - Zeigt in Liste, Tabelle und Desktop-Ansicht nur Apps mit verfügbaren Updates
+  - Scope-Index 2 → `search_scope = "updates"` → filtert auf `p.update_available == True`
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.2
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ✅ v1.0.3 - UPDATE-Badge in Filter sichtbar (14.05.2026) — RELEASED
+- **Fix:** UPDATE-Badge im Filter "Updates verfügbar" für alle Pakete sichtbar
+- **Fix:** `update_available` beim Erstellen des Package-Kopie korrekt weitergegeben
+  - `_populate_list_view()` und `_populate_table_view()` übergaben `update_available` nicht beim Package-Konstruktor → Feld fiel auf None zurück
+- **Fix:** Desktop-Ansicht zeigt korrekt Pakete mit Updates an
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.3
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ✅ v1.0.4 - LANG=C Fix + Desktop icon_name Abgleich (14.05.2026) — RELEASED
+- **Fix:** `LANG=C` für apt-get damit Auto-Updater auf deutschen Systemen Erfolg korrekt meldet
+  - Problem: apt gibt auf Deutsch aus ("1 aktualisiert"), Regex suchte nach "upgraded"
+  - Lösung: `LANG=C apt-get install ...` erzwingt englische Ausgabe
+- **Fix:** Filter "Updates verfügbar" zeigt in Desktop-Ansicht korrekte Apps (icon_name-Abgleich)
+  - Desktop-Pakete haben lokalisierten Namen ("Firefox-Webbrowser") statt Paketname ("firefox")
+  - `icon_name` aus `.desktop`-Datei entspricht oft dem apt-Paketnamen → als Fallback genutzt
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.4
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ✅ v1.0.5 - UPDATE-Badge in Desktop-Ansicht (14.05.2026) — RELEASED
+- **Fix:** UPDATE-Badge in Desktop-Ansicht ergänzt
+  - `_on_desktop_setup()` hatte kein `update_badge`-Widget
+  - `name_row`-Box mit Badge-Label hinzugefügt, gespeichert als `box.update_badge`
+  - `_on_desktop_bind()` setzt `set_visible(pkg.update_available or False)`
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.5
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ❌ v1.0.6 - Desktop-Filter via desktop_id (14.05.2026) — REVERTED
+- **Versuchter Fix:** desktop_id-Feld (path.stem aus .desktop-Dateiname) für Desktop-Update-Abgleich
+- **Problem:** Änderung des Package-Dataclass brach den Desktop-Filter komplett — keine App mehr angezeigt
+- **Entscheidung:** Vollständig rückgängig gemacht, Inhalt in v1.0.7 übernommen
+- **Lerneffekt:** `desktop_id` als neues Feld zwischen bestehende Felder einzufügen kann Dataclass-Kompatibilität brechen
+
+### ✅ v1.0.7 - Desktop-Filter via Teilstring (14.05.2026) — RELEASED
+- **Fix:** Desktop Update-Abgleich via Teilstring (ersetzt fehlgeschlagenen v1.0.6 Ansatz)
+  - Paketname muss nur als Teilstring im App-Namen oder icon_name vorkommen
+  - `chromium` findet "Chromium", "Chromium-Browser", "Chromium-Webbrowser"
+  - `firefox` findet "Firefox", "Firefox-Webbrowser", "Firefox ESR"
+  - Implementierung: `any(u in name_lower or u in icon_lower for u in updatable)`
+- **Changelog-Link:** https://github.com/nicolettas-muggelbude/myapps/compare/v1.0.5...v1.0.7
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.7
+- **AUR:** ✅ https://aur.archlinux.org/packages/myapps
+- **OBS:** ✅ https://build.opensuse.org/package/show/home:nicoletta:myapps/myapps
+
+### ⚠️ OBS "finished"-Status — bekanntes Infrastruktur-Problem
+- **Symptom:** Einzelne OBS-Builds bleiben dauerhaft auf Status "finished" statt "succeeded"
+- **Ursache:** OBS-Infrastrukturproblem, nicht im Code begründet
+- **Auswirkung:** Betroffene Distributionen bauen nicht, Paket nicht verfügbar
+- **Lösung:** Keinen Code-Fix möglich — auf OBS-Seite warten oder Build manuell triggern (Rebuild-Button)
+- **Workaround:** Einen anderen Build anklicken → "Trigger rebuild" → manchmal hilft das
+
+### ✅ v1.0.8 - Spenden-Option entfernt (28.06.2026) — RELEASED
+- Spenden-Option vollständig entfernt: PayPal-Button im About-Dialog, PC-Wittfoot UG Referenzen in README/Docs/Release Notes
+- docs/impressum.md und docs/datenschutz.md gelöscht (GitHub Pages)
+- App-ID in gui_gtk.py korrigiert: `de.pc-wittfoot.myapps` → `io.github.nicolettas-muggelbude.myapps`
+- **GitHub Release:** https://github.com/nicolettas-muggelbude/myapps/releases/tag/v1.0.8
+- **AUR:** ⏳ ausstehend
+- **OBS:** ⏳ ausstehend
+
 ### 🔄 Aktuell laufend
-- Kein aktives Release in Arbeit — nächstes Ziel: v2.0.0 (Deinstallations-Funktion)
+- Nächstes Ziel: v2.0.0 (Deinstallations-Funktion)
 
 ### 📋 Roadmap
 
