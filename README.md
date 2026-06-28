@@ -222,7 +222,7 @@ python3 -m myapps.main
 > **Wichtig:** `pip install -e .` **ohne** `--no-deps` schlägt fehl, weil pip versucht PyGObject zu kompilieren — das benötigt `pkg-config` + `libcairo2-dev`. GTK-Bindings müssen als System-Paket kommen.
 
 ## Pakete selbst bauen
-
+ 
 ### DEB-Paket bauen
 
 ```bash
