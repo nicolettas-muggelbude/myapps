@@ -1,5 +1,5 @@
 Name:           myapps
-Version:        1.0.7
+Version:        1.0.8
 Release:        1%{?dist}
 Summary:        Linux package manager overview with GTK4 + Libadwaita
 
@@ -166,6 +166,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Jun 28 2026 MyApps Contributors <noreply@github.com> - 1.0.8-1
+- Spenden-Option entfernt
+- App-ID korrigiert: de.pc-wittfoot.myapps -> io.github.nicolettas-muggelbude.myapps
+
 * Thu May 14 2026 MyApps Contributors <noreply@github.com> - 1.0.7-1
 - Fix: Desktop Update-Abgleich via Teilstring (firefox findet Firefox-Webbrowser usw.)
 
